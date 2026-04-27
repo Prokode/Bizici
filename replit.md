@@ -33,7 +33,7 @@ Both apps reuse the same logo (`assets/images/icon.png`), splash animation (`com
 - `app/index.tsx` — first-launch routing: shows onboarding once (`AsyncStorage` key `nearbuy.consumer.onboarding.seen`), then `(tabs)`.
 - `app/onboarding.tsx` — 4-slide pager with full-bleed gradient hero per slide (welcome / search / visual search / Karma).
 - `app/(tabs)/_layout.tsx` — 4 tabs: Carte (map), Recherche (search), Photo (visual search), Profil (Clerk + Karma).
-- `app/(tabs)/index.tsx` — full-screen `react-native-maps` with GPS permission via `expo-location`, top search bar that hands off to the Search tab. Web fallback shows a placeholder (maps render only on native).
+- `app/(tabs)/index.tsx` — full-screen `react-native-maps` with GPS permission via `expo-location`, top search bar that hands off to the Search tab. Status pill shows live shop count. Markers use `components/ShopMarker.tsx` (gradient pin + product-count badge) and tap opens `components/ShopBottomSheet.tsx` (modal with shop details + preview products + "Encore là?" Karma CTA stub). Data comes from `lib/publicApi.ts → fetchNearbyShops` calling `GET /api/public/shops`. Web fallback: maps don't render but the status pill + shop count still update from the live API; geolocation falls back to Paris after a 2 s timeout for headless previews.
 - `app/(tabs)/search.tsx` — search input + empty-state CTA "Diffuser ma demande" (broadcast). Backend wiring + Fuse.js fuzzy matching pending.
 - `app/(tabs)/camera.tsx` — capture / pick-from-gallery CTAs. Backend visual-search endpoint pending.
 - `app/(tabs)/profile.tsx` — signed-out hero + sign-in CTA, signed-in shows name/email + Karma card. Karma always reads 0 until backend is wired.
@@ -62,7 +62,9 @@ Connection lives in `lib/db/src/connect.ts` (`connectMongo()`, idempotent via ca
 
 `2dsphere` indexes on `Shop.location` and `BroadcastRequest.location` power radius/distance queries via `$nearSphere` / `$geoWithin`.
 
-The API server calls `connectMongo()` and `seedDefaultCategories()` on startup; if Mongo is unreachable the server keeps serving (just logs the error) so `/healthz` stays green.
+The API server calls `connectMongo()`, `seedDefaultCategories()`, and `seedDemoShops()` on startup; if Mongo is unreachable the server keeps serving (just logs the error) so `/healthz` stays green.
+
+`seedDemoShops()` (in `lib/db/src/seedDemoShops.ts`) is idempotent: if the demo seller (`demo-seller@nearbuy.local`) already owns shops, it skips. Otherwise it inserts 6 Paris shops (Marché des Enfants Rouges, Tech Corner, L'Atelier Denim, Boulangerie du Coin, Bijoux Nadia, Beauté Rose) with ~17 in-stock products so the customer map has content immediately. Products are inserted via `Product.insertMany(..., { lean: true })` rather than `Product.create()` to bypass a Mongoose 9.5.x pre-save hook bug — do NOT change to `Product.create` here.
 
 ## Authentication (Clerk)
 
@@ -73,9 +75,16 @@ The mobile app:
 - Uses Clerk's custom-flow APIs (`useSignIn`, `useSignUp`, `useSSO`) for email/password and Google OAuth.
 - After sign-in, `(home)/_layout.tsx` registers `setAuthTokenGetter(() => getToken())` so every API call carries `Authorization: Bearer <jwt>`.
 
-## API endpoints (under `/api`, all require Bearer auth)
+## API endpoints (under `/api`)
 
-- `GET /healthz` (public)
+### Public (no auth — used by the customer app)
+
+- `GET /healthz`
+- `GET /public/shops?lat&lng&radiusKm=5&limit=200` — shops within radius via `$nearSphere`, each with `distanceMeters`, `productCount`, and up to 4 `previewProducts`
+- `GET /public/shops/:shopId` — shop detail + full in-stock products list
+
+### Authenticated (Bearer JWT, all under `/api`)
+
 - `GET /me` — current user + their shops with role
 - `GET /shops`, `POST /shops` (creator becomes the Seller, `ShopMember(seller)` row also created)
 - `GET /shops/:shopId`, `PUT /shops/:shopId` (Seller only), `PATCH /shops/:shopId/open`, `GET /shops/:shopId/qr`, `GET /shops/:shopId/summary`

@@ -8,7 +8,7 @@ import {
 } from "./middlewares/clerkProxyMiddleware";
 import router from "./routes";
 import { logger } from "./lib/logger";
-import { connectMongo, seedDefaultCategories } from "@workspace/db";
+import { connectMongo, seedDefaultCategories, seedDemoShops } from "@workspace/db";
 
 const app: Express = express();
 
@@ -50,6 +50,14 @@ connectMongo()
       logger.info("Default categories ensured");
     } catch (err) {
       logger.error({ err }, "Failed to seed categories");
+    }
+    try {
+      const { inserted } = await seedDemoShops();
+      if (inserted > 0) {
+        logger.info({ inserted }, "Demo shops seeded");
+      }
+    } catch (err) {
+      logger.error({ err }, "Failed to seed demo shops");
     }
   })
   .catch((err) => {

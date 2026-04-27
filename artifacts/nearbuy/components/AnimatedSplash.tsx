@@ -3,6 +3,7 @@ import {
   Animated,
   Dimensions,
   Easing,
+  Platform,
   StyleSheet,
 } from "react-native";
 import Svg, {
@@ -37,6 +38,13 @@ export function AnimatedSplash({ onFinish }: Props) {
   const fade = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    // On web the native driver is unavailable and the JS-driven sequence
+    // blocks the preview pane for ~3-5s every reload. Skip the animation
+    // entirely there — the OS splash already handles the cold start.
+    if (Platform.OS === "web") {
+      const t = setTimeout(onFinish, 50);
+      return () => clearTimeout(t);
+    }
     Animated.sequence([
       Animated.spring(translateY, {
         toValue: 0,
