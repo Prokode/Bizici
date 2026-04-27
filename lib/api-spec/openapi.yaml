@@ -3,20 +3,25 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: NearBuy Business API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: shop
+    description: Shop profile and setup
+  - name: products
+    description: Product inventory
+  - name: requests
+    description: Live broadcast requests (demand feed)
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +29,500 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /shop:
+    get:
+      operationId: getShop
+      tags: [shop]
+      parameters:
+        - $ref: "#/components/parameters/OwnerId"
+      responses:
+        "200":
+          description: Shop or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShopOrNull"
+    put:
+      operationId: upsertShop
+      tags: [shop]
+      parameters:
+        - $ref: "#/components/parameters/OwnerId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShopUpsertInput"
+      responses:
+        "200":
+          description: The created or updated shop
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shop"
+
+  /shop/qr:
+    get:
+      operationId: getShopQr
+      tags: [shop]
+      parameters:
+        - $ref: "#/components/parameters/OwnerId"
+      responses:
+        "200":
+          description: QR payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QrPayload"
+
+  /shop/open:
+    patch:
+      operationId: setShopOpen
+      tags: [shop]
+      summary: Set whether the shop is currently open
+      parameters:
+        - $ref: "#/components/parameters/OwnerId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShopOpenInput"
+      responses:
+        "200":
+          description: Updated shop
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shop"
+
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      parameters:
+        - $ref: "#/components/parameters/OwnerId"
+      responses:
+        "200":
+          description: Product list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+    post:
+      operationId: createProduct
+      tags: [products]
+      parameters:
+        - $ref: "#/components/parameters/OwnerId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductCreateInput"
+      responses:
+        "200":
+          description: Created product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /products/{id}:
+    patch:
+      operationId: updateProduct
+      tags: [products]
+      parameters:
+        - $ref: "#/components/parameters/OwnerId"
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductUpdateInput"
+      responses:
+        "200":
+          description: Updated product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+    delete:
+      operationId: deleteProduct
+      tags: [products]
+      parameters:
+        - $ref: "#/components/parameters/OwnerId"
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResult"
+
+  /products/analyze-photo:
+    post:
+      operationId: analyzeProductPhoto
+      tags: [products]
+      summary: Analyze a product photo and return suggested fields
+      parameters:
+        - $ref: "#/components/parameters/OwnerId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzePhotoInput"
+      responses:
+        "200":
+          description: AI suggestions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductSuggestion"
+
+  /requests:
+    get:
+      operationId: listNearbyRequests
+      tags: [requests]
+      summary: List active broadcast requests near the owner's shop
+      parameters:
+        - $ref: "#/components/parameters/OwnerId"
+      responses:
+        "200":
+          description: Broadcast request list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BroadcastRequest"
+
+  /requests/{id}/found:
+    post:
+      operationId: markRequestFound
+      tags: [requests]
+      summary: Confirm availability — mark a broadcast request as found
+      parameters:
+        - $ref: "#/components/parameters/OwnerId"
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Updated request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BroadcastRequest"
+
+  /requests/{id}/expire:
+    post:
+      operationId: expireRequest
+      tags: [requests]
+      summary: Dismiss / expire a broadcast request from the feed
+      parameters:
+        - $ref: "#/components/parameters/OwnerId"
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Updated request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BroadcastRequest"
+
+  /summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [shop]
+      parameters:
+        - $ref: "#/components/parameters/OwnerId"
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
 components:
+  parameters:
+    OwnerId:
+      in: header
+      name: X-Owner-Id
+      required: true
+      description: Stable device-generated owner UUID
+      schema:
+        type: string
+        format: uuid
   schemas:
     HealthStatus:
       type: object
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    Shop:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        marketName:
+          type: string
+          nullable: true
+        stallInfo:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+        longitude:
+          type: number
+        isOpen:
+          type: boolean
+      required:
+        - id
+        - name
+        - latitude
+        - longitude
+        - isOpen
+
+    ShopOrNull:
+      oneOf:
+        - $ref: "#/components/schemas/Shop"
+        - type: "null"
+
+    ShopUpsertInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        marketName:
+          type: string
+          nullable: true
+        stallInfo:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+        longitude:
+          type: number
+      required:
+        - name
+        - latitude
+        - longitude
+
+    ShopOpenInput:
+      type: object
+      properties:
+        isOpen:
+          type: boolean
+      required:
+        - isOpen
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        shopId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        category:
+          type: string
+          nullable: true
+        price:
+          type: number
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        imageUrl:
+          type: string
+          nullable: true
+        stockStatus:
+          type: string
+          enum: [in_stock, out_of_stock]
+        lastVerifiedAt:
+          type: string
+      required:
+        - id
+        - shopId
+        - name
+        - tags
+        - stockStatus
+        - lastVerifiedAt
+
+    ProductCreateInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        category:
+          type: string
+          nullable: true
+        price:
+          type: number
+          minimum: 0
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        imageUrl:
+          type: string
+          nullable: true
+        stockStatus:
+          type: string
+          enum: [in_stock, out_of_stock]
+      required:
+        - name
+
+    ProductUpdateInput:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+          nullable: true
+        price:
+          type: number
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        imageUrl:
+          type: string
+          nullable: true
+        stockStatus:
+          type: string
+          enum: [in_stock, out_of_stock]
+
+    AnalyzePhotoInput:
+      type: object
+      properties:
+        imageBase64:
+          type: string
+          description: Base64-encoded image data (without data URL prefix)
+      required:
+        - imageBase64
+
+    ProductSuggestion:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        price:
+          type: number
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - category
+        - price
+        - tags
+
+    BroadcastRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+          nullable: true
+        query:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        status:
+          type: string
+          enum: [active, found, expired]
+        distanceMeters:
+          type: number
+      required:
+        - id
+        - query
+        - latitude
+        - longitude
+        - status
+        - distanceMeters
+
+    QrPayload:
+      type: object
+      properties:
+        url:
+          type: string
+        token:
+          type: string
+      required: [url, token]
+
+    DeleteResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required: [success]
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalProducts:
+          type: integer
+        inStockCount:
+          type: integer
+        outOfStockCount:
+          type: integer
+        activeRequestsCount:
+          type: integer
+      required:
+        - totalProducts
+        - inStockCount
+        - outOfStockCount
+        - activeRequestsCount

@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "LY9wB6VFmRVCCha8Qc1Ik"
+uri = "file://artifacts/nearbuy-business/assets/images/icon.png"
+type = "image"
+title = "NearBuy App Icon"

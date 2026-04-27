@@ -17,6 +17,11 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
+let _ownerIdGetter: (() => Promise<string | null> | string | null) | null = null;
+
+export function setOwnerIdGetter(getter: (() => Promise<string | null> | string | null) | null): void {
+  _ownerIdGetter = getter;
+}
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -355,6 +360,13 @@ export async function customFetch<T = unknown>(
     const token = await _authTokenGetter();
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
+    }
+  }
+
+  if (_ownerIdGetter && !headers.has("x-owner-id")) {
+    const ownerId = await _ownerIdGetter();
+    if (ownerId) {
+      headers.set("x-owner-id", ownerId);
     }
   }
 
