@@ -2,30 +2,25 @@ openapi: 3.1.0
 info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
-  description: NearBuy Business API
+  version: 0.2.0
+  description: NearBuy Business API (MongoDB-backed)
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
   - name: me
-    description: Current user
   - name: shops
-    description: Shops the user owns or is a member of
   - name: products
-    description: Product inventory (per shop)
   - name: requests
-    description: Live broadcast requests near a shop
   - name: members
-    description: Shop members and invitations
+  - name: categories
+  - name: discounts
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
-      summary: Health check
       responses:
         "200":
           description: Healthy
@@ -38,20 +33,17 @@ paths:
     get:
       operationId: getMe
       tags: [me]
-      summary: Current authenticated user with their shop memberships
       responses:
         "200":
           description: Current user
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/Me"
+              schema: { $ref: "#/components/schemas/Me" }
 
   /shops:
     get:
       operationId: listShops
       tags: [shops]
-      summary: List shops the current user owns or is assigned to
       responses:
         "200":
           description: Shop list with role
@@ -59,25 +51,21 @@ paths:
             application/json:
               schema:
                 type: array
-                items:
-                  $ref: "#/components/schemas/ShopWithRole"
+                items: { $ref: "#/components/schemas/ShopWithRole" }
     post:
       operationId: createShop
       tags: [shops]
-      summary: Create a new shop (current user becomes seller)
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: "#/components/schemas/ShopCreateInput"
+            schema: { $ref: "#/components/schemas/ShopCreateInput" }
       responses:
         "200":
           description: Created shop
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/Shop"
+              schema: { $ref: "#/components/schemas/Shop" }
 
   /shops/{shopId}:
     get:
@@ -90,48 +78,41 @@ paths:
           description: Shop
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/Shop"
+              schema: { $ref: "#/components/schemas/Shop" }
     put:
       operationId: updateShop
       tags: [shops]
-      summary: Update shop details (seller only)
       parameters:
         - $ref: "#/components/parameters/ShopId"
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: "#/components/schemas/ShopUpdateInput"
+            schema: { $ref: "#/components/schemas/ShopUpdateInput" }
       responses:
         "200":
           description: Updated shop
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/Shop"
+              schema: { $ref: "#/components/schemas/Shop" }
 
   /shops/{shopId}/open:
     patch:
       operationId: setShopOpen
       tags: [shops]
-      summary: Toggle whether the shop is open
       parameters:
         - $ref: "#/components/parameters/ShopId"
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: "#/components/schemas/ShopOpenInput"
+            schema: { $ref: "#/components/schemas/ShopOpenInput" }
       responses:
         "200":
           description: Updated shop
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/Shop"
+              schema: { $ref: "#/components/schemas/Shop" }
 
   /shops/{shopId}/qr:
     get:
@@ -144,8 +125,7 @@ paths:
           description: QR payload
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/QrPayload"
+              schema: { $ref: "#/components/schemas/QrPayload" }
 
   /shops/{shopId}/summary:
     get:
@@ -158,8 +138,7 @@ paths:
           description: Summary
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/DashboardSummary"
+              schema: { $ref: "#/components/schemas/DashboardSummary" }
 
   /shops/{shopId}/products:
     get:
@@ -174,8 +153,7 @@ paths:
             application/json:
               schema:
                 type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+                items: { $ref: "#/components/schemas/Product" }
     post:
       operationId: createProduct
       tags: [products]
@@ -185,15 +163,13 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              $ref: "#/components/schemas/ProductCreateInput"
+            schema: { $ref: "#/components/schemas/ProductCreateInput" }
       responses:
         "200":
           description: Created product
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/Product"
+              schema: { $ref: "#/components/schemas/Product" }
 
   /shops/{shopId}/products/{id}:
     patch:
@@ -204,22 +180,18 @@ paths:
         - in: path
           name: id
           required: true
-          schema:
-            type: string
-            format: uuid
+          schema: { type: string }
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: "#/components/schemas/ProductUpdateInput"
+            schema: { $ref: "#/components/schemas/ProductUpdateInput" }
       responses:
         "200":
-          description: Updated product
+          description: Updated
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/Product"
+              schema: { $ref: "#/components/schemas/Product" }
     delete:
       operationId: deleteProduct
       tags: [products]
@@ -228,37 +200,91 @@ paths:
         - in: path
           name: id
           required: true
-          schema:
-            type: string
-            format: uuid
+          schema: { type: string }
       responses:
         "200":
           description: Deleted
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/DeleteResult"
+              schema: { $ref: "#/components/schemas/DeleteResult" }
 
   /shops/{shopId}/products/analyze-photo:
     post:
       operationId: analyzeProductPhoto
       tags: [products]
-      summary: Analyze a product photo and return suggested fields
       parameters:
         - $ref: "#/components/parameters/ShopId"
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: "#/components/schemas/AnalyzePhotoInput"
+            schema: { $ref: "#/components/schemas/AnalyzePhotoInput" }
       responses:
         "200":
           description: AI suggestions
           content:
             application/json:
+              schema: { $ref: "#/components/schemas/ProductSuggestion" }
+
+  /shops/{shopId}/products/{productId}/discounts:
+    get:
+      operationId: listDiscounts
+      tags: [discounts]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+        - in: path
+          name: productId
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
               schema:
-                $ref: "#/components/schemas/ProductSuggestion"
+                type: array
+                items: { $ref: "#/components/schemas/Discount" }
+    post:
+      operationId: createDiscount
+      tags: [discounts]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+        - in: path
+          name: productId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DiscountCreateInput" }
+      responses:
+        "200":
+          description: Created discount
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Discount" }
+
+  /shops/{shopId}/products/{productId}/discounts/{discountId}:
+    delete:
+      operationId: deleteDiscount
+      tags: [discounts]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+        - in: path
+          name: productId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: discountId
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DeleteResult" }
 
   /shops/{shopId}/requests:
     get:
@@ -273,8 +299,7 @@ paths:
             application/json:
               schema:
                 type: array
-                items:
-                  $ref: "#/components/schemas/BroadcastRequest"
+                items: { $ref: "#/components/schemas/BroadcastRequest" }
 
   /shops/{shopId}/requests/{id}/found:
     post:
@@ -285,16 +310,13 @@ paths:
         - in: path
           name: id
           required: true
-          schema:
-            type: string
-            format: uuid
+          schema: { type: string }
       responses:
         "200":
           description: Updated request
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/BroadcastRequest"
+              schema: { $ref: "#/components/schemas/BroadcastRequest" }
 
   /shops/{shopId}/requests/{id}/expire:
     post:
@@ -305,16 +327,13 @@ paths:
         - in: path
           name: id
           required: true
-          schema:
-            type: string
-            format: uuid
+          schema: { type: string }
       responses:
         "200":
           description: Updated request
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/BroadcastRequest"
+              schema: { $ref: "#/components/schemas/BroadcastRequest" }
 
   /shops/{shopId}/members:
     get:
@@ -327,103 +346,99 @@ paths:
           description: Members and pending invitations
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/ShopMembersList"
+              schema: { $ref: "#/components/schemas/ShopMembersList" }
     post:
       operationId: inviteShopMember
       tags: [members]
-      summary: Invite a helper by email (seller only)
       parameters:
         - $ref: "#/components/parameters/ShopId"
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: "#/components/schemas/InviteMemberInput"
+            schema: { $ref: "#/components/schemas/InviteMemberInput" }
       responses:
         "200":
           description: Created invitation
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/ShopInvitation"
+              schema: { $ref: "#/components/schemas/ShopInvitation" }
 
   /shops/{shopId}/members/{userId}:
     delete:
       operationId: removeShopMember
       tags: [members]
-      summary: Remove a SubSeller from the shop (seller only)
       parameters:
         - $ref: "#/components/parameters/ShopId"
         - in: path
           name: userId
           required: true
-          schema:
-            type: string
-            format: uuid
+          schema: { type: string }
       responses:
         "200":
           description: Deleted
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/DeleteResult"
+              schema: { $ref: "#/components/schemas/DeleteResult" }
 
   /shops/{shopId}/invitations/{invitationId}:
     delete:
       operationId: cancelShopInvitation
       tags: [members]
-      summary: Cancel a pending invitation (seller only)
       parameters:
         - $ref: "#/components/parameters/ShopId"
         - in: path
           name: invitationId
           required: true
-          schema:
-            type: string
-            format: uuid
+          schema: { type: string }
       responses:
         "200":
           description: Cancelled
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/DeleteResult"
+              schema: { $ref: "#/components/schemas/DeleteResult" }
 
   /invitations:
     get:
       operationId: listMyInvitations
       tags: [members]
-      summary: Pending invitations addressed to current user's email
       responses:
         "200":
-          description: List of pending invitations
+          description: List of pending invitations for current user
           content:
             application/json:
               schema:
                 type: array
-                items:
-                  $ref: "#/components/schemas/PendingInvitation"
+                items: { $ref: "#/components/schemas/PendingInvitation" }
 
   /invitations/{token}/accept:
     post:
       operationId: acceptInvitation
       tags: [members]
-      summary: Accept an invitation token (creates shop membership)
       parameters:
         - in: path
           name: token
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       responses:
         "200":
           description: Accepted; returns shop with role
           content:
             application/json:
+              schema: { $ref: "#/components/schemas/ShopWithRole" }
+
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [categories]
+      responses:
+        "200":
+          description: All categories
+          content:
+            application/json:
               schema:
-                $ref: "#/components/schemas/ShopWithRole"
+                type: array
+                items: { $ref: "#/components/schemas/Category" }
 
 components:
   parameters:
@@ -431,72 +446,43 @@ components:
       in: path
       name: shopId
       required: true
-      schema:
-        type: string
-        format: uuid
+      schema: { type: string }
 
   schemas:
     HealthStatus:
       type: object
       properties:
-        status:
-          type: string
+        status: { type: string }
       required: [status]
 
     Me:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        email:
-          type: string
-          nullable: true
-        name:
-          type: string
-          nullable: true
+        id: { type: string }
+        email: { type: string, nullable: true }
+        name: { type: string, nullable: true }
         shops:
           type: array
-          items:
-            $ref: "#/components/schemas/ShopWithRole"
+          items: { $ref: "#/components/schemas/ShopWithRole" }
       required: [id, shops]
 
     Shop:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        sellerId:
-          type: string
-          format: uuid
-        name:
-          type: string
-        marketName:
-          type: string
-          nullable: true
-        stallInfo:
-          type: string
-          nullable: true
-        latitude:
-          type: number
-        longitude:
-          type: number
-        isOpen:
-          type: boolean
-      required:
-        - id
-        - sellerId
-        - name
-        - latitude
-        - longitude
-        - isOpen
+        id: { type: string }
+        sellerId: { type: string }
+        name: { type: string }
+        marketName: { type: string, nullable: true }
+        stallInfo: { type: string, nullable: true }
+        latitude: { type: number }
+        longitude: { type: number }
+        isOpen: { type: boolean }
+      required: [id, sellerId, name, latitude, longitude, isOpen]
 
     ShopWithRole:
       type: object
       properties:
-        shop:
-          $ref: "#/components/schemas/Shop"
+        shop: { $ref: "#/components/schemas/Shop" }
         role:
           type: string
           enum: [seller, sub_seller]
@@ -505,78 +491,125 @@ components:
     ShopCreateInput:
       type: object
       properties:
-        name:
-          type: string
-          minLength: 1
-        marketName:
-          type: string
-          nullable: true
-        stallInfo:
-          type: string
-          nullable: true
-        latitude:
-          type: number
-        longitude:
-          type: number
+        name: { type: string, minLength: 1 }
+        marketName: { type: string, nullable: true }
+        stallInfo: { type: string, nullable: true }
+        latitude: { type: number }
+        longitude: { type: number }
       required: [name, latitude, longitude]
 
     ShopUpdateInput:
       type: object
       properties:
-        name:
-          type: string
-          minLength: 1
-        marketName:
-          type: string
-          nullable: true
-        stallInfo:
-          type: string
-          nullable: true
-        latitude:
-          type: number
-        longitude:
-          type: number
+        name: { type: string, minLength: 1 }
+        marketName: { type: string, nullable: true }
+        stallInfo: { type: string, nullable: true }
+        latitude: { type: number }
+        longitude: { type: number }
 
     ShopOpenInput:
       type: object
       properties:
-        isOpen:
-          type: boolean
+        isOpen: { type: boolean }
       required: [isOpen]
+
+    Category:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        slug: { type: string }
+        parent: { type: string, nullable: true }
+        icon: { type: string, nullable: true }
+      required: [id, name, slug]
+
+    Dimension:
+      type: object
+      properties:
+        height: { type: number, minimum: 0 }
+        length: { type: number, minimum: 0 }
+        width: { type: number, minimum: 0 }
+      required: [height, length, width]
+
+    ProductVariation:
+      type: object
+      properties:
+        id: { type: string, nullable: true }
+        sku: { type: string }
+        price: { type: number, minimum: 0 }
+        quantity: { type: number, minimum: 0 }
+        colors:
+          type: array
+          items: { type: string }
+        photos:
+          type: array
+          items: { type: string }
+        dimension:
+          oneOf:
+            - { $ref: "#/components/schemas/Dimension" }
+            - { type: "null" }
+      required: [sku, price, quantity, colors, photos]
 
     Product:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        shopId:
-          type: string
-          format: uuid
-        name:
-          type: string
-        category:
-          type: string
-          nullable: true
-        price:
-          type: number
-          nullable: true
+        id: { type: string }
+        shopId: { type: string }
+        sellerId: { type: string }
+        name: { type: string }
+        slug: { type: string, nullable: true }
+        brand: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        price: { type: number }
+        quantity: { type: number }
+        colors:
+          type: array
+          items: { type: string }
+        photos:
+          type: array
+          items: { type: string }
+        sizes:
+          type: array
+          items: { type: string }
+        categories:
+          type: array
+          items: { $ref: "#/components/schemas/Category" }
+        weight: { type: number, nullable: true }
+        dimension:
+          oneOf:
+            - { $ref: "#/components/schemas/Dimension" }
+            - { type: "null" }
+        variations:
+          type: array
+          items: { $ref: "#/components/schemas/ProductVariation" }
+        rating: { type: number, nullable: true }
+        reviews: { type: number }
+        totalSell: { type: number }
+        applyDiscount: { type: boolean }
         tags:
           type: array
-          items:
-            type: string
-        imageUrl:
-          type: string
-          nullable: true
+          items: { type: string }
         stockStatus:
           type: string
           enum: [in_stock, out_of_stock]
-        lastVerifiedAt:
-          type: string
+        imageUrl: { type: string, nullable: true }
+        category: { type: string, nullable: true }
+        lastVerifiedAt: { type: string }
       required:
         - id
         - shopId
+        - sellerId
         - name
+        - price
+        - quantity
+        - colors
+        - photos
+        - sizes
+        - categories
+        - variations
+        - reviews
+        - totalSell
+        - applyDiscount
         - tags
         - stockStatus
         - lastVerifiedAt
@@ -584,165 +617,154 @@ components:
     ProductCreateInput:
       type: object
       properties:
-        name:
-          type: string
-          minLength: 1
-        category:
-          type: string
-          nullable: true
-        price:
-          type: number
-          minimum: 0
-          nullable: true
+        name: { type: string, minLength: 1 }
+        brand: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        price: { type: number, minimum: 0 }
+        quantity: { type: number, minimum: 0 }
+        colors:
+          type: array
+          items: { type: string }
+        photos:
+          type: array
+          items: { type: string }
+        sizes:
+          type: array
+          items: { type: string }
+        categoryIds:
+          type: array
+          items: { type: string }
+        weight: { type: number, nullable: true }
+        dimension:
+          oneOf:
+            - { $ref: "#/components/schemas/Dimension" }
+            - { type: "null" }
+        variations:
+          type: array
+          items: { $ref: "#/components/schemas/ProductVariation" }
         tags:
           type: array
-          items:
-            type: string
-        imageUrl:
-          type: string
-          nullable: true
+          items: { type: string }
+        imageUrl: { type: string, nullable: true }
+        category: { type: string, nullable: true }
         stockStatus:
           type: string
           enum: [in_stock, out_of_stock]
+        applyDiscount: { type: boolean }
       required: [name]
 
     ProductUpdateInput:
       type: object
       properties:
-        name:
-          type: string
-        category:
-          type: string
-          nullable: true
-        price:
-          type: number
-          nullable: true
+        name: { type: string }
+        brand: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        price: { type: number, minimum: 0 }
+        quantity: { type: number, minimum: 0 }
+        colors:
+          type: array
+          items: { type: string }
+        photos:
+          type: array
+          items: { type: string }
+        sizes:
+          type: array
+          items: { type: string }
+        categoryIds:
+          type: array
+          items: { type: string }
+        weight: { type: number, nullable: true }
+        dimension:
+          oneOf:
+            - { $ref: "#/components/schemas/Dimension" }
+            - { type: "null" }
+        variations:
+          type: array
+          items: { $ref: "#/components/schemas/ProductVariation" }
         tags:
           type: array
-          items:
-            type: string
-        imageUrl:
-          type: string
-          nullable: true
+          items: { type: string }
+        imageUrl: { type: string, nullable: true }
         stockStatus:
           type: string
           enum: [in_stock, out_of_stock]
+        applyDiscount: { type: boolean }
 
     AnalyzePhotoInput:
       type: object
       properties:
-        imageBase64:
-          type: string
+        imageBase64: { type: string }
       required: [imageBase64]
 
     ProductSuggestion:
       type: object
       properties:
-        name:
-          type: string
-        category:
-          type: string
-        price:
-          type: number
+        name: { type: string }
+        category: { type: string }
+        price: { type: number }
         tags:
           type: array
-          items:
-            type: string
+          items: { type: string }
       required: [name, category, price, tags]
 
     BroadcastRequest:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        userId:
-          type: string
-          format: uuid
-          nullable: true
-        query:
-          type: string
-        latitude:
-          type: number
-        longitude:
-          type: number
+        id: { type: string }
+        userId: { type: string, nullable: true }
+        query: { type: string }
+        latitude: { type: number }
+        longitude: { type: number }
         status:
           type: string
           enum: [active, found, expired]
-        distanceMeters:
-          type: number
-      required:
-        - id
-        - query
-        - latitude
-        - longitude
-        - status
-        - distanceMeters
+        distanceMeters: { type: number }
+      required: [id, query, latitude, longitude, status, distanceMeters]
 
     QrPayload:
       type: object
       properties:
-        url:
-          type: string
-        token:
-          type: string
+        url: { type: string }
+        token: { type: string }
       required: [url, token]
 
     DeleteResult:
       type: object
       properties:
-        success:
-          type: boolean
+        success: { type: boolean }
       required: [success]
 
     DashboardSummary:
       type: object
       properties:
-        totalProducts:
-          type: integer
-        inStockCount:
-          type: integer
-        outOfStockCount:
-          type: integer
-        activeRequestsCount:
-          type: integer
+        totalProducts: { type: integer }
+        inStockCount: { type: integer }
+        outOfStockCount: { type: integer }
+        activeRequestsCount: { type: integer }
       required: [totalProducts, inStockCount, outOfStockCount, activeRequestsCount]
 
     ShopMember:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        userId:
-          type: string
-          format: uuid
-        email:
-          type: string
-          nullable: true
-        name:
-          type: string
-          nullable: true
+        id: { type: string }
+        userId: { type: string }
+        email: { type: string, nullable: true }
+        name: { type: string, nullable: true }
         role:
           type: string
           enum: [seller, sub_seller]
-        createdAt:
-          type: string
+        createdAt: { type: string }
       required: [id, userId, role, createdAt]
 
     ShopInvitation:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        email:
-          type: string
+        id: { type: string }
+        email: { type: string }
         role:
           type: string
           enum: [seller, sub_seller]
-        createdAt:
-          type: string
+        createdAt: { type: string }
       required: [id, email, role, createdAt]
 
     ShopMembersList:
@@ -750,36 +772,49 @@ components:
       properties:
         members:
           type: array
-          items:
-            $ref: "#/components/schemas/ShopMember"
+          items: { $ref: "#/components/schemas/ShopMember" }
         invitations:
           type: array
-          items:
-            $ref: "#/components/schemas/ShopInvitation"
+          items: { $ref: "#/components/schemas/ShopInvitation" }
       required: [members, invitations]
 
     InviteMemberInput:
       type: object
       properties:
-        email:
-          type: string
-          format: email
+        email: { type: string, format: email }
       required: [email]
 
     PendingInvitation:
       type: object
       properties:
-        token:
-          type: string
-        shopId:
-          type: string
-          format: uuid
-        shopName:
-          type: string
+        token: { type: string }
+        shopId: { type: string }
+        shopName: { type: string }
         role:
           type: string
           enum: [seller, sub_seller]
-        invitedByName:
-          type: string
-          nullable: true
+        invitedByName: { type: string, nullable: true }
       required: [token, shopId, shopName, role]
+
+    Discount:
+      type: object
+      properties:
+        id: { type: string }
+        productId: { type: string }
+        code: { type: string, nullable: true }
+        percentOff: { type: number }
+        amountOff: { type: number }
+        validFrom: { type: string }
+        validTo: { type: string, nullable: true }
+        isActive: { type: boolean }
+      required: [id, productId, percentOff, amountOff, validFrom, isActive]
+
+    DiscountCreateInput:
+      type: object
+      properties:
+        code: { type: string, nullable: true }
+        percentOff: { type: number, minimum: 0, maximum: 100 }
+        amountOff: { type: number, minimum: 0 }
+        validFrom: { type: string }
+        validTo: { type: string, nullable: true }
+        isActive: { type: boolean }

@@ -1,101 +1,134 @@
 import { Router, type IRouter } from "express";
-import { eq, and, desc } from "drizzle-orm";
-import { db, productsTable } from "@workspace/db";
-import {
-  CreateProductBody,
-  UpdateProductBody,
-  AnalyzeProductPhotoBody,
-} from "@workspace/api-zod";
+import { Types } from "mongoose";
+import { Product, Category } from "@workspace/db";
 import { requireAuth, requireShopAccess } from "../lib/auth";
-import { openai } from "../lib/openai";
+import { serializeProduct } from "../lib/serialize";
+import { analyzeProductPhoto } from "../lib/openai";
 
 const router: IRouter = Router();
 router.use(requireAuth);
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function serializeProduct(p: typeof productsTable.$inferSelect) {
-  return {
-    id: p.id,
-    shopId: p.shopId ?? "",
-    name: p.name,
-    category: p.category,
-    price: p.price !== null ? Number(p.price) : null,
-    tags: p.tags ?? [],
-    imageUrl: p.imageUrl,
-    stockStatus: (p.stockStatus ?? "in_stock") as "in_stock" | "out_of_stock",
-    lastVerifiedAt: (p.lastVerifiedAt ?? new Date()).toISOString(),
-  };
+function toObjectIds(ids: unknown): Types.ObjectId[] {
+  if (!Array.isArray(ids)) return [];
+  return ids
+    .filter((s) => typeof s === "string" && Types.ObjectId.isValid(s))
+    .map((s) => new Types.ObjectId(s as string));
 }
 
 router.get("/shops/:shopId/products", requireShopAccess, async (req, res) => {
-  const shopId = (req.params.shopId as string);
-  const rows = await db
-    .select()
-    .from(productsTable)
-    .where(eq(productsTable.shopId, shopId))
-    .orderBy(desc(productsTable.lastVerifiedAt));
-  res.json(rows.map(serializeProduct));
+  const products = await Product.find({
+    shop: new Types.ObjectId(req.params.shopId),
+    deletedAt: null,
+  })
+    .populate("categories")
+    .sort({ createdAt: -1 })
+    .lean();
+  res.json(products.map(serializeProduct));
 });
 
 router.post("/shops/:shopId/products", requireShopAccess, async (req, res) => {
-  const shopId = (req.params.shopId as string);
-  const body = CreateProductBody.parse(req.body);
-  const [created] = await db
-    .insert(productsTable)
-    .values({
-      shopId,
-      name: body.name,
-      category: body.category ?? null,
-      price:
-        body.price !== undefined && body.price !== null
-          ? String(body.price)
-          : null,
-      tags: body.tags ?? [],
-      imageUrl: body.imageUrl ?? null,
-      stockStatus: body.stockStatus ?? "in_stock",
-    })
-    .returning();
-  res.json(serializeProduct(created!));
+  const body = req.body ?? {};
+  if (!body.name) {
+    res.status(400).json({ error: "name required" });
+    return;
+  }
+
+  // Accept categoryIds (new) OR a single legacy `category` string (resolves to slug match)
+  let categoryIds = toObjectIds(body.categoryIds);
+  if (categoryIds.length === 0 && typeof body.category === "string" && body.category.trim()) {
+    const slug = body.category
+      .toString()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+    const cat = await Category.findOne({ slug }).lean();
+    if (cat) categoryIds = [cat._id];
+  }
+
+  const photos: string[] = Array.isArray(body.photos)
+    ? body.photos.filter((p: unknown) => typeof p === "string")
+    : typeof body.imageUrl === "string"
+      ? [body.imageUrl]
+      : [];
+
+  const created = await Product.create({
+    shop: new Types.ObjectId(req.params.shopId),
+    seller: new Types.ObjectId(req.userId),
+    name: String(body.name),
+    brand: body.brand ?? null,
+    description: body.description ?? null,
+    price: typeof body.price === "number" ? body.price : 0,
+    quantity: typeof body.quantity === "number" ? body.quantity : 1,
+    colors: Array.isArray(body.colors) ? body.colors : [],
+    photos,
+    sizes: Array.isArray(body.sizes) ? body.sizes : [],
+    categories: categoryIds,
+    weight: typeof body.weight === "number" ? body.weight : null,
+    dimension: body.dimension ?? null,
+    variations: Array.isArray(body.variations) ? body.variations : [],
+    rating: typeof body.rating === "number" ? body.rating : null,
+    tags: Array.isArray(body.tags) ? body.tags : [],
+    stockStatus: body.stockStatus === "out_of_stock" ? "out_of_stock" : "in_stock",
+    applyDiscount: !!body.applyDiscount,
+  });
+
+  const populated = await Product.findById(created._id).populate("categories").lean();
+  res.json(serializeProduct(populated));
 });
 
 router.patch(
   "/shops/:shopId/products/:id",
   requireShopAccess,
   async (req, res) => {
-    const shopId = (req.params.shopId as string);
-    const id = (req.params.id as string);
-    if (!UUID_RE.test(id)) {
+    if (!Types.ObjectId.isValid(req.params.id)) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
-    const body = UpdateProductBody.parse(req.body);
-
-    const updateData: Partial<typeof productsTable.$inferInsert> = {
-      lastVerifiedAt: new Date(),
-    };
-    if (body.name !== undefined) updateData.name = body.name;
-    if (body.category !== undefined) updateData.category = body.category;
-    if (body.price !== undefined) {
-      updateData.price = body.price !== null ? String(body.price) : null;
+    const body = req.body ?? {};
+    const update: any = {};
+    if (typeof body.name === "string") update.name = body.name;
+    if (body.brand !== undefined) update.brand = body.brand;
+    if (body.description !== undefined) update.description = body.description;
+    if (typeof body.price === "number") update.price = body.price;
+    if (typeof body.quantity === "number") {
+      update.quantity = body.quantity;
+      update.stockStatus = body.quantity > 0 ? "in_stock" : "out_of_stock";
     }
-    if (body.tags !== undefined) updateData.tags = body.tags;
-    if (body.imageUrl !== undefined) updateData.imageUrl = body.imageUrl;
-    if (body.stockStatus !== undefined)
-      updateData.stockStatus = body.stockStatus;
+    if (Array.isArray(body.colors)) update.colors = body.colors;
+    if (Array.isArray(body.photos)) update.photos = body.photos;
+    if (typeof body.imageUrl === "string") update.photos = [body.imageUrl];
+    if (Array.isArray(body.sizes)) update.sizes = body.sizes;
+    if (Array.isArray(body.tags)) update.tags = body.tags;
+    if (body.weight !== undefined) update.weight = body.weight;
+    if (body.dimension !== undefined) update.dimension = body.dimension;
+    if (Array.isArray(body.variations)) update.variations = body.variations;
+    if (Array.isArray(body.categoryIds)) {
+      update.categories = toObjectIds(body.categoryIds);
+    }
+    if (body.applyDiscount !== undefined) update.applyDiscount = !!body.applyDiscount;
+    if (body.stockStatus === "in_stock" || body.stockStatus === "out_of_stock") {
+      update.stockStatus = body.stockStatus;
+    }
+    update.lastVerifiedAt = new Date();
 
-    const [updated] = await db
-      .update(productsTable)
-      .set(updateData)
-      .where(and(eq(productsTable.id, id), eq(productsTable.shopId, shopId)))
-      .returning();
-
-    if (!updated) {
+    const product = await Product.findOneAndUpdate(
+      {
+        _id: new Types.ObjectId(req.params.id),
+        shop: new Types.ObjectId(req.params.shopId),
+        deletedAt: null,
+      },
+      update,
+      { new: true },
+    )
+      .populate("categories")
+      .lean();
+    if (!product) {
       res.status(404).json({ error: "Product not found" });
       return;
     }
-    res.json(serializeProduct(updated));
+    res.json(serializeProduct(product));
   },
 );
 
@@ -103,16 +136,19 @@ router.delete(
   "/shops/:shopId/products/:id",
   requireShopAccess,
   async (req, res) => {
-    const shopId = (req.params.shopId as string);
-    const id = (req.params.id as string);
-    if (!UUID_RE.test(id)) {
+    if (!Types.ObjectId.isValid(req.params.id)) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
-    await db
-      .delete(productsTable)
-      .where(and(eq(productsTable.id, id), eq(productsTable.shopId, shopId)));
-    res.json({ success: true });
+    const r = await Product.updateOne(
+      {
+        _id: new Types.ObjectId(req.params.id),
+        shop: new Types.ObjectId(req.params.shopId),
+        deletedAt: null,
+      },
+      { $set: { deletedAt: new Date() } },
+    );
+    res.json({ success: r.modifiedCount > 0 });
   },
 );
 
@@ -120,56 +156,17 @@ router.post(
   "/shops/:shopId/products/analyze-photo",
   requireShopAccess,
   async (req, res) => {
-    const body = AnalyzeProductPhotoBody.parse(req.body);
-    const cleaned = body.imageBase64.replace(/^data:image\/\w+;base64,/, "");
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      max_tokens: 500,
-      messages: [
-        {
-          role: "system",
-          content:
-            'You are an inventory assistant for a small market shop. Given a product photo, identify the product and respond ONLY with raw JSON (no prose, no markdown, no code fences) with these fields: name (short product name, max 40 chars), category (one of: Grocery, Produce, Beverage, Snacks, Apparel, Electronics, Hardware, Beauty, Household, Crafts, Other), price (estimated retail price as a number in USD, no currency symbol), tags (array of 3-6 short lowercase searchable keywords customers might use to find this product, e.g. ["water", "bottle", "drink", "cold"]).',
-        },
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "Identify this product." },
-            {
-              type: "image_url",
-              image_url: { url: `data:image/jpeg;base64,${cleaned}` },
-            },
-          ],
-        },
-      ],
-    });
-
-    const raw = completion.choices[0]?.message?.content?.trim() ?? "";
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
-
-    const name =
-      typeof parsed?.name === "string" && parsed.name.length > 0
-        ? parsed.name.slice(0, 60)
-        : "Unknown product";
-    const category =
-      typeof parsed?.category === "string" && parsed.category.length > 0
-        ? parsed.category
-        : "Other";
-    const price =
-      typeof parsed?.price === "number" && Number.isFinite(parsed.price)
-        ? Math.max(0, parsed.price)
-        : 0;
-    const tags = Array.isArray(parsed?.tags)
-      ? parsed.tags
-          .filter((t: unknown): t is string => typeof t === "string")
-          .map((t: string) => t.toLowerCase().trim())
-          .filter((t: string) => t.length > 0)
-          .slice(0, 8)
-      : [];
-
-    res.json({ name, category, price, tags });
+    const { imageBase64 } = req.body ?? {};
+    if (!imageBase64) {
+      res.status(400).json({ error: "imageBase64 required" });
+      return;
+    }
+    try {
+      const out = await analyzeProductPhoto(imageBase64);
+      res.json(out);
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message ?? "Analyze failed" });
+    }
   },
 );
 

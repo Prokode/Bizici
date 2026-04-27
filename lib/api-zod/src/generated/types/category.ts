@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.2.0
  */
 
-export interface InviteMemberInput {
-  email: string;
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  parent?: string | null;
+  icon?: string | null;
 }

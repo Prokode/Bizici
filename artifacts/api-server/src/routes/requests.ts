@@ -1,64 +1,39 @@
 import { Router, type IRouter } from "express";
-import { eq, sql } from "drizzle-orm";
-import { db, shopsTable, broadcastRequestsTable } from "@workspace/db";
+import { Types } from "mongoose";
+import { Shop, BroadcastRequest } from "@workspace/db";
 import { requireAuth, requireShopAccess } from "../lib/auth";
+import { serializeBroadcastRequest } from "../lib/serialize";
 
 const router: IRouter = Router();
 router.use(requireAuth);
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 const SEARCH_RADIUS_METERS = 5000;
 
 router.get("/shops/:shopId/requests", requireShopAccess, async (req, res) => {
-  const shopId = (req.params.shopId as string);
-  const shopRows = await db
-    .select({
-      id: shopsTable.id,
-      lat: sql<number>`ST_Y(${shopsTable.location}::geometry)`.as("lat"),
-      lng: sql<number>`ST_X(${shopsTable.location}::geometry)`.as("lng"),
-    })
-    .from(shopsTable)
-    .where(eq(shopsTable.id, shopId))
-    .limit(1);
-
-  if (shopRows.length === 0) {
+  const shop = await Shop.findById(req.params.shopId).lean();
+  if (!shop) {
     res.json([]);
     return;
   }
-  const shop = shopRows[0]!;
-  const shopPoint = sql`ST_SetSRID(ST_MakePoint(${shop.lng}, ${shop.lat}), 4326)::geography`;
+  const coords = (shop.location as any)?.coordinates ?? [0, 0];
+  const [lng, lat] = coords;
 
-  const rows = await db
-    .select({
-      id: broadcastRequestsTable.id,
-      userId: broadcastRequestsTable.userId,
-      query: broadcastRequestsTable.query,
-      status: broadcastRequestsTable.status,
-      latitude: sql<number>`ST_Y(${broadcastRequestsTable.location}::geometry)`,
-      longitude: sql<number>`ST_X(${broadcastRequestsTable.location}::geometry)`,
-      distanceMeters: sql<number>`ST_Distance(${broadcastRequestsTable.location}, ${shopPoint})`,
-    })
-    .from(broadcastRequestsTable)
-    .where(
-      sql`${broadcastRequestsTable.status} = 'active' AND ST_DWithin(${broadcastRequestsTable.location}, ${shopPoint}, ${SEARCH_RADIUS_METERS})`,
-    )
-    .orderBy(
-      sql`ST_Distance(${broadcastRequestsTable.location}, ${shopPoint}) ASC`,
-    );
+  // $geoNear via aggregation gives us distance. Use 2dsphere index.
+  const rows = await BroadcastRequest.aggregate([
+    {
+      $geoNear: {
+        near: { type: "Point", coordinates: [lng, lat] },
+        distanceField: "distanceMeters",
+        maxDistance: SEARCH_RADIUS_METERS,
+        spherical: true,
+        query: { status: "active" },
+      },
+    },
+    { $sort: { distanceMeters: 1 } },
+    { $limit: 50 },
+  ]);
 
-  res.json(
-    rows.map((r) => ({
-      id: r.id,
-      userId: r.userId,
-      query: r.query,
-      latitude: Number(r.latitude),
-      longitude: Number(r.longitude),
-      status: (r.status ?? "active") as "active" | "found" | "expired",
-      distanceMeters: Math.round(Number(r.distanceMeters)),
-    })),
-  );
+  res.json(rows.map((r) => serializeBroadcastRequest(r, r.distanceMeters)));
 });
 
 async function setStatus(
@@ -66,51 +41,35 @@ async function setStatus(
   id: string,
   status: "found" | "expired",
 ) {
-  const [updated] = await db
-    .update(broadcastRequestsTable)
-    .set({ status })
-    .where(
-      sql`${broadcastRequestsTable.id} = ${id} AND ST_DWithin(
-        ${broadcastRequestsTable.location},
-        (SELECT location FROM ${shopsTable} WHERE id = ${shopId}),
-        ${SEARCH_RADIUS_METERS}
-      )`,
-    )
-    .returning({
-      id: broadcastRequestsTable.id,
-      userId: broadcastRequestsTable.userId,
-      query: broadcastRequestsTable.query,
-      status: broadcastRequestsTable.status,
-      latitude: sql<number>`ST_Y(${broadcastRequestsTable.location}::geometry)`,
-      longitude: sql<number>`ST_X(${broadcastRequestsTable.location}::geometry)`,
-    });
-  return updated ?? null;
+  if (!Types.ObjectId.isValid(id) || !Types.ObjectId.isValid(shopId)) return null;
+  const shop = await Shop.findById(shopId).lean();
+  if (!shop) return null;
+  const updated = await BroadcastRequest.findOneAndUpdate(
+    {
+      _id: new Types.ObjectId(id),
+      location: {
+        $nearSphere: {
+          $geometry: shop.location as any,
+          $maxDistance: SEARCH_RADIUS_METERS,
+        },
+      },
+    },
+    { $set: { status } },
+    { new: true },
+  ).lean();
+  return updated;
 }
 
 router.post(
   "/shops/:shopId/requests/:id/found",
   requireShopAccess,
   async (req, res) => {
-    const id = (req.params.id as string);
-    if (!UUID_RE.test(id)) {
-      res.status(400).json({ error: "Invalid id" });
-      return;
-    }
-    const shopId = req.params.shopId as string;
-    const updated = await setStatus(shopId, id, "found");
+    const updated = await setStatus(req.params.shopId, req.params.id, "found");
     if (!updated) {
-      res.status(404).json({ error: "Request not found" });
+      res.status(404).json({ error: "Request not found or out of range" });
       return;
     }
-    res.json({
-      id: updated.id,
-      userId: updated.userId,
-      query: updated.query,
-      latitude: Number(updated.latitude),
-      longitude: Number(updated.longitude),
-      status: (updated.status ?? "found") as "active" | "found" | "expired",
-      distanceMeters: 0,
-    });
+    res.json(serializeBroadcastRequest(updated, 0));
   },
 );
 
@@ -118,26 +77,12 @@ router.post(
   "/shops/:shopId/requests/:id/expire",
   requireShopAccess,
   async (req, res) => {
-    const id = (req.params.id as string);
-    if (!UUID_RE.test(id)) {
-      res.status(400).json({ error: "Invalid id" });
-      return;
-    }
-    const shopId = req.params.shopId as string;
-    const updated = await setStatus(shopId, id, "expired");
+    const updated = await setStatus(req.params.shopId, req.params.id, "expired");
     if (!updated) {
-      res.status(404).json({ error: "Request not found" });
+      res.status(404).json({ error: "Request not found or out of range" });
       return;
     }
-    res.json({
-      id: updated.id,
-      userId: updated.userId,
-      query: updated.query,
-      latitude: Number(updated.latitude),
-      longitude: Number(updated.longitude),
-      status: (updated.status ?? "expired") as "active" | "found" | "expired",
-      distanceMeters: 0,
-    });
+    res.json(serializeBroadcastRequest(updated, 0));
   },
 );
 

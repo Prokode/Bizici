@@ -1,67 +1,42 @@
 import { Router, type IRouter } from "express";
-import { eq, sql } from "drizzle-orm";
-import { db, usersTable } from "@workspace/db";
+import { Types } from "mongoose";
+import { User, ShopMember, Shop } from "@workspace/db";
 import { requireAuth } from "../lib/auth";
+import { serializeShop } from "../lib/serialize";
 
 const router: IRouter = Router();
-router.use(requireAuth);
 
-router.get("/me", async (req, res) => {
-  const userRows = await db
-    .select({
-      id: usersTable.id,
-      email: usersTable.email,
-      name: usersTable.name,
+router.get("/me", requireAuth, async (req, res) => {
+  const user = await User.findById(req.userId).lean();
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  const memberships = await ShopMember.find({
+    userId: new Types.ObjectId(req.userId),
+  }).lean();
+
+  const shopIds = memberships.map((m) => m.shopId);
+  const shops = await Shop.find({ _id: { $in: shopIds } }).lean();
+  const shopMap = new Map(shops.map((s) => [String(s._id), s]));
+
+  const shopsWithRole = memberships
+    .map((m) => {
+      const shop = shopMap.get(String(m.shopId));
+      if (!shop) return null;
+      return {
+        shop: serializeShop(shop),
+        role: m.role as "seller" | "sub_seller",
+      };
     })
-    .from(usersTable)
-    .where(eq(usersTable.id, req.userId))
-    .limit(1);
-  const user = userRows[0]!;
-
-  const shopRows = await db.execute<{
-    id: string;
-    sellerId: string;
-    name: string;
-    marketName: string | null;
-    stallInfo: string | null;
-    isOpen: boolean | null;
-    latitude: number;
-    longitude: number;
-    role: "seller" | "sub_seller";
-  }>(sql`
-    SELECT
-      s.id,
-      s.seller_id AS "sellerId",
-      s.name,
-      s.market_name AS "marketName",
-      s.stall_info AS "stallInfo",
-      s.is_open AS "isOpen",
-      ST_Y(s.location::geometry) AS latitude,
-      ST_X(s.location::geometry) AS longitude,
-      m.role
-    FROM shop_members m
-    JOIN shops s ON s.id = m.shop_id
-    WHERE m.user_id = ${req.userId}
-    ORDER BY s.created_at ASC
-  `);
+    .filter((x): x is NonNullable<typeof x> => x !== null);
 
   res.json({
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    shops: (shopRows.rows as any[]).map((s) => ({
-      role: s.role,
-      shop: {
-        id: s.id,
-        sellerId: s.sellerId,
-        name: s.name,
-        marketName: s.marketName,
-        stallInfo: s.stallInfo,
-        latitude: Number(s.latitude),
-        longitude: Number(s.longitude),
-        isOpen: s.isOpen ?? true,
-      },
-    })),
+    id: String(user._id),
+    email: user.email ?? null,
+    name: user.name ?? null,
+    shops: shopsWithRole,
   });
 });
 

@@ -8,6 +8,7 @@ import {
 } from "./middlewares/clerkProxyMiddleware";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { connectMongo, seedDefaultCategories } from "@workspace/db";
 
 const app: Express = express();
 
@@ -40,5 +41,19 @@ app.use(express.urlencoded({ extended: true }));
 app.use(clerkMiddleware());
 
 app.use("/api", router);
+
+connectMongo()
+  .then(async () => {
+    logger.info("MongoDB connected");
+    try {
+      await seedDefaultCategories();
+      logger.info("Default categories ensured");
+    } catch (err) {
+      logger.error({ err }, "Failed to seed categories");
+    }
+  })
+  .catch((err) => {
+    logger.error({ err }, "MongoDB connection failed");
+  });
 
 export default app;

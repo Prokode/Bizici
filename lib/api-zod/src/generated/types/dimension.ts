@@ -6,6 +6,11 @@
  * OpenAPI spec version: 0.2.0
  */
 
-export interface InviteMemberInput {
-  email: string;
+export interface Dimension {
+  /** @minimum 0 */
+  height: number;
+  /** @minimum 0 */
+  length: number;
+  /** @minimum 0 */
+  width: number;
 }
