@@ -35,6 +35,10 @@ app.use(
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
 app.use(cors({ credentials: true, origin: true }));
+// Default JSON / urlencoded body parser limit (Express's built-in default
+// of 100kb is fine for every endpoint EXCEPT the visual-search route, which
+// installs its own 10MB-limited parser locally so the wider attack surface
+// is unaffected.
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

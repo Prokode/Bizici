@@ -24,13 +24,13 @@ The NearBuy suite is built as a pnpm monorepo, sharing a common Node.js/Express 
 **Backend (Node.js/Express):**
 - **Clerk Integration:** Acts as a managed proxy for authentication, handling user sign-in/sign-up, SSO, and populating `req.auth` with user information. It also manages user roles (Seller, SubSeller).
 - **MongoDB Models:** Key models include `User`, `Shop`, `ShopMember`, `ShopInvitation`, `Category`, `Product`, `Discount`, and `BroadcastRequest`. `2dsphere` indexes are used for efficient geospatial queries.
-- **API Endpoints:** Divided into public (e.g., `GET /public/shops`, `GET /public/search`) and authenticated endpoints (e.g., `/me`, `/shops`, `/products`, `/karma`).
+- **API Endpoints:** Divided into public (e.g., `GET /public/shops`, `GET /public/search`, `POST /public/visual-search` — stub returning up to 6 in-radius products with mock confidence scores, optional `hint` text bias) and authenticated endpoints (e.g., `/me`, `/shops`, `/products`, `/karma`). The Express body limit is set to 10 MB so the visual-search endpoint can accept base64-encoded photos.
 - **Codegen Workflow:** OpenAPI spec (`lib/api-spec/openapi.yaml`) generates React Query hooks and types (`lib/api-client-react/src/generated/`) and Zod schemas (`lib/api-zod/src/generated/`) for validation.
 
 **Core Features:**
 - **Product Management:** Sellers can add, edit, and delete products, including AI photo analysis for product details.
 - **Shop Management:** Sellers can manage shop details, set operating hours, and invite helpers.
-- **Search:** Customer app offers debounced text search and visual search capabilities.
+- **Search:** Customer app offers debounced text search (Fuse.js fuzzy re-rank) and a visual-search camera tab (`app/(tabs)/camera.tsx`) with capture/gallery/web-upload, an optional text indice, and a results list whose match cards open the shared `ShopBottomSheet`.
 - **Karma System:** Tracks customer engagement with points for actions like stock confirmation.
 - **Roles:** A user can be a Seller for some shops and a SubSeller (helper) for others.
 
