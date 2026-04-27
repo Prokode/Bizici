@@ -1,6 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  FlatList,
+  Image,
   Platform,
   Pressable,
   StyleSheet,
@@ -34,11 +36,26 @@ const FALLBACK_REGION: Region = {
   longitudeDelta: 0.05,
 };
 
+function formatDistance(m: number): string {
+  if (m < 1000) return `${m} m`;
+  return `${(m / 1000).toFixed(1)} km`;
+}
+
+function formatPriceCents(cents: number): string {
+  return `${(cents / 100).toFixed(2).replace(".", ",")} €`;
+}
+
 export default function MapTab() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [region, setRegion] = useState<Region | null>(null);
+  // On web, seed the region with the fallback immediately so the shops list
+  // renders without waiting for `navigator.geolocation` (which can hang
+  // indefinitely in headless previews and when the user denies permission
+  // silently). Real geolocation will upgrade the region in the effect below.
+  const [region, setRegion] = useState<Region | null>(
+    Platform.OS === "web" ? FALLBACK_REGION : null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [selectedShop, setSelectedShop] = useState<PublicShop | null>(null);
@@ -66,11 +83,12 @@ export default function MapTab() {
             return;
           }
           // Belt-and-braces: even if the browser never resolves geolocation
-          // (common in headless previews), fall back to Paris quickly so the
-          // map shows real shops instead of an empty spinner.
+          // (very common in headless previews and when permissions aren't
+          // granted), fall back to Paris quickly so the list shows real
+          // shops instead of an empty spinner.
           const fallbackTimer = setTimeout(() => {
             if (mounted) setRegion((r) => r ?? FALLBACK_REGION);
-          }, 2000);
+          }, 800);
           navigator.geolocation.getCurrentPosition(
             (pos) => {
               clearTimeout(fallbackTimer);
@@ -86,7 +104,7 @@ export default function MapTab() {
               clearTimeout(fallbackTimer);
               if (mounted) setRegion(FALLBACK_REGION);
             },
-            { timeout: 4000 }
+            { timeout: 4000 },
           );
           return;
         }
@@ -94,7 +112,7 @@ export default function MapTab() {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
           setError(
-            "Activez la localisation pour voir les boutiques autour de vous."
+            "Activez la localisation pour voir les boutiques autour de vous.",
           );
           setRegion(FALLBACK_REGION);
           return;
@@ -147,6 +165,12 @@ export default function MapTab() {
 
   const showMap = Platform.OS !== "web" && maps && region;
 
+  // Sort shops by distance for the list view (web fallback).
+  const sortedShops = useMemo(
+    () => [...shops].sort((a, b) => a.distanceMeters - b.distanceMeters),
+    [shops],
+  );
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {showMap ? (
@@ -172,42 +196,206 @@ export default function MapTab() {
           ))}
         </maps.MapView>
       ) : (
-        <View
-          style={[
-            StyleSheet.absoluteFill,
-            styles.placeholder,
-            { backgroundColor: colors.muted },
+        // Web fallback: scrollable list of nearby shops with the same data
+        // the native map would show. The user can still tap a shop to open
+        // the bottom sheet.
+        <FlatList
+          data={sortedShops}
+          keyExtractor={(s) => s.id}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingTop: insets.top + 132, paddingBottom: 32 },
           ]}
-        >
-          {region ? (
-            <>
-              <Feather name="map" size={56} color={colors.mutedForeground} />
-              <Text
-                style={[
-                  styles.placeholderText,
-                  { color: colors.mutedForeground },
-                ]}
-              >
-                {Platform.OS === "web"
-                  ? "La carte interactive est disponible sur mobile (Expo Go)."
-                  : "Chargement de la carte..."}
-              </Text>
-              {Platform.OS === "web" && shops.length > 0 && (
-                <Text
+          ListHeaderComponent={
+            <View style={styles.listHeader}>
+              {Platform.OS === "web" && (
+                <View
                   style={[
-                    styles.placeholderText,
-                    { color: colors.foreground, marginTop: 8 },
+                    styles.webHint,
+                    {
+                      backgroundColor: colors.muted,
+                      borderColor: colors.border,
+                    },
                   ]}
                 >
-                  {shops.length} boutique{shops.length > 1 ? "s" : ""} dans un
-                  rayon de 5 km.
-                </Text>
+                  <Feather name="info" size={14} color={colors.mutedForeground} />
+                  <Text
+                    style={[styles.webHintText, { color: colors.mutedForeground }]}
+                  >
+                    Carte interactive disponible sur mobile (Expo Go). Voici
+                    les boutiques proches.
+                  </Text>
+                </View>
               )}
-            </>
-          ) : (
-            <ActivityIndicator color={colors.primary} />
+            </View>
+          }
+          ListEmptyComponent={
+            !center || loadingShops ? (
+              <View style={styles.emptyCenter}>
+                <ActivityIndicator color={colors.primary} />
+                <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                  {!center
+                    ? "Recherche de votre position…"
+                    : "Recherche des boutiques…"}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.emptyCenter}>
+                <Feather name="map-pin" size={40} color={colors.mutedForeground} />
+                <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
+                  Aucune boutique dans un rayon de 5 km
+                </Text>
+                <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                  Élargissez votre zone ou diffusez votre demande depuis la
+                  recherche.
+                </Text>
+              </View>
+            )
+          }
+          renderItem={({ item }) => (
+            <Pressable
+              onPress={() => setSelectedShop(item)}
+              style={({ pressed }) => [
+                styles.shopCard,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                  opacity: pressed ? 0.7 : 1,
+                },
+              ]}
+            >
+              <View style={styles.shopHeaderRow}>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={[styles.shopName, { color: colors.foreground }]}
+                    numberOfLines={1}
+                  >
+                    {item.name}
+                  </Text>
+                  {item.marketName && (
+                    <Text
+                      style={[
+                        styles.shopMarket,
+                        { color: colors.mutedForeground },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {item.marketName}
+                    </Text>
+                  )}
+                </View>
+                <View
+                  style={[
+                    styles.openBadge,
+                    {
+                      backgroundColor: item.isOpen
+                        ? "#10b98122"
+                        : colors.muted,
+                    },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.openDot,
+                      {
+                        backgroundColor: item.isOpen
+                          ? "#10b981"
+                          : colors.mutedForeground,
+                      },
+                    ]}
+                  />
+                  <Text
+                    style={[
+                      styles.openText,
+                      {
+                        color: item.isOpen ? "#047857" : colors.mutedForeground,
+                      },
+                    ]}
+                  >
+                    {item.isOpen ? "Ouvert" : "Fermé"}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.metaRow}>
+                <Feather
+                  name="navigation"
+                  size={12}
+                  color={colors.mutedForeground}
+                />
+                <Text
+                  style={[styles.metaText, { color: colors.mutedForeground }]}
+                >
+                  {formatDistance(item.distanceMeters)}
+                </Text>
+                <Text
+                  style={[styles.dotSep, { color: colors.mutedForeground }]}
+                >
+                  ·
+                </Text>
+                <Feather
+                  name="package"
+                  size={12}
+                  color={colors.mutedForeground}
+                />
+                <Text
+                  style={[styles.metaText, { color: colors.mutedForeground }]}
+                >
+                  {item.productCount} produit{item.productCount > 1 ? "s" : ""}
+                </Text>
+              </View>
+
+              {item.previewProducts.length > 0 && (
+                <View style={styles.previewRow}>
+                  {item.previewProducts.slice(0, 4).map((p) => (
+                    <View
+                      key={p.id}
+                      style={[
+                        styles.previewItem,
+                        { borderColor: colors.border },
+                      ]}
+                    >
+                      {p.photo ? (
+                        <Image
+                          source={{ uri: p.photo }}
+                          style={styles.previewThumb}
+                        />
+                      ) : (
+                        <View
+                          style={[
+                            styles.previewThumb,
+                            styles.previewThumbFallback,
+                            { backgroundColor: colors.muted },
+                          ]}
+                        >
+                          <Feather
+                            name="package"
+                            size={18}
+                            color={colors.mutedForeground}
+                          />
+                        </View>
+                      )}
+                      <Text
+                        style={[
+                          styles.previewName,
+                          { color: colors.foreground },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {p.name}
+                      </Text>
+                      <Text
+                        style={[styles.previewPrice, { color: colors.primary }]}
+                      >
+                        {formatPriceCents(p.price)}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </Pressable>
           )}
-        </View>
+        />
       )}
 
       <View
@@ -293,12 +481,6 @@ export default function MapTab() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  placeholder: { alignItems: "center", justifyContent: "center", gap: 12 },
-  placeholderText: {
-    fontSize: 14,
-    paddingHorizontal: 32,
-    textAlign: "center",
-  },
   searchWrap: {
     position: "absolute",
     left: 16,
@@ -342,4 +524,77 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   errorText: { color: "#ffffff", fontSize: 13, fontWeight: "600" },
+
+  listContent: { paddingHorizontal: 16, gap: 12 },
+  listHeader: { marginBottom: 12 },
+  webHint: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  webHintText: { fontSize: 12, flex: 1, lineHeight: 16 },
+  emptyCenter: {
+    paddingVertical: 80,
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 24,
+  },
+  emptyTitle: { fontSize: 16, fontWeight: "700", textAlign: "center" },
+  emptyText: { fontSize: 13, textAlign: "center", lineHeight: 18 },
+  shopCard: {
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 12,
+    gap: 10,
+  },
+  shopHeaderRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  shopName: { fontSize: 16, fontWeight: "700" },
+  shopMarket: { fontSize: 12, marginTop: 2 },
+  openBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  openDot: { width: 6, height: 6, borderRadius: 3 },
+  openText: { fontSize: 11, fontWeight: "700" },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    flexWrap: "wrap",
+  },
+  metaText: { fontSize: 12 },
+  dotSep: { fontSize: 12, marginHorizontal: 2 },
+  previewRow: {
+    flexDirection: "row",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  previewItem: {
+    width: 80,
+    borderRadius: 8,
+    borderWidth: 1,
+    padding: 6,
+    gap: 4,
+  },
+  previewThumb: {
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: 6,
+  },
+  previewThumbFallback: { alignItems: "center", justifyContent: "center" },
+  previewName: { fontSize: 11, fontWeight: "600" },
+  previewPrice: { fontSize: 11, fontWeight: "700" },
 });

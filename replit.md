@@ -1,171 +1,44 @@
 # NearBuy Suite
 
-Two-sided marketplace built as a pnpm monorepo:
+## Overview
 
-- **NearBuy Business** — Expo React Native app for shop owners to digitize their inventory (Sellers + SubSeller helpers).
-- **NearBuy** — Expo React Native app for customers to discover products in nearby shops (map-centric search, visual search, "Still There?" Karma verification, broadcast requests).
+NearBuy is a two-sided marketplace designed to connect local shops with customers. The platform consists of two main mobile applications: "NearBuy Business" for shop owners to manage their inventory and "NearBuy" for customers to discover products from nearby shops. The project aims to digitize local commerce, provide a seamless shopping experience for customers through map-centric and visual search, and offer robust inventory management tools for businesses. The long-term vision includes expanding features like "Still There?" Karma verification and broadcast requests to enhance community engagement and product availability.
 
-Both mobile apps share the same Node/Express + MongoDB (Mongoose) backend and Clerk authentication. Each ships as an independent app with its own bundle ID (`com.nearbuy.business.app` / `com.nearbuy.app`), but only one mobile app can be registered in the Replit preview pane at a time. **NearBuy (customer)** is currently the registered one. The other runs in parallel via a manual workflow and is reached through its dev URL.
+## User Preferences
 
-## Artifacts / Packages
+I prefer concise and clear communication. When making changes, please prioritize iterative development and ask for confirmation before implementing major architectural shifts or significant feature changes.
 
-- `artifacts/nearbuy` — Expo React Native (customer side), port 20248. **Currently registered as the mobile artifact in the Replit preview pane** (title "NearBuy", previewPath `/`). Note: the underlying artifact id is still `artifacts/nearbuy-business` because Replit does not allow changing artifact ids after creation; only the toml's title/dir/run/port were swapped.
-- `artifacts/nearbuy-business` — Expo React Native (seller side), runs on port 20247 via the manual workflow `NearBuy Business (background)`. Not in the preview pane; reachable through its dev URL or by re-swapping the registration.
-- `artifacts/api-server` — Node/Express API server, port 8080, base path `/api`.
-- `artifacts/mockup-sandbox` — Vite preview server for canvas mockups (template, unused).
+## System Architecture
 
-### Swapping which app is in the preview pane
+The NearBuy suite is built as a pnpm monorepo, sharing a common Node.js/Express backend with MongoDB (Mongoose) for persistence and Clerk for authentication.
 
-Only one mobile app can be registered at a time. To put the **seller** app back in the preview:
+**Mobile Applications (Expo React Native):**
+- **NearBuy Business (Seller App):** Allows shop owners and their helpers to manage shop details, inventory, and customer requests.
+- **NearBuy (Customer App):** Enables customers to discover products, search visually, and interact with shops. Features include `react-native-maps` for shop discovery, `Fuse.js` for client-side search re-ranking, and a "Karma" system for user engagement.
 
-1. `mv artifacts/nearbuy/.replit-artifact/artifact.toml artifacts/nearbuy-business/.replit-artifact/artifact.toml`
-2. Edit a sibling `artifact.edit.toml` to set `title = "NearBuy Business"`, `localPort = 20247`, env `PORT = "20247"`, and run commands pointing to `@workspace/nearbuy-business` (keep `id = "artifacts/nearbuy-business"`).
-3. Call `verifyAndReplaceArtifactToml` to commit.
-4. Configure a manual workflow (e.g. "NearBuy (background)") to keep the customer app running on port 20248.
+**UI/UX Decisions:**
+- Both apps share a consistent branding, including the same logo, splash animation, color palette (defined in `constants/colors.ts`), and UI primitives for a cohesive user experience.
+- The customer app features a 4-slide onboarding pager with full-bleed gradient heroes.
+- Design uses a gradient theme (orange to pink) for branding and interactive elements.
 
-## Code sharing between the two mobile apps
+**Backend (Node.js/Express):**
+- **Clerk Integration:** Acts as a managed proxy for authentication, handling user sign-in/sign-up, SSO, and populating `req.auth` with user information. It also manages user roles (Seller, SubSeller).
+- **MongoDB Models:** Key models include `User`, `Shop`, `ShopMember`, `ShopInvitation`, `Category`, `Product`, `Discount`, and `BroadcastRequest`. `2dsphere` indexes are used for efficient geospatial queries.
+- **API Endpoints:** Divided into public (e.g., `GET /public/shops`, `GET /public/search`) and authenticated endpoints (e.g., `/me`, `/shops`, `/products`, `/karma`).
+- **Codegen Workflow:** OpenAPI spec (`lib/api-spec/openapi.yaml`) generates React Query hooks and types (`lib/api-client-react/src/generated/`) and Zod schemas (`lib/api-zod/src/generated/`) for validation.
 
-Both apps reuse the same logo (`assets/images/icon.png`), splash animation (`components/AnimatedSplash.tsx`), color palette (`constants/colors.ts`), `useColors` hook, and UI primitives (`components/ui/*`). These are currently duplicated as a copy in each package; if churn becomes a problem, extract them into a shared `lib/mobile-ui` workspace package.
+**Core Features:**
+- **Product Management:** Sellers can add, edit, and delete products, including AI photo analysis for product details.
+- **Shop Management:** Sellers can manage shop details, set operating hours, and invite helpers.
+- **Search:** Customer app offers debounced text search and visual search capabilities.
+- **Karma System:** Tracks customer engagement with points for actions like stock confirmation.
+- **Roles:** A user can be a Seller for some shops and a SubSeller (helper) for others.
 
-## NearBuy (customer) app structure
+## External Dependencies
 
-- `app/_layout.tsx` — Clerk + React Query providers, AnimatedSplash overlay.
-- `app/index.tsx` — first-launch routing: shows onboarding once (`AsyncStorage` key `nearbuy.consumer.onboarding.seen`), then `(tabs)`.
-- `app/onboarding.tsx` — 4-slide pager with full-bleed gradient hero per slide (welcome / search / visual search / Karma).
-- `app/(tabs)/_layout.tsx` — 4 tabs: Carte (map), Recherche (search), Photo (visual search), Profil (Clerk + Karma).
-- `app/(tabs)/index.tsx` — full-screen `react-native-maps` with GPS permission via `expo-location`, top search bar that hands off to the Search tab. Status pill shows live shop count. Markers use `components/ShopMarker.tsx` (gradient pin + product-count badge) and tap opens `components/ShopBottomSheet.tsx` (modal with shop details + preview products + "Encore là?" Karma CTA stub). Data comes from `lib/publicApi.ts → fetchNearbyShops` calling `GET /api/public/shops`. Web fallback: maps don't render but the status pill + shop count still update from the live API; geolocation falls back to Paris after a 2 s timeout for headless previews.
-- `app/(tabs)/search.tsx` — debounced search input (300 ms) wired to `GET /api/public/search` via `lib/publicApi.ts → fetchSearch`. **Fuse.js** re-ranks results client-side (keys: `name` 0.6 / `brand` 0.2 / `description` 0.1 / `shopName` 0.1, threshold 0.5, `ignoreLocation: true`) so typos like `jeen` still surface `Jean slim brut indigo`. Each result card shows photo / brand / name / price / shop chip / distance + open-status; tapping opens the same `ShopBottomSheet` modal as the map. Empty state: hint card. No-results state: "Diffuser ma demande" CTA (BroadcastRequest endpoint wiring is the next pass).
-- `app/(tabs)/camera.tsx` — capture / pick-from-gallery CTAs. Backend visual-search endpoint pending.
-- `app/(auth)/_layout.tsx` — Stack guard: redirects to `/(tabs)/profile` when already signed in.
-- `app/(auth)/sign-in.tsx`, `app/(auth)/sign-up.tsx` — French Clerk flows mirroring the seller app's pattern (`useSignIn` / `useSignUp` + `useSSO` for Google), themed with the orange→pink gradient. Sign-up advertises the +10 welcome bonus and includes the email-code verification step + `clerk-captcha` slot. Both navigate to `/(tabs)/profile` on success.
-- `app/(tabs)/_layout.tsx` — wires `setAuthTokenGetter(() => getToken())` from `@workspace/api-client-react` so any code (including `fetchMyKarma` and the generated client) automatically attaches `Authorization: Bearer <Clerk JWT>` to API calls.
-- `app/(tabs)/profile.tsx` — signed-out hero with "Se connecter" + "Créer un compte (10 Karma offerts)" CTAs. Signed-in: avatar + name/email card, gradient Karma card showing `points` (live from `GET /api/me/karma` via React Query, keyed by `user.id`), and an "Activité récente" list rendering the recent events with per-kind icon + relative timestamp + signed point delta. Sign-out button at the bottom.
-
-## Roles
-
-- **Seller** — owns one or many shops. Can do anything on shops they own (edit shop details, manage inventory, view requests, invite/remove helpers).
-- **SubSeller (Helper)** — invited by a Seller to help with one specific shop. Can manage that shop's inventory and respond to requests, but cannot edit shop details or manage other helpers.
-
-A user can simultaneously be a Seller of some shops and a Helper on others.
-
-## Database (MongoDB Atlas + Mongoose)
-
-All primary keys are MongoDB `ObjectId`s, serialized as 24-char hex strings in API responses (the OpenAPI spec uses plain `string` for all ids).
-
-Connection lives in `lib/db/src/connect.ts` (`connectMongo()`, idempotent via cached promise). Models in `lib/db/src/models/`:
-
-- `User` — `clerkUserId` (unique), `email`, `name`, timestamps. Auto-created on first authenticated request.
-- `Shop` — `name`, `marketName`, `stallInfo`, `location` (GeoJSON `Point` + `2dsphere` index), `isOpen`, `sellerId`.
-- `ShopMember` — `shopId` × `userId`, role enum (`seller` | `sub_seller`). Unique on (`shopId`, `userId`).
-- `ShopInvitation` — pending email-based invites with role, `token` (unique), `clerkInvitationId`, `acceptedAt`, `createdBy`.
-- `Category` — `name`, `slug` (unique), optional `parent` (self-ref), optional `icon`. 8 default French categories seeded on startup if collection is empty (Vêtements, Alimentation, Électronique, Maison & Déco, Beauté & Soins, Bijoux & Accessoires, Chaussures, Autre).
-- `Product` — `shop` (ref Shop, required), `seller` (ref User, derived from shop), `name`, `slug` (auto from name), `brand`, `description`, `price` (cents), `quantity` (default 1), `colors[]`, `photos[]`, `sizes[]`, `categories[]` (ref Category), `weight`, `dimension` (height/length/width), `variations[]` (sku/price/quantity/colors/photos/dimension), `rating`, `reviews`, `totalSell`, `applyDiscount`, `tags[]`, `stockStatus` enum, plus legacy fields `imageUrl` / `category` (plain text) / `lastVerifiedAt`. Soft-delete via `deletedAt`.
-- `Discount` — per-product discount with `code`, `percentOff`, `validFrom`, `validTo`, `isActive`.
-- `BroadcastRequest` — `userId`, `query`, `location` (GeoJSON `Point` + `2dsphere`), `status` enum (`active` | `found` | `expired`).
-
-`2dsphere` indexes on `Shop.location` and `BroadcastRequest.location` power radius/distance queries via `$nearSphere` / `$geoWithin`.
-
-The API server calls `connectMongo()`, `seedDefaultCategories()`, and `seedDemoShops()` on startup; if Mongo is unreachable the server keeps serving (just logs the error) so `/healthz` stays green.
-
-`seedDemoShops()` (in `lib/db/src/seedDemoShops.ts`) is idempotent: if the demo seller (`demo-seller@nearbuy.local`) already owns shops, it skips. Otherwise it inserts 6 Paris shops (Marché des Enfants Rouges, Tech Corner, L'Atelier Denim, Boulangerie du Coin, Bijoux Nadia, Beauté Rose) with ~17 in-stock products so the customer map has content immediately. Products are inserted via `Product.insertMany(..., { lean: true })` rather than `Product.create()` to bypass a Mongoose 9.5.x pre-save hook bug — do NOT change to `Product.create` here.
-
-## Authentication (Clerk)
-
-The API server runs Clerk as a managed proxy: `clerkProxyMiddleware` forwards `/__clerk/*` to Clerk's frontend API, so the mobile app can use `proxyUrl` to talk to Clerk through our domain. `clerkMiddleware()` populates `req.auth` from the bearer token. The `requireAuth` middleware resolves the Clerk user → Mongo `User` (auto-creating on first hit) and attaches the result as `req.user`.
-
-The mobile app:
-- Wraps the root in `ClerkProvider` + `ClerkLoaded` (`app/_layout.tsx`).
-- Uses Clerk's custom-flow APIs (`useSignIn`, `useSignUp`, `useSSO`) for email/password and Google OAuth.
-- After sign-in, `(home)/_layout.tsx` registers `setAuthTokenGetter(() => getToken())` so every API call carries `Authorization: Bearer <jwt>`.
-
-## API endpoints (under `/api`)
-
-### Public (no auth — used by the customer app)
-
-- `GET /healthz`
-- `GET /public/shops?lat&lng&radiusKm=5&limit=200` — shops within radius via `$nearSphere`, each with `distanceMeters`, `productCount`, and up to 4 `previewProducts`
-- `GET /public/shops/:shopId` — shop detail + full in-stock products list
-- `GET /public/search?q&lat&lng&radiusKm=5&limit=60` — products in radius matching `q` (case-insensitive regex on `name`/`brand`/`description`/`tags`/`category`); if the strict regex returns nothing, falls back to **all** in-radius products so the client's Fuse.js can fuzzy-match typos (e.g. `jeen` → `Jean slim brut indigo`)
-
-### Authenticated (Bearer JWT, all under `/api`)
-
-- `GET /me` — current user + their shops with role
-- `GET /me/karma` — signed-in customer's total Karma points + 10 most recent `KarmaEvent`s. On first call for a fresh user, seeds a one-time `welcome` event of +10 pts so the Profile tab is never empty.
-- `GET /shops`, `POST /shops` (creator becomes the Seller, `ShopMember(seller)` row also created)
-- `GET /shops/:shopId`, `PUT /shops/:shopId` (Seller only), `PATCH /shops/:shopId/open`, `GET /shops/:shopId/qr`, `GET /shops/:shopId/summary`
-- `GET /shops/:shopId/products`, `POST`, `PATCH /shops/:shopId/products/:id`, `DELETE`, `POST /shops/:shopId/products/analyze-photo`
-- `GET /shops/:shopId/products/:productId/discounts`, `POST` same, `DELETE /shops/:shopId/products/:productId/discounts/:discountId`
-- `GET /categories`
-- `GET /shops/:shopId/requests`, `POST /shops/:shopId/requests/:id/found`, `POST /shops/:shopId/requests/:id/expire` (geo-scoped to shop's radius)
-- `GET /shops/:shopId/members`, `POST /shops/:shopId/members/invite` (Seller only), `DELETE /shops/:shopId/members/:userId` (Seller only), `DELETE /shops/:shopId/invitations/:invitationId` (Seller only)
-- `GET /invitations` — current user's pending invitations (joined by email)
-- `POST /invitations/:token/accept` — accepts and creates `ShopMember` row
-
-When the first shop is created the backend seeds 4 demo broadcast requests at random points within 200–2000 m of the shop so the Requests feed has content immediately.
-
-`KarmaEvent` is an append-only Mongoose collection (`{ userId, kind, points, note, shopId?, productId?, createdAt }`, indexed on `{ userId, createdAt: -1 }`). Total Karma is computed via aggregation `sum(points)` over the user's events. Kinds: `welcome | stock_confirmation | stock_report | broadcast`. The seed welcome event is inserted via `KarmaEvent.insertMany` (matches the `Product.insertMany` pattern that avoids the Mongoose 9.5 pre-save hook bug).
-
-## Codegen workflow
-
-OpenAPI spec lives at `lib/api-spec/openapi.yaml`. Run:
-
-```
-pnpm --filter @workspace/api-spec run codegen
-```
-
-This regenerates:
-- `lib/api-client-react/src/generated/` — React Query hooks & types
-- `lib/api-zod/src/generated/` — Zod schemas used by the backend for body validation
-
-## Mobile app structure
-
-```
-app/
-  _layout.tsx              ClerkProvider + ClerkLoaded + providers
-  index.tsx                Auth-aware redirect (signed in → /(home), else → /(auth)/sign-in)
-  (auth)/                  Public auth screens
-    _layout.tsx            Stack; redirects to /(home) when already signed in
-    sign-in.tsx            Email/password + Google SSO
-    sign-up.tsx            Email/password (with email code verification) + Google SSO
-  (home)/                  Authenticated area
-    _layout.tsx            Auth gate; wires setAuthTokenGetter(() => getToken())
-    index.tsx              Shop list (role badge per shop, pending-invite banner, "+ New shop" FAB)
-    new-shop.tsx           Two-step create shop flow (form + map pin)
-    invitations.tsx        Pending invitations list with Accept button
-    shops/[shopId]/
-      _layout.tsx          Stack with (tabs), add-product, camera, edit
-      edit.tsx             Edit shop details (Seller only)
-      add-product.tsx      AI photo analysis or manual product entry; surfaces brand, description, multi-photo, colors, sizes, multi-category picker
-      camera.tsx           Capture photo, return to add-product
-      (tabs)/              Per-shop tabs
-        _layout.tsx        Inventory / Requests / Profile tabs
-        index.tsx          Inventory list (thumbnail = photos[0] || imageUrl, brand line above name)
-        requests.tsx       Broadcast requests for this shop
-        profile.tsx        Shop profile, Open/Closed switch, QR, Helpers section (Seller only), Sign out
-components/
-  CategoryPicker.tsx       Horizontal multi-select chips backed by GET /categories
-  HelpersSection.tsx       List/invite/remove helpers (used in profile, Seller only)
-  HeaderSummary.tsx        Per-shop summary chip
-  ShopMapPicker[.web].tsx  Native uses react-native-maps; web uses coord pad
-  ShopMapPreview[.web].tsx Native map preview; web fallback
-```
-
-## Integrations
-
-- Clerk (managed) — authentication via email/password and Google SSO; SubSeller invites via email/token
-- OpenAI (via Replit AI Integrations proxy) — used by `/shops/:shopId/products/analyze-photo` for product photo → JSON
-- MongoDB Atlas — primary persistence (Mongoose ODM)
-
-## Environment variables
-
-- `CLERK_SECRET_KEY` (api-server) — Clerk secret key
-- `CLERK_PUBLISHABLE_KEY` — Clerk publishable key (exposed to Expo as `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` via the dev script)
-- `MONGODB_URI` — MongoDB Atlas connection string (SRV format). Atlas Network Access must allow `0.0.0.0/0` for Replit's dynamic IPs.
-- `SESSION_SECRET` — Express session secret
-
-## Known notes
-
-- `react-native-maps` pinned to 1.18.0 (Expo suggests 1.20.1 but 1.18.0 is the stable choice in this stack); not added to the `plugins` array in `app.json`
-- Demo broadcast requests are inserted on first shop creation only
-- The legacy Postgres database (`DATABASE_URL`) is no longer used by the application but remains provisioned (orphaned tables — drop later if desired). All persistence is in MongoDB Atlas now.
-- Atlas auth note: Atlas returns the misleading error `bad auth : authentication failed` for both wrong credentials AND IP-not-allowlisted. If you hit it from Replit, first verify Network Access has `0.0.0.0/0` Active.
+- **Clerk:** Authentication and user management (email/password, Google SSO, invitations).
+- **MongoDB Atlas:** Primary database for all application data using Mongoose ODM.
+- **OpenAI (via Replit AI Integrations proxy):** Used for product photo analysis to extract product details.
+- **Expo:** Framework for building universal React applications.
+- **`react-native-maps`:** For displaying maps and location-based services in mobile apps.
+- **`Fuse.js`:** Client-side fuzzy search library for product search re-ranking.
