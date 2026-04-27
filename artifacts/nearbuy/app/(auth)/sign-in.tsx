@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { useSignIn, useSSO } from "@clerk/expo";
-import { Link, useRouter, type Href } from "expo-router";
+import { Link, useLocalSearchParams, useRouter, type Href } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import * as AuthSession from "expo-auth-session";
 import { Feather } from "@expo/vector-icons";
@@ -30,6 +30,7 @@ export default function SignInScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { next } = useLocalSearchParams<{ next?: string }>();
   const { signIn, errors, fetchStatus } = useSignIn();
   const { startSSOFlow } = useSSO();
 
@@ -38,8 +39,12 @@ export default function SignInScreen() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const goHome = useCallback(() => {
-    router.replace("/(tabs)/profile" as Href);
-  }, [router]);
+    const target =
+      typeof next === "string" && next.startsWith("/")
+        ? (next as Href)
+        : ("/(tabs)/profile" as Href);
+    router.replace(target);
+  }, [router, next]);
 
   const handleSubmit = async () => {
     setSubmitError(null);
@@ -210,7 +215,13 @@ export default function SignInScreen() {
           <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
             Pas encore de compte ?{" "}
           </Text>
-          <Link href={"/(auth)/sign-up" as Href}>
+          <Link
+            href={
+              (typeof next === "string" && next.startsWith("/")
+                ? `/(auth)/sign-up?next=${encodeURIComponent(next)}`
+                : "/(auth)/sign-up") as Href
+            }
+          >
             <Text
               style={[
                 styles.link,

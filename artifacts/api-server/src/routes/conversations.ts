@@ -1,0 +1,335 @@
+import { Router, type IRouter, type Request, type Response } from "express";
+import { Types } from "mongoose";
+import {
+  Conversation,
+  type ConversationDoc,
+  Message,
+  Shop,
+  ShopMember,
+  User,
+} from "@workspace/db";
+
+import { requireAuth, getShopAccess } from "../lib/auth";
+
+const router: IRouter = Router();
+
+// ---- helpers --------------------------------------------------------------
+
+type Role = "customer" | "seller";
+
+function objectId(id: string | string[] | undefined): Types.ObjectId | null {
+  if (typeof id !== "string") return null;
+  return Types.ObjectId.isValid(id) ? new Types.ObjectId(id) : null;
+}
+
+function asId(id: string | string[] | undefined): string | null {
+  return typeof id === "string" ? id : null;
+}
+
+async function resolveRole(
+  userId: string,
+  conv: Pick<ConversationDoc, "customerUserId" | "shopId">,
+): Promise<Role | null> {
+  const userOid = new Types.ObjectId(userId);
+  if (conv.customerUserId.equals(userOid)) return "customer";
+  const access = await getShopAccess(userId, String(conv.shopId));
+  return access ? "seller" : null;
+}
+
+type EnrichedConversation = {
+  id: string;
+  shop: { id: string; name: string; marketName: string | null };
+  customer: { id: string; name: string | null; email: string | null };
+  lastMessageAt: string;
+  lastMessageText: string;
+  lastMessageSenderRole: Role | null;
+  unreadCount: number;
+  myRole: Role;
+};
+
+async function enrich(
+  conv: ConversationDoc,
+  myRole: Role,
+): Promise<EnrichedConversation | null> {
+  const [shop, customer] = await Promise.all([
+    Shop.findById(conv.shopId).lean(),
+    User.findById(conv.customerUserId).lean(),
+  ]);
+  if (!shop || !customer) return null;
+  return {
+    id: String(conv._id),
+    shop: {
+      id: String(shop._id),
+      name: shop.name,
+      marketName: shop.marketName ?? null,
+    },
+    customer: {
+      id: String(customer._id),
+      name: customer.name ?? null,
+      // Only expose customer email to the seller, never echo it back to customer.
+      email: myRole === "seller" ? (customer.email ?? null) : null,
+    },
+    lastMessageAt: (conv.lastMessageAt ?? conv.createdAt ?? new Date()).toISOString(),
+    lastMessageText: conv.lastMessageText ?? "",
+    lastMessageSenderRole: (conv.lastMessageSenderRole as Role | null) ?? null,
+    unreadCount:
+      myRole === "customer"
+        ? (conv.customerUnreadCount ?? 0)
+        : (conv.sellerUnreadCount ?? 0),
+    myRole,
+  };
+}
+
+// ---- routes ---------------------------------------------------------------
+
+// All conversation endpoints require auth.
+router.use("/conversations", requireAuth);
+
+// POST /conversations { shopId } → idempotent get-or-create as customer
+router.post("/conversations", async (req: Request, res: Response) => {
+  const { shopId } = req.body ?? {};
+  if (typeof shopId !== "string" || !objectId(shopId)) {
+    res.status(400).json({ error: "shopId must be a valid ObjectId" });
+    return;
+  }
+  const shop = await Shop.findById(shopId).lean();
+  if (!shop) {
+    res.status(404).json({ error: "Shop not found" });
+    return;
+  }
+  const access = await getShopAccess(req.userId, shopId);
+  if (access) {
+    res.status(400).json({
+      error:
+        "You are a member of this shop. Sellers cannot start a conversation as a customer.",
+    });
+    return;
+  }
+
+  const customerOid = new Types.ObjectId(req.userId);
+  const shopOid = new Types.ObjectId(shopId);
+  const conv = await Conversation.findOneAndUpdate(
+    { shopId: shopOid, customerUserId: customerOid },
+    {
+      $setOnInsert: {
+        shopId: shopOid,
+        customerUserId: customerOid,
+        lastMessageAt: new Date(),
+        lastMessageText: "",
+        lastMessageSenderRole: null,
+        customerUnreadCount: 0,
+        sellerUnreadCount: 0,
+      },
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true },
+  );
+
+  const enriched = await enrich(conv as ConversationDoc, "customer");
+  if (!enriched) {
+    res.status(500).json({ error: "Failed to enrich conversation" });
+    return;
+  }
+  res.status(200).json({ conversation: enriched });
+});
+
+// GET /conversations → list user's conversations (customer + seller views)
+router.get("/conversations", async (req: Request, res: Response) => {
+  const userOid = new Types.ObjectId(req.userId);
+
+  // Find shops where this user is a seller / sub_seller
+  const sellerShopIds = await ShopMember.find({ userId: userOid })
+    .select({ shopId: 1, _id: 0 })
+    .lean();
+  const sellerShopOids = sellerShopIds.map((m: { shopId: Types.ObjectId }) => m.shopId);
+
+  const convs = await Conversation.find({
+    $or: [
+      { customerUserId: userOid },
+      ...(sellerShopOids.length > 0 ? [{ shopId: { $in: sellerShopOids } }] : []),
+    ],
+  })
+    .sort({ lastMessageAt: -1 })
+    .limit(200)
+    .lean();
+
+  const enriched = (
+    await Promise.all(
+      convs.map(async (c: ConversationDoc) => {
+        const role: Role = c.customerUserId.equals(userOid) ? "customer" : "seller";
+        return enrich(c as ConversationDoc, role);
+      }),
+    )
+  ).filter((x: EnrichedConversation | null): x is EnrichedConversation => x !== null);
+
+  res.json({ conversations: enriched });
+});
+
+// GET /conversations/:id → single conversation detail
+router.get("/conversations/:id", async (req: Request, res: Response) => {
+  const id = asId(req.params.id);
+  if (!id || !objectId(id)) {
+    res.status(400).json({ error: "Invalid conversation id" });
+    return;
+  }
+  const conv = await Conversation.findById(id);
+  if (!conv) {
+    res.status(404).json({ error: "Conversation not found" });
+    return;
+  }
+  const role = await resolveRole(req.userId, conv);
+  if (!role) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+  const enriched = await enrich(conv, role);
+  if (!enriched) {
+    res.status(500).json({ error: "Failed to enrich conversation" });
+    return;
+  }
+  res.json({ conversation: enriched });
+});
+
+// GET /conversations/:id/messages?before=ISO&limit=50
+router.get("/conversations/:id/messages", async (req: Request, res: Response) => {
+  const id = asId(req.params.id);
+  if (!id || !objectId(id)) {
+    res.status(400).json({ error: "Invalid conversation id" });
+    return;
+  }
+  const conv = await Conversation.findById(id);
+  if (!conv) {
+    res.status(404).json({ error: "Conversation not found" });
+    return;
+  }
+  const role = await resolveRole(req.userId, conv);
+  if (!role) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+
+  const before = typeof req.query.before === "string" ? new Date(req.query.before) : null;
+  const limitRaw = Number(req.query.limit ?? 50);
+  const limit = Math.min(Math.max(Number.isFinite(limitRaw) ? limitRaw : 50, 1), 100);
+
+  const filter: Record<string, unknown> = { conversationId: conv._id };
+  if (before && !Number.isNaN(before.getTime())) {
+    filter.createdAt = { $lt: before };
+  }
+
+  const docs = await Message.find(filter)
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .lean();
+
+  // Return in chronological order (oldest → newest) for FlatList inverted convenience.
+  docs.reverse();
+
+  res.json({
+    messages: docs.map((m: any) => ({
+      id: String(m._id),
+      conversationId: String(m.conversationId),
+      senderRole: m.senderRole,
+      text: m.text,
+      createdAt: (m.createdAt ?? new Date()).toISOString(),
+      mine: m.senderUserId.equals(new Types.ObjectId(req.userId)),
+    })),
+    hasMore: docs.length === limit,
+  });
+});
+
+// POST /conversations/:id/messages { text }
+router.post("/conversations/:id/messages", async (req: Request, res: Response) => {
+  const id = asId(req.params.id);
+  if (!id || !objectId(id)) {
+    res.status(400).json({ error: "Invalid conversation id" });
+    return;
+  }
+  const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
+  if (!text) {
+    res.status(400).json({ error: "text is required" });
+    return;
+  }
+  if (text.length > 2000) {
+    res.status(400).json({ error: "text too long (max 2000 chars)" });
+    return;
+  }
+  const conv = await Conversation.findById(id);
+  if (!conv) {
+    res.status(404).json({ error: "Conversation not found" });
+    return;
+  }
+  const role = await resolveRole(req.userId, conv);
+  if (!role) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+
+  // Single round-trip insert (avoids the Mongoose 9.5 pre-save bug).
+  const [msg] = await Message.insertMany([
+    {
+      conversationId: conv._id,
+      senderUserId: new Types.ObjectId(req.userId),
+      senderRole: role,
+      text,
+    },
+  ]);
+
+  if (!msg) {
+    res.status(500).json({ error: "Failed to create message" });
+    return;
+  }
+
+  // Bump conversation summary + unread counters.
+  const otherUnreadField =
+    role === "customer" ? "sellerUnreadCount" : "customerUnreadCount";
+  const myUnreadField =
+    role === "customer" ? "customerUnreadCount" : "sellerUnreadCount";
+
+  await Conversation.updateOne(
+    { _id: conv._id },
+    {
+      $set: {
+        lastMessageAt: msg.createdAt ?? new Date(),
+        lastMessageText: text,
+        lastMessageSenderRole: role,
+        [myUnreadField]: 0,
+      },
+      $inc: { [otherUnreadField]: 1 },
+    },
+  );
+
+  res.status(201).json({
+    message: {
+      id: String(msg._id),
+      conversationId: String(msg.conversationId),
+      senderRole: role,
+      text: msg.text,
+      createdAt: (msg.createdAt ?? new Date()).toISOString(),
+      mine: true,
+    },
+  });
+});
+
+// POST /conversations/:id/read → reset current side's unread to 0
+router.post("/conversations/:id/read", async (req: Request, res: Response) => {
+  const id = asId(req.params.id);
+  if (!id || !objectId(id)) {
+    res.status(400).json({ error: "Invalid conversation id" });
+    return;
+  }
+  const conv = await Conversation.findById(id);
+  if (!conv) {
+    res.status(404).json({ error: "Conversation not found" });
+    return;
+  }
+  const role = await resolveRole(req.userId, conv);
+  if (!role) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+  const field = role === "customer" ? "customerUnreadCount" : "sellerUnreadCount";
+  await Conversation.updateOne({ _id: conv._id }, { $set: { [field]: 0 } });
+  res.json({ ok: true });
+});
+
+export default router;

@@ -22,6 +22,7 @@ export default function ShopLayout() {
         name="edit"
         options={{ headerShown: true, presentation: "modal", title: shop?.name ?? "Edit shop" }}
       />
+      <Stack.Screen name="chat/[conversationId]" options={{ headerShown: false }} />
     </Stack>
   );
 }

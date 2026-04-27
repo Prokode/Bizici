@@ -13,12 +13,23 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import { ClerkProvider, ClerkLoaded } from "@clerk/expo";
+import { ClerkProvider, ClerkLoaded, useAuth } from "@clerk/expo";
 import { tokenCache } from "@clerk/expo/token-cache";
 
 import { AnimatedSplash } from "@/components/AnimatedSplash";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { setBaseUrl } from "@workspace/api-client-react";
+import { setAuthTokenGetter, setBaseUrl } from "@workspace/api-client-react";
+
+function AuthTokenBridge() {
+  const { getToken } = useAuth();
+  useEffect(() => {
+    setAuthTokenGetter(() => getToken());
+    return () => {
+      setAuthTokenGetter(null);
+    };
+  }, [getToken]);
+  return null;
+}
 
 SplashScreen.preventAutoHideAsync();
 
@@ -62,6 +73,7 @@ export default function RootLayout() {
             <QueryClientProvider client={queryClient}>
               <GestureHandlerRootView style={{ flex: 1 }}>
                 <KeyboardProvider>
+                  <AuthTokenBridge />
                   <Slot />
                   {!animationDone && (
                     <AnimatedSplash onFinish={() => setAnimationDone(true)} />

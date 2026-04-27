@@ -4,5 +4,7 @@ export {
   setBaseUrl,
   setAuthTokenGetter,
   setOwnerIdGetter,
+  customFetch,
+  ApiError,
 } from "./custom-fetch";
-export type { AuthTokenGetter } from "./custom-fetch";
+export type { AuthTokenGetter, CustomFetchOptions } from "./custom-fetch";

@@ -9,6 +9,7 @@ import membersRouter from "./members";
 import invitationsRouter from "./invitations";
 import categoriesRouter from "./categories";
 import discountsRouter from "./discounts";
+import conversationsRouter from "./conversations";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(membersRouter);
 router.use(invitationsRouter);
 router.use(categoriesRouter);
 router.use(discountsRouter);
+router.use(conversationsRouter);
 
 export default router;

@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Modal,
@@ -12,10 +13,13 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter, type Href } from "expo-router";
+import { useAuth } from "@clerk/expo";
 
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
 import { fetchShopDetail, type PublicShop } from "@/lib/publicApi";
+import { getOrCreateConversation } from "@/lib/chatApi";
 
 type Props = {
   shop: PublicShop | null;
@@ -34,13 +38,42 @@ function formatPrice(cents: number): string {
 export function ShopBottomSheet({ shop, onClose }: Props) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { isSignedIn, isLoaded } = useAuth();
   const visible = shop !== null;
+  const [chatLoading, setChatLoading] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["public-shop", shop?.id],
     queryFn: () => fetchShopDetail(shop!.id),
     enabled: !!shop,
   });
+
+  const handleChatPress = async () => {
+    if (!shop || !isLoaded) return;
+    if (!isSignedIn) {
+      onClose();
+      router.push(
+        `/(auth)/sign-in?next=${encodeURIComponent(
+          `/chat-shop/${shop.id}`,
+        )}` as Href,
+      );
+      return;
+    }
+    setChatLoading(true);
+    try {
+      const conv = await getOrCreateConversation(shop.id);
+      onClose();
+      router.push(`/chat/${conv.id}` as Href);
+    } catch (err: any) {
+      Alert.alert(
+        "Discussion indisponible",
+        err?.message ?? "Impossible d'ouvrir la discussion. Réessayez.",
+      );
+    } finally {
+      setChatLoading(false);
+    }
+  };
 
   return (
     <Modal
@@ -233,6 +266,20 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
               )}
 
               <View style={styles.footer}>
+                <Button
+                  title="Discuter avec le vendeur"
+                  size="lg"
+                  loading={chatLoading}
+                  onPress={handleChatPress}
+                  icon={
+                    <Feather
+                      name="message-circle"
+                      size={18}
+                      color={colors.primaryForeground}
+                    />
+                  }
+                  style={{ marginBottom: 8 }}
+                />
                 <Button
                   title="Encore là ?"
                   variant="outline"

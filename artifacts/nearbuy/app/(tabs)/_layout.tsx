@@ -1,22 +1,25 @@
 import { Tabs } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { Platform } from "react-native";
-import { useEffect } from "react";
 import { useAuth } from "@clerk/expo";
-import { setAuthTokenGetter } from "@workspace/api-client-react";
+import { useQuery } from "@tanstack/react-query";
 
 import { useColors } from "@/hooks/useColors";
+import { listConversations } from "@/lib/chatApi";
 
 export default function TabsLayout() {
   const colors = useColors();
-  const { getToken } = useAuth();
+  const { isSignedIn } = useAuth();
 
-  useEffect(() => {
-    setAuthTokenGetter(() => getToken());
-    return () => {
-      setAuthTokenGetter(null);
-    };
-  }, [getToken]);
+  const unreadQuery = useQuery({
+    queryKey: ["chat-conv-list"],
+    queryFn: () => listConversations(),
+    enabled: !!isSignedIn,
+    refetchInterval: 8000,
+    refetchIntervalInBackground: false,
+  });
+  const totalUnread =
+    unreadQuery.data?.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) ?? 0;
 
   return (
     <Tabs
@@ -61,6 +64,16 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <Feather name="camera" size={size} color={color} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="messages"
+        options={{
+          title: "Messages",
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="message-circle" size={size} color={color} />
+          ),
+          tabBarBadge: totalUnread > 0 ? totalUnread : undefined,
         }}
       />
       <Tabs.Screen

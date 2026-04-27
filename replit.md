@@ -23,7 +23,7 @@ The NearBuy suite is built as a pnpm monorepo, sharing a common Node.js/Express 
 
 **Backend (Node.js/Express):**
 - **Clerk Integration:** Acts as a managed proxy for authentication, handling user sign-in/sign-up, SSO, and populating `req.auth` with user information. It also manages user roles (Seller, SubSeller).
-- **MongoDB Models:** Key models include `User`, `Shop`, `ShopMember`, `ShopInvitation`, `Category`, `Product`, `Discount`, and `BroadcastRequest`. `2dsphere` indexes are used for efficient geospatial queries.
+- **MongoDB Models:** Key models include `User`, `Shop`, `ShopMember`, `ShopInvitation`, `Category`, `Product`, `Discount`, `BroadcastRequest`, `Conversation`, and `Message`. `2dsphere` indexes are used for efficient geospatial queries. The `Conversation` model has a unique compound index on `{shopId, customerUserId}`; `Message` is indexed on `{conversationId, createdAt:-1}` for efficient pagination.
 - **API Endpoints:** Divided into public (e.g., `GET /public/shops`, `GET /public/search`, `POST /public/visual-search` — stub returning up to 6 in-radius products with mock confidence scores, optional `hint` text bias) and authenticated endpoints (e.g., `/me`, `/shops`, `/products`, `/karma`). The Express body limit is set to 10 MB so the visual-search endpoint can accept base64-encoded photos.
 - **Codegen Workflow:** OpenAPI spec (`lib/api-spec/openapi.yaml`) generates React Query hooks and types (`lib/api-client-react/src/generated/`) and Zod schemas (`lib/api-zod/src/generated/`) for validation.
 
@@ -33,6 +33,7 @@ The NearBuy suite is built as a pnpm monorepo, sharing a common Node.js/Express 
 - **Search:** Customer app offers debounced text search (Fuse.js fuzzy re-rank) and a visual-search camera tab (`app/(tabs)/camera.tsx`) with capture/gallery/web-upload, an optional text indice, and a results list whose match cards open the shared `ShopBottomSheet`.
 - **Karma System:** Tracks customer engagement with points for actions like stock confirmation.
 - **Roles:** A user can be a Seller for some shops and a SubSeller (helper) for others.
+- **Chat (Customer ↔ Seller):** Signed-in customers can open a 1:1 conversation per shop from the `ShopBottomSheet` ("Discuter avec le vendeur" CTA). A conversation is auto-upserted via `POST /api/conversations { shopId }` (rejected if the caller is already a `ShopMember` of that shop). Threads are paginated through `GET /api/conversations/:id/messages?before=&limit=`; sending uses `POST /api/conversations/:id/messages { text }`. The role is inferred per request from `customerUserId` vs `ShopMember`, so any seller / sub_seller of the shop receives the conversation in their inbox. Customer email is exposed only on the seller view. Unread counters are bumped on the receiving side and reset to 0 on the sending side automatically; `POST /api/conversations/:id/read` resets a side explicitly. The UI uses React Query polling (3s for messages, 5s for conversation lists, 8s for the badge) instead of websockets. Customer routes: `/(tabs)/messages`, `/chat-shop/[shopId]` (resolver), `/chat/[id]` (thread). Business routes: `/(home)/shops/[shopId]/(tabs)/messages` and `/(home)/shops/[shopId]/chat/[conversationId]`. Sign-in / sign-up screens honor a `next` query param to deep-link back into the chat after auth.
 
 ## External Dependencies
 
