@@ -1,11 +1,23 @@
 import { Tabs } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { Platform } from "react-native";
+import { useEffect } from "react";
+import { useAuth } from "@clerk/expo";
+import { setAuthTokenGetter } from "@workspace/api-client-react";
 
 import { useColors } from "@/hooks/useColors";
 
 export default function TabsLayout() {
   const colors = useColors();
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    setAuthTokenGetter(() => getToken());
+    return () => {
+      setAuthTokenGetter(null);
+    };
+  }, [getToken]);
+
   return (
     <Tabs
       screenOptions={{

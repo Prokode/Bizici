@@ -25,6 +25,34 @@ export type PublicShop = {
   previewProducts: PublicProductPreview[];
 };
 
+export type KarmaEvent = {
+  id: string;
+  kind: "welcome" | "stock_confirmation" | "stock_report" | "broadcast";
+  points: number;
+  note: string | null;
+  createdAt: string;
+};
+
+export type KarmaSummary = {
+  points: number;
+  recentEvents: KarmaEvent[];
+};
+
+/**
+ * Fetch the signed-in user's Karma summary. Requires a Clerk session — caller
+ * must have wired `setAuthTokenGetter` (done in `app/(tabs)/_layout.tsx`).
+ */
+export async function fetchMyKarma(
+  baseUrl: string,
+  token: string,
+): Promise<KarmaSummary> {
+  const res = await fetch(`${baseUrl}/api/me/karma`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`fetchMyKarma failed: ${res.status}`);
+  return (await res.json()) as KarmaSummary;
+}
+
 export type PublicProduct = {
   id: string;
   shopId: string;

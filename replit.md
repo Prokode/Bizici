@@ -36,7 +36,10 @@ Both apps reuse the same logo (`assets/images/icon.png`), splash animation (`com
 - `app/(tabs)/index.tsx` — full-screen `react-native-maps` with GPS permission via `expo-location`, top search bar that hands off to the Search tab. Status pill shows live shop count. Markers use `components/ShopMarker.tsx` (gradient pin + product-count badge) and tap opens `components/ShopBottomSheet.tsx` (modal with shop details + preview products + "Encore là?" Karma CTA stub). Data comes from `lib/publicApi.ts → fetchNearbyShops` calling `GET /api/public/shops`. Web fallback: maps don't render but the status pill + shop count still update from the live API; geolocation falls back to Paris after a 2 s timeout for headless previews.
 - `app/(tabs)/search.tsx` — debounced search input (300 ms) wired to `GET /api/public/search` via `lib/publicApi.ts → fetchSearch`. **Fuse.js** re-ranks results client-side (keys: `name` 0.6 / `brand` 0.2 / `description` 0.1 / `shopName` 0.1, threshold 0.5, `ignoreLocation: true`) so typos like `jeen` still surface `Jean slim brut indigo`. Each result card shows photo / brand / name / price / shop chip / distance + open-status; tapping opens the same `ShopBottomSheet` modal as the map. Empty state: hint card. No-results state: "Diffuser ma demande" CTA (BroadcastRequest endpoint wiring is the next pass).
 - `app/(tabs)/camera.tsx` — capture / pick-from-gallery CTAs. Backend visual-search endpoint pending.
-- `app/(tabs)/profile.tsx` — signed-out hero + sign-in CTA, signed-in shows name/email + Karma card. Karma always reads 0 until backend is wired.
+- `app/(auth)/_layout.tsx` — Stack guard: redirects to `/(tabs)/profile` when already signed in.
+- `app/(auth)/sign-in.tsx`, `app/(auth)/sign-up.tsx` — French Clerk flows mirroring the seller app's pattern (`useSignIn` / `useSignUp` + `useSSO` for Google), themed with the orange→pink gradient. Sign-up advertises the +10 welcome bonus and includes the email-code verification step + `clerk-captcha` slot. Both navigate to `/(tabs)/profile` on success.
+- `app/(tabs)/_layout.tsx` — wires `setAuthTokenGetter(() => getToken())` from `@workspace/api-client-react` so any code (including `fetchMyKarma` and the generated client) automatically attaches `Authorization: Bearer <Clerk JWT>` to API calls.
+- `app/(tabs)/profile.tsx` — signed-out hero with "Se connecter" + "Créer un compte (10 Karma offerts)" CTAs. Signed-in: avatar + name/email card, gradient Karma card showing `points` (live from `GET /api/me/karma` via React Query, keyed by `user.id`), and an "Activité récente" list rendering the recent events with per-kind icon + relative timestamp + signed point delta. Sign-out button at the bottom.
 
 ## Roles
 
@@ -87,6 +90,7 @@ The mobile app:
 ### Authenticated (Bearer JWT, all under `/api`)
 
 - `GET /me` — current user + their shops with role
+- `GET /me/karma` — signed-in customer's total Karma points + 10 most recent `KarmaEvent`s. On first call for a fresh user, seeds a one-time `welcome` event of +10 pts so the Profile tab is never empty.
 - `GET /shops`, `POST /shops` (creator becomes the Seller, `ShopMember(seller)` row also created)
 - `GET /shops/:shopId`, `PUT /shops/:shopId` (Seller only), `PATCH /shops/:shopId/open`, `GET /shops/:shopId/qr`, `GET /shops/:shopId/summary`
 - `GET /shops/:shopId/products`, `POST`, `PATCH /shops/:shopId/products/:id`, `DELETE`, `POST /shops/:shopId/products/analyze-photo`
@@ -98,6 +102,8 @@ The mobile app:
 - `POST /invitations/:token/accept` — accepts and creates `ShopMember` row
 
 When the first shop is created the backend seeds 4 demo broadcast requests at random points within 200–2000 m of the shop so the Requests feed has content immediately.
+
+`KarmaEvent` is an append-only Mongoose collection (`{ userId, kind, points, note, shopId?, productId?, createdAt }`, indexed on `{ userId, createdAt: -1 }`). Total Karma is computed via aggregation `sum(points)` over the user's events. Kinds: `welcome | stock_confirmation | stock_report | broadcast`. The seed welcome event is inserted via `KarmaEvent.insertMany` (matches the `Product.insertMany` pattern that avoids the Mongoose 9.5 pre-save hook bug).
 
 ## Codegen workflow
 

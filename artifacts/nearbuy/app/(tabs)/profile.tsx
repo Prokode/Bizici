@@ -1,21 +1,71 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useUser, useAuth } from "@clerk/expo";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter, type Href } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
+import { fetchMyKarma, type KarmaEvent } from "@/lib/publicApi";
+
+const API_BASE = process.env.EXPO_PUBLIC_DOMAIN
+  ? `https://${process.env.EXPO_PUBLIC_DOMAIN}`
+  : "";
+
+const KARMA_LABELS: Record<KarmaEvent["kind"], string> = {
+  welcome: "Bienvenue",
+  stock_confirmation: "Stock confirmé",
+  stock_report: "Stock signalé",
+  broadcast: "Demande diffusée",
+};
+
+const KARMA_ICONS: Record<KarmaEvent["kind"], React.ComponentProps<typeof Feather>["name"]> = {
+  welcome: "gift",
+  stock_confirmation: "check-circle",
+  stock_report: "alert-circle",
+  broadcast: "radio",
+};
+
+function formatRelative(iso: string): string {
+  const then = new Date(iso).getTime();
+  const now = Date.now();
+  const seconds = Math.max(1, Math.round((now - then) / 1000));
+  if (seconds < 60) return "à l'instant";
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `il y a ${minutes} min`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `il y a ${hours} h`;
+  const days = Math.round(hours / 24);
+  if (days < 30) return `il y a ${days} j`;
+  return new Date(iso).toLocaleDateString("fr-FR");
+}
 
 export default function ProfileTab() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { user, isSignedIn } = useUser();
-  const { signOut } = useAuth();
+  const { signOut, getToken } = useAuth();
 
-  // Karma points will be wired to /api/me/karma later; show 0 for now.
-  const karma = 0;
+  const karmaQuery = useQuery({
+    queryKey: ["karma", user?.id],
+    enabled: !!isSignedIn,
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error("Aucun token de session");
+      return fetchMyKarma(API_BASE, token);
+    },
+  });
 
   if (!isSignedIn) {
     return (
@@ -47,11 +97,17 @@ export default function ProfileTab() {
           title="Se connecter"
           fullWidth
           size="lg"
-          onPress={() => {
-            // TODO: wire Clerk sign-in flow
-          }}
+          onPress={() => router.push("/(auth)/sign-in" as Href)}
           icon={<Feather name="log-in" size={18} color="#ffffff" />}
         />
+        <Pressable
+          onPress={() => router.push("/(auth)/sign-up" as Href)}
+          style={styles.createLink}
+        >
+          <Text style={[styles.createLinkText, { color: colors.primary }]}>
+            Créer un compte (10 Karma offerts)
+          </Text>
+        </Pressable>
       </View>
     );
   }
@@ -62,14 +118,23 @@ export default function ProfileTab() {
     user?.primaryEmailAddress?.emailAddress ||
     "Utilisateur";
 
+  const points = karmaQuery.data?.points ?? null;
+  const events = karmaQuery.data?.recentEvents ?? [];
+
   return (
-    <View
-      style={[
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={[
         styles.container,
-        { backgroundColor: colors.background, paddingTop: insets.top + 24 },
+        { paddingTop: insets.top + 24, paddingBottom: 32 },
       ]}
     >
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
         <View
           style={[
             styles.avatar,
@@ -98,11 +163,81 @@ export default function ProfileTab() {
           <Feather name="award" size={28} color="#ffffff" />
           <Text style={styles.karmaLabel}>Karma NearBuy</Text>
         </View>
-        <Text style={styles.karmaValue}>{karma}</Text>
+        {karmaQuery.isLoading ? (
+          <ActivityIndicator
+            color="#ffffff"
+            size="large"
+            style={{ marginTop: 8 }}
+          />
+        ) : karmaQuery.isError ? (
+          <Text style={styles.karmaError}>
+            Impossible de charger votre Karma
+          </Text>
+        ) : (
+          <Text style={styles.karmaValue}>{points ?? 0}</Text>
+        )}
         <Text style={styles.karmaHint}>
           Confirmez les stocks pour gagner des points.
         </Text>
       </LinearGradient>
+
+      {events.length > 0 && (
+        <View
+          style={[
+            styles.historyCard,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.historyTitle, { color: colors.foreground }]}>
+            Activité récente
+          </Text>
+          {events.map((evt) => (
+            <View key={evt.id} style={styles.historyRow}>
+              <View
+                style={[
+                  styles.historyIcon,
+                  { backgroundColor: colors.muted },
+                ]}
+              >
+                <Feather
+                  name={KARMA_ICONS[evt.kind]}
+                  size={16}
+                  color={colors.primary}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={[
+                    styles.historyLabel,
+                    { color: colors.foreground },
+                  ]}
+                >
+                  {evt.note ?? KARMA_LABELS[evt.kind]}
+                </Text>
+                <Text
+                  style={[
+                    styles.historyMeta,
+                    { color: colors.mutedForeground },
+                  ]}
+                >
+                  {formatRelative(evt.createdAt)}
+                </Text>
+              </View>
+              <Text
+                style={[
+                  styles.historyPoints,
+                  {
+                    color:
+                      evt.points >= 0 ? colors.primary : colors.destructive,
+                  },
+                ]}
+              >
+                {evt.points >= 0 ? `+${evt.points}` : evt.points}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
 
       <Pressable
         onPress={() => signOut()}
@@ -116,12 +251,12 @@ export default function ProfileTab() {
           Se déconnecter
         </Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 20 },
+  container: { paddingHorizontal: 20 },
   signInHero: { alignItems: "center", marginTop: 24, gap: 16 },
   signInCircle: {
     width: 140,
@@ -142,6 +277,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: 16,
   },
+  createLink: { alignItems: "center", paddingVertical: 16 },
+  createLinkText: { fontSize: 15, fontWeight: "600" },
   card: {
     alignItems: "center",
     padding: 20,
@@ -180,6 +317,31 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   karmaHint: { color: "rgba(255,255,255,0.85)", fontSize: 13, marginTop: 4 },
+  karmaError: {
+    color: "#ffffff",
+    fontSize: 14,
+    marginTop: 8,
+    fontWeight: "600",
+  },
+  historyCard: {
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 16,
+    gap: 12,
+  },
+  historyTitle: { fontSize: 16, fontWeight: "700", marginBottom: 4 },
+  historyRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  historyIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  historyLabel: { fontSize: 14, fontWeight: "600" },
+  historyMeta: { fontSize: 12, marginTop: 2 },
+  historyPoints: { fontSize: 16, fontWeight: "800" },
   signOut: {
     flexDirection: "row",
     alignItems: "center",

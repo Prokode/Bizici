@@ -6,3 +6,4 @@ export { BroadcastRequest, type BroadcastRequestDoc } from "./BroadcastRequest";
 export { Category, type CategoryDoc } from "./Category";
 export { Product, type ProductDoc } from "./Product";
 export { Discount, type DiscountDoc } from "./Discount";
+export { KarmaEvent, type KarmaEventDoc } from "./KarmaEvent";

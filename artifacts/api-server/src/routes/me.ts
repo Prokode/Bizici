@@ -1,10 +1,12 @@
 import { Router, type IRouter } from "express";
 import { Types } from "mongoose";
-import { User, ShopMember, Shop } from "@workspace/db";
+import { User, ShopMember, Shop, KarmaEvent } from "@workspace/db";
 import { requireAuth } from "../lib/auth";
 import { serializeShop } from "../lib/serialize";
 
 const router: IRouter = Router();
+
+const WELCOME_BONUS_POINTS = 10;
 
 router.get("/me", requireAuth, async (req, res) => {
   const user = await User.findById(req.userId).lean();
@@ -37,6 +39,53 @@ router.get("/me", requireAuth, async (req, res) => {
     email: user.email ?? null,
     name: user.name ?? null,
     shops: shopsWithRole,
+  });
+});
+
+/**
+ * GET /api/me/karma
+ *
+ * Returns the signed-in customer's total Karma points plus their 10 most
+ * recent events. Awards a one-time "welcome" bonus the first time the user
+ * hits this endpoint so the Profile tab is never empty for a fresh account.
+ */
+router.get("/me/karma", requireAuth, async (req, res) => {
+  const userObjectId = new Types.ObjectId(req.userId);
+
+  const existing = await KarmaEvent.countDocuments({ userId: userObjectId });
+  if (existing === 0) {
+    await KarmaEvent.insertMany([
+      {
+        userId: userObjectId,
+        kind: "welcome",
+        points: WELCOME_BONUS_POINTS,
+        note: "Bienvenue sur NearBuy !",
+      },
+    ]);
+  }
+
+  const [agg] = await KarmaEvent.aggregate<{ total: number }>([
+    { $match: { userId: userObjectId } },
+    { $group: { _id: null, total: { $sum: "$points" } } },
+  ]);
+
+  const recent = await KarmaEvent.find({ userId: userObjectId })
+    .sort({ createdAt: -1 })
+    .limit(10)
+    .lean();
+
+  res.json({
+    points: agg?.total ?? 0,
+    recentEvents: recent.map((e) => ({
+      id: String(e._id),
+      kind: e.kind,
+      points: e.points,
+      note: e.note ?? null,
+      createdAt:
+        e.createdAt instanceof Date
+          ? e.createdAt.toISOString()
+          : new Date(e.createdAt as unknown as string).toISOString(),
+    })),
   });
 });
 
