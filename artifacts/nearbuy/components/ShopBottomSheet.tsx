@@ -4,7 +4,9 @@ import {
   Alert,
   FlatList,
   Image,
+  Linking,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -48,6 +50,45 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
     queryFn: () => fetchShopDetail(shop!.id),
     enabled: !!shop,
   });
+
+  const handleDirectionsPress = async () => {
+    if (!shop) return;
+    const lat = shop.latitude;
+    const lng = shop.longitude;
+    if (
+      typeof lat !== "number" ||
+      typeof lng !== "number" ||
+      Number.isNaN(lat) ||
+      Number.isNaN(lng)
+    ) {
+      Alert.alert(
+        "Position indisponible",
+        "Cette boutique n'a pas de coordonnées renseignées.",
+      );
+      return;
+    }
+    const label = encodeURIComponent(shop.name);
+    const universalUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    let primaryUrl = universalUrl;
+    if (Platform.OS === "ios") {
+      primaryUrl = `maps://?daddr=${lat},${lng}&dirflg=d`;
+    } else if (Platform.OS === "android") {
+      primaryUrl = `geo:0,0?q=${lat},${lng}(${label})`;
+    }
+    try {
+      const supported = await Linking.canOpenURL(primaryUrl);
+      await Linking.openURL(supported ? primaryUrl : universalUrl);
+    } catch {
+      try {
+        await Linking.openURL(universalUrl);
+      } catch {
+        Alert.alert(
+          "Itinéraire indisponible",
+          "Aucune application de cartes n'a pu être ouverte.",
+        );
+      }
+    }
+  };
 
   const handleChatPress = async () => {
     if (!shop || !isLoaded) return;
@@ -280,20 +321,38 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                   }
                   style={{ marginBottom: 8 }}
                 />
-                <Button
-                  title="Encore là ?"
-                  variant="outline"
-                  onPress={() => {
-                    // TODO: Karma "Still There?" verification flow
-                  }}
-                  icon={
-                    <Feather
-                      name="check-square"
-                      size={18}
-                      color={colors.primary}
+                <View style={styles.secondaryRow}>
+                  <View style={{ flex: 1 }}>
+                    <Button
+                      title="Itinéraire"
+                      variant="outline"
+                      onPress={handleDirectionsPress}
+                      icon={
+                        <Feather
+                          name="navigation"
+                          size={18}
+                          color={colors.primary}
+                        />
+                      }
                     />
-                  }
-                />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Button
+                      title="Encore là ?"
+                      variant="outline"
+                      onPress={() => {
+                        // TODO: Karma "Still There?" verification flow
+                      }}
+                      icon={
+                        <Feather
+                          name="check-square"
+                          size={18}
+                          color={colors.primary}
+                        />
+                      }
+                    />
+                  </View>
+                </View>
               </View>
             </>
           )}
@@ -377,5 +436,9 @@ const styles = StyleSheet.create({
   footer: {
     paddingTop: 8,
     borderTopColor: "transparent",
+  },
+  secondaryRow: {
+    flexDirection: "row",
+    gap: 8,
   },
 });
