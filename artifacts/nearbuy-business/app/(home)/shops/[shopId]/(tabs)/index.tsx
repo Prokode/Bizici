@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   StyleSheet,
   Text,
@@ -10,14 +10,15 @@ import {
   Platform,
 } from "react-native";
 import { useColors } from "@/hooks/useColors";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  getGetShopQueryOptions,
   getListProductsQueryOptions,
-  useUpdateProduct,
   getListProductsQueryKey,
+  getGetShopSummaryQueryKey,
+  useUpdateProduct,
+  type Product,
 } from "@workspace/api-client-react";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -30,69 +31,41 @@ export default function InventoryScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-
-  const {
-    data: shop,
-    isLoading: isShopLoading,
-    isFetching: isShopFetching,
-    isError: isShopError,
-  } = useQuery({
-    ...getGetShopQueryOptions(),
-    retry: false,
-  });
+  const { shopId } = useLocalSearchParams<{ shopId: string }>();
 
   const {
     data: products,
     isLoading: isProductsLoading,
     refetch,
     isRefetching,
-  } = useQuery(getListProductsQueryOptions({ query: { enabled: !!shop } }));
+  } = useQuery({
+    ...getListProductsQueryOptions(shopId as string),
+    enabled: !!shopId,
+  });
 
   const updateProduct = useUpdateProduct();
 
-  useEffect(() => {
-    if (!isShopLoading && !isShopFetching && shop === null && !isShopError) {
-      router.replace("/onboarding");
-    }
-  }, [shop, isShopLoading, isShopFetching, isShopError]);
-
-  if (isShopLoading || (shop === undefined && !isShopError)) {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.content}>
-          <Skeleton height={100} style={{ marginBottom: 16 }} />
-          <Skeleton height={100} style={{ marginBottom: 16 }} />
-          <Skeleton height={100} />
-        </View>
-      </View>
-    );
-  }
-
-  if (!shop) return null;
-
   const handleToggleStock = (id: string, currentStock: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    
     const newStatus = currentStock === "in_stock" ? "out_of_stock" : "in_stock";
+    const queryKey = getListProductsQueryKey(shopId as string);
 
-    // Optimistic update
-    queryClient.setQueryData(getListProductsQueryKey(), (old: any) => {
+    queryClient.setQueryData(queryKey, (old: Product[] | undefined) => {
       if (!old) return old;
-      return old.map((p: any) => (p.id === id ? { ...p, stockStatus: newStatus } : p));
+      return old.map((p) => (p.id === id ? { ...p, stockStatus: newStatus as Product["stockStatus"] } : p));
     });
 
     updateProduct.mutate(
-      { id, data: { stockStatus: newStatus } },
+      { shopId: shopId as string, id, data: { stockStatus: newStatus as Product["stockStatus"] } },
       {
-        onError: () => {
-          // Revert on error
-          queryClient.invalidateQueries({ queryKey: getListProductsQueryKey() });
-        },
+        onSuccess: () =>
+          queryClient.invalidateQueries({ queryKey: getGetShopSummaryQueryKey(shopId as string) }),
+        onError: () => queryClient.invalidateQueries({ queryKey }),
       }
     );
   };
 
-  const renderItem = ({ item }: { item: any }) => (
+  const renderItem = ({ item }: { item: Product }) => (
     <Card style={styles.card}>
       <View style={styles.cardHeader}>
         <View style={styles.cardTitleArea}>
@@ -107,17 +80,17 @@ export default function InventoryScreen() {
           {item.price != null ? `$${(item.price / 100).toFixed(2)}` : "Price not set"}
         </Text>
       </View>
-      
+
       {item.tags && item.tags.length > 0 && (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
-          {item.tags.map((tag: string) => (
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+          {item.tags.map((tag) => (
             <View key={tag} style={{ backgroundColor: colors.muted, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 }}>
               <Text style={{ fontSize: 12, color: colors.mutedForeground }}>{tag}</Text>
             </View>
           ))}
         </View>
       )}
-      
+
       <View style={styles.cardFooter}>
         <View style={styles.stockToggle}>
           <Switch
@@ -134,36 +107,46 @@ export default function InventoryScreen() {
     </Card>
   );
 
+  if (!shopId) return null;
+
+  if (isProductsLoading) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.content}>
+          <Skeleton height={100} style={{ marginBottom: 16 }} />
+          <Skeleton height={100} style={{ marginBottom: 16 }} />
+          <Skeleton height={100} />
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
         data={products || []}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={[
           styles.content,
           Platform.OS === "web" && { paddingTop: 67, paddingBottom: 84 + 100 },
-          !Platform.OS && { paddingBottom: 100 },
+          Platform.OS !== "web" && { paddingBottom: 100 },
         ]}
-        ListHeaderComponent={<HeaderSummary />}
+        ListHeaderComponent={<HeaderSummary shopId={shopId as string} />}
         ListEmptyComponent={
-          isProductsLoading ? null : (
-            <View style={styles.emptyContainer}>
-              <Feather name="package" size={48} color={colors.mutedForeground} style={{ marginBottom: 16 }} />
-              <Text style={[styles.emptyTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-                Your inventory is empty
-              </Text>
-              <Text style={[styles.emptyDesc, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
-                Add your first product so customers nearby can discover your shop.
-              </Text>
-            </View>
-          )
+          <View style={styles.emptyContainer}>
+            <Feather name="package" size={48} color={colors.mutedForeground} style={{ marginBottom: 16 }} />
+            <Text style={[styles.emptyTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
+              Your inventory is empty
+            </Text>
+            <Text style={[styles.emptyDesc, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
+              Add your first product so customers nearby can discover your shop.
+            </Text>
+          </View>
         }
-        refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />
-        }
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
       />
-      
+
       <TouchableOpacity
         style={[
           styles.fab,
@@ -171,7 +154,7 @@ export default function InventoryScreen() {
         ]}
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          router.push("/add-product");
+          router.push(`/(home)/shops/${shopId}/add-product`);
         }}
         activeOpacity={0.8}
       >
@@ -185,61 +168,19 @@ export default function InventoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 16,
-    paddingTop: 8,
-  },
-  card: {
-    padding: 16,
-    marginBottom: 12,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 16,
-  },
-  cardTitleArea: {
-    flex: 1,
-    paddingRight: 16,
-  },
-  productName: {
-    fontSize: 18,
-    marginBottom: 4,
-  },
-  productCategory: {
-    fontSize: 14,
-  },
-  productPrice: {
-    fontSize: 18,
-  },
-  cardFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  stockToggle: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 64,
-    paddingHorizontal: 32,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  emptyDesc: {
-    fontSize: 16,
-    textAlign: "center",
-  },
+  container: { flex: 1 },
+  content: { padding: 16, paddingTop: 8 },
+  card: { padding: 16, marginBottom: 12 },
+  cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 },
+  cardTitleArea: { flex: 1, paddingRight: 16 },
+  productName: { fontSize: 18, marginBottom: 4 },
+  productCategory: { fontSize: 14 },
+  productPrice: { fontSize: 18 },
+  cardFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  stockToggle: { flexDirection: "row", alignItems: "center" },
+  emptyContainer: { alignItems: "center", justifyContent: "center", paddingVertical: 64, paddingHorizontal: 32 },
+  emptyTitle: { fontSize: 20, marginBottom: 8, textAlign: "center" },
+  emptyDesc: { fontSize: 16, textAlign: "center" },
   fab: {
     position: "absolute",
     right: 16,
@@ -254,8 +195,5 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 8,
   },
-  fabText: {
-    marginLeft: 8,
-    fontSize: 16,
-  },
+  fabText: { marginLeft: 8, fontSize: 16 },
 });

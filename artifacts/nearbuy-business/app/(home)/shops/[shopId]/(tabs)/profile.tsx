@@ -1,30 +1,60 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, ScrollView, Platform, Modal, Switch } from "react-native";
 import { useColors } from "@/hooks/useColors";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getGetShopQueryOptions, getGetShopQrQueryOptions, useSetShopOpen, getGetShopQueryKey } from "@workspace/api-client-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  getGetShopQueryOptions,
+  getGetShopQueryKey,
+  getListShopsQueryKey,
+  getGetShopQrQueryOptions,
+  getListShopsQueryOptions,
+  useSetShopOpen,
+} from "@workspace/api-client-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { Feather } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { ShopMapPreview } from "@/components/ShopMapPreview";
 import QRCode from "react-native-qrcode-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth, useClerk } from "@clerk/expo";
+import { HelpersSection } from "@/components/HelpersSection";
 
 export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-  const { data: shop } = useQuery(getGetShopQueryOptions());
-  const { data: qrData } = useQuery(getGetShopQrQueryOptions({ query: { enabled: !!shop } }));
-  const setShopOpen = useSetShopOpen();
+  const clerk = useClerk();
+  const { shopId } = useLocalSearchParams<{ shopId: string }>();
 
+  const { data: shop } = useQuery({
+    ...getGetShopQueryOptions(shopId as string),
+    enabled: !!shopId,
+  });
+
+  const { data: shops } = useQuery(getListShopsQueryOptions());
+  const myRole = shops?.find((s) => s.shop.id === shopId)?.role;
+  const isSeller = myRole === "seller";
+
+  const { data: qrData } = useQuery({
+    ...getGetShopQrQueryOptions(shopId as string),
+    enabled: !!shopId && !!shop,
+  });
+
+  const setShopOpen = useSetShopOpen();
   const [showQr, setShowQr] = useState(false);
 
-  if (!shop) return null;
+  const handleSignOut = async () => {
+    await clerk.signOut();
+    queryClient.clear();
+    router.replace("/(auth)/sign-in");
+  };
+
+  if (!shop || !shopId) return null;
 
   return (
-    <ScrollView 
+    <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={[
         styles.content,
@@ -44,17 +74,22 @@ export default function ProfileScreen() {
           <Text style={[styles.shopCategory, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_500Medium" }]}>
             {shop.marketName || "No Market Name"}
           </Text>
+          <Badge variant={isSeller ? "default" : "secondary"} style={{ marginTop: 6, alignSelf: "flex-start" }}>
+            {isSeller ? "Seller" : "Helper"}
+          </Badge>
         </View>
       </View>
 
       <View style={styles.actions}>
-        <Button
-          title="Edit Details"
-          variant="secondary"
-          icon={<Feather name="edit-2" size={18} color={colors.secondaryForeground} />}
-          style={styles.actionBtn}
-          onPress={() => router.push("/onboarding")}
-        />
+        {isSeller && (
+          <Button
+            title="Edit Details"
+            variant="secondary"
+            icon={<Feather name="edit-2" size={18} color={colors.secondaryForeground} />}
+            style={styles.actionBtn}
+            onPress={() => router.push(`/(home)/shops/${shopId}/edit`)}
+          />
+        )}
         <Button
           title="Show QR Code"
           variant="primary"
@@ -71,10 +106,17 @@ export default function ProfileScreen() {
           </Text>
           <Switch
             value={shop.isOpen}
+            disabled={!isSeller}
             onValueChange={(val) => {
-              setShopOpen.mutate({ data: { isOpen: val } }, {
-                onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetShopQueryKey() })
-              });
+              setShopOpen.mutate(
+                { shopId: shopId as string, data: { isOpen: val } },
+                {
+                  onSuccess: () => {
+                    queryClient.invalidateQueries({ queryKey: getGetShopQueryKey(shopId as string) });
+                    queryClient.invalidateQueries({ queryKey: getListShopsQueryKey() });
+                  },
+                }
+              );
             }}
             trackColor={{ false: colors.muted, true: colors.success || colors.primary }}
             thumbColor={colors.background}
@@ -94,14 +136,37 @@ export default function ProfileScreen() {
       <Text style={[styles.sectionTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
         Location
       </Text>
-      
+
       <View style={[styles.mapContainer, { borderColor: colors.border, borderRadius: colors.radius }]}>
         <ShopMapPreview latitude={shop.latitude} longitude={shop.longitude} />
       </View>
 
-      {/* QR Modal */}
+      {isSeller && <HelpersSection shopId={shopId as string} />}
+
+      <View style={{ marginTop: 24 }}>
+        <Button
+          title="Switch shop"
+          variant="ghost"
+          icon={<Feather name="repeat" size={18} color={colors.foreground} />}
+          onPress={() => router.replace("/(home)")}
+        />
+        <Button
+          title="Sign out"
+          variant="ghost"
+          icon={<Feather name="log-out" size={18} color={colors.destructive} />}
+          textStyle={{ color: colors.destructive }}
+          onPress={handleSignOut}
+          style={{ marginTop: 4 }}
+        />
+      </View>
+
       <Modal visible={showQr} animationType="slide" presentationStyle="formSheet" onRequestClose={() => setShowQr(false)}>
-        <View style={[styles.modalContainer, { backgroundColor: colors.background, paddingTop: Platform.OS === "ios" ? 0 : insets.top }]}>
+        <View
+          style={[
+            styles.modalContainer,
+            { backgroundColor: colors.background, paddingTop: Platform.OS === "ios" ? 0 : insets.top },
+          ]}
+        >
           <View style={styles.modalHeader}>
             <Text style={[styles.modalTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
               Scan to view shop
@@ -112,21 +177,16 @@ export default function ProfileScreen() {
               onPress={() => setShowQr(false)}
             />
           </View>
-          
+
           <View style={styles.qrWrapper}>
             {qrData ? (
               <View style={[styles.qrContainer, { backgroundColor: "#fff" }]}>
-                <QRCode
-                  value={qrData.url}
-                  size={250}
-                  color="#000"
-                  backgroundColor="#fff"
-                />
+                <QRCode value={qrData.url} size={250} color="#000" backgroundColor="#fff" />
               </View>
             ) : (
               <Text style={{ color: colors.foreground }}>Loading QR code...</Text>
             )}
-            
+
             <Text style={[styles.qrDesc, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
               Customers can scan this code to see your digital catalog.
             </Text>
@@ -138,104 +198,27 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 16,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 16,
-  },
-  avatarText: {
-    fontSize: 28,
-  },
-  headerInfo: {
-    flex: 1,
-  },
-  shopName: {
-    fontSize: 24,
-    marginBottom: 4,
-  },
-  shopCategory: {
-    fontSize: 16,
-  },
-  actions: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 24,
-  },
-  actionBtn: {
-    flex: 1,
-  },
-  detailsCard: {
-    marginBottom: 24,
-  },
-  detailRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 16,
-  },
-  detailLabel: {
-    fontSize: 16,
-  },
-  detailValue: {
-    fontSize: 16,
-  },
-  divider: {
-    height: 1,
-    marginHorizontal: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    marginBottom: 12,
-  },
-  mapContainer: {
-    height: 200,
-    borderWidth: 1,
-    overflow: "hidden",
-  },
-  webMapFallback: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modalContainer: {
-    flex: 1,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-  },
-  modalTitle: {
-    fontSize: 20,
-  },
-  qrWrapper: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 32,
-  },
-  qrContainer: {
-    padding: 24,
-    borderRadius: 16,
-    marginBottom: 32,
-  },
-  qrDesc: {
-    fontSize: 16,
-    textAlign: "center",
-    lineHeight: 24,
-  },
+  container: { flex: 1 },
+  content: { padding: 16 },
+  header: { flexDirection: "row", alignItems: "center", marginBottom: 24 },
+  avatar: { width: 64, height: 64, borderRadius: 16, alignItems: "center", justifyContent: "center", marginRight: 16 },
+  avatarText: { fontSize: 28 },
+  headerInfo: { flex: 1 },
+  shopName: { fontSize: 24, marginBottom: 4 },
+  shopCategory: { fontSize: 16 },
+  actions: { flexDirection: "row", gap: 12, marginBottom: 24 },
+  actionBtn: { flex: 1 },
+  detailsCard: { marginBottom: 24 },
+  detailRow: { flexDirection: "row", justifyContent: "space-between", padding: 16 },
+  detailLabel: { fontSize: 16 },
+  detailValue: { fontSize: 16 },
+  divider: { height: 1, marginHorizontal: 16 },
+  sectionTitle: { fontSize: 20, marginBottom: 12, marginTop: 8 },
+  mapContainer: { height: 200, borderWidth: 1, overflow: "hidden", marginBottom: 8 },
+  modalContainer: { flex: 1 },
+  modalHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16 },
+  modalTitle: { fontSize: 20 },
+  qrWrapper: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 },
+  qrContainer: { padding: 24, borderRadius: 16, marginBottom: 32 },
+  qrDesc: { fontSize: 16, textAlign: "center", lineHeight: 24 },
 });

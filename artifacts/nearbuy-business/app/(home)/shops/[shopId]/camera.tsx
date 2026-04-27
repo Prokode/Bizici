@@ -1,9 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -13,6 +13,7 @@ export default function CameraScreen() {
   const insets = useSafeAreaInsets();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
+  const { shopId } = useLocalSearchParams<{ shopId: string }>();
 
   if (!permission) {
     return <View style={{ flex: 1, backgroundColor: "#000" }} />;
@@ -39,9 +40,8 @@ export default function CameraScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       const photo = await cameraRef.current.takePictureAsync({ base64: true, quality: 0.5 });
       if (photo) {
-        // Redirect back to add-product with the photo data
         router.replace({
-          pathname: "/add-product",
+          pathname: `/(home)/shops/${shopId}/add-product`,
           params: { photoUri: photo.uri, base64: photo.base64 },
         });
       }
@@ -57,7 +57,7 @@ export default function CameraScreen() {
               <Feather name="x" size={28} color="#fff" />
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.footer}>
             <TouchableOpacity style={styles.shutterBtn} onPress={takePicture}>
               <View style={styles.shutterInner} />
@@ -70,63 +70,15 @@ export default function CameraScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
-  camera: {
-    flex: 1,
-  },
-  overlay: {
-    flex: 1,
-    justifyContent: "space-between",
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    alignItems: "flex-start",
-  },
-  closeBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  footer: {
-    alignItems: "center",
-    paddingBottom: 32,
-  },
-  shutterBtn: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: "rgba(255,255,255,0.3)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  shutterInner: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#fff",
-  },
-  permissionContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 32,
-  },
-  permissionTitle: {
-    fontSize: 24,
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  permissionDesc: {
-    fontSize: 16,
-    textAlign: "center",
-    marginBottom: 32,
-    lineHeight: 24,
-  },
+  container: { flex: 1, backgroundColor: "#000" },
+  camera: { flex: 1 },
+  overlay: { flex: 1, justifyContent: "space-between" },
+  header: { paddingHorizontal: 16, paddingTop: 16, alignItems: "flex-start" },
+  closeBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(0,0,0,0.5)", alignItems: "center", justifyContent: "center" },
+  footer: { alignItems: "center", paddingBottom: 32 },
+  shutterBtn: { width: 72, height: 72, borderRadius: 36, backgroundColor: "rgba(255,255,255,0.3)", alignItems: "center", justifyContent: "center" },
+  shutterInner: { width: 56, height: 56, borderRadius: 28, backgroundColor: "#fff" },
+  permissionContainer: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 },
+  permissionTitle: { fontSize: 24, marginBottom: 12, textAlign: "center" },
+  permissionDesc: { fontSize: 16, textAlign: "center", marginBottom: 32, lineHeight: 24 },
 });

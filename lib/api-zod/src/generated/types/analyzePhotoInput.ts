@@ -7,6 +7,5 @@
  */
 
 export interface AnalyzePhotoInput {
-  /** Base64-encoded image data (without data URL prefix) */
   imageBase64: string;
 }

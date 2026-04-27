@@ -2,11 +2,14 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useColors } from "@/hooks/useColors";
 import { useQuery } from "@tanstack/react-query";
-import { getGetDashboardSummaryQueryOptions } from "@workspace/api-client-react";
+import { getGetShopSummaryQueryOptions } from "@workspace/api-client-react";
 
-export function HeaderSummary() {
+export function HeaderSummary({ shopId }: { shopId: string }) {
   const colors = useColors();
-  const { data, isLoading } = useQuery(getGetDashboardSummaryQueryOptions());
+  const { data, isLoading } = useQuery({
+    ...getGetShopSummaryQueryOptions(shopId),
+    enabled: !!shopId,
+  });
 
   if (isLoading || !data) {
     return null;
@@ -30,7 +33,5 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     alignSelf: "flex-start",
   },
-  text: {
-    fontSize: 12,
-  },
+  text: { fontSize: 12 },
 });

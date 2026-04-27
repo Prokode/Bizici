@@ -10,12 +10,16 @@ servers:
 tags:
   - name: health
     description: Health operations
-  - name: shop
-    description: Shop profile and setup
+  - name: me
+    description: Current user
+  - name: shops
+    description: Shops the user owns or is a member of
   - name: products
-    description: Product inventory
+    description: Product inventory (per shop)
   - name: requests
-    description: Live broadcast requests (demand feed)
+    description: Live broadcast requests near a shop
+  - name: members
+    description: Shop members and invitations
 paths:
   /healthz:
     get:
@@ -30,59 +34,91 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
 
-  /shop:
+  /me:
     get:
-      operationId: getShop
-      tags: [shop]
-      parameters:
-        - $ref: "#/components/parameters/OwnerId"
+      operationId: getMe
+      tags: [me]
+      summary: Current authenticated user with their shop memberships
       responses:
         "200":
-          description: Shop or null
+          description: Current user
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ShopOrNull"
-    put:
-      operationId: upsertShop
-      tags: [shop]
-      parameters:
-        - $ref: "#/components/parameters/OwnerId"
+                $ref: "#/components/schemas/Me"
+
+  /shops:
+    get:
+      operationId: listShops
+      tags: [shops]
+      summary: List shops the current user owns or is assigned to
+      responses:
+        "200":
+          description: Shop list with role
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ShopWithRole"
+    post:
+      operationId: createShop
+      tags: [shops]
+      summary: Create a new shop (current user becomes seller)
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ShopUpsertInput"
+              $ref: "#/components/schemas/ShopCreateInput"
       responses:
         "200":
-          description: The created or updated shop
+          description: Created shop
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Shop"
 
-  /shop/qr:
+  /shops/{shopId}:
     get:
-      operationId: getShopQr
-      tags: [shop]
+      operationId: getShop
+      tags: [shops]
       parameters:
-        - $ref: "#/components/parameters/OwnerId"
+        - $ref: "#/components/parameters/ShopId"
       responses:
         "200":
-          description: QR payload
+          description: Shop
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/QrPayload"
+                $ref: "#/components/schemas/Shop"
+    put:
+      operationId: updateShop
+      tags: [shops]
+      summary: Update shop details (seller only)
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShopUpdateInput"
+      responses:
+        "200":
+          description: Updated shop
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shop"
 
-  /shop/open:
+  /shops/{shopId}/open:
     patch:
       operationId: setShopOpen
-      tags: [shop]
-      summary: Set whether the shop is currently open
+      tags: [shops]
+      summary: Toggle whether the shop is open
       parameters:
-        - $ref: "#/components/parameters/OwnerId"
+        - $ref: "#/components/parameters/ShopId"
       requestBody:
         required: true
         content:
@@ -97,12 +133,40 @@ paths:
               schema:
                 $ref: "#/components/schemas/Shop"
 
-  /products:
+  /shops/{shopId}/qr:
+    get:
+      operationId: getShopQr
+      tags: [shops]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+      responses:
+        "200":
+          description: QR payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QrPayload"
+
+  /shops/{shopId}/summary:
+    get:
+      operationId: getShopSummary
+      tags: [shops]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /shops/{shopId}/products:
     get:
       operationId: listProducts
       tags: [products]
       parameters:
-        - $ref: "#/components/parameters/OwnerId"
+        - $ref: "#/components/parameters/ShopId"
       responses:
         "200":
           description: Product list
@@ -116,7 +180,7 @@ paths:
       operationId: createProduct
       tags: [products]
       parameters:
-        - $ref: "#/components/parameters/OwnerId"
+        - $ref: "#/components/parameters/ShopId"
       requestBody:
         required: true
         content:
@@ -131,12 +195,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/Product"
 
-  /products/{id}:
+  /shops/{shopId}/products/{id}:
     patch:
       operationId: updateProduct
       tags: [products]
       parameters:
-        - $ref: "#/components/parameters/OwnerId"
+        - $ref: "#/components/parameters/ShopId"
         - in: path
           name: id
           required: true
@@ -160,7 +224,7 @@ paths:
       operationId: deleteProduct
       tags: [products]
       parameters:
-        - $ref: "#/components/parameters/OwnerId"
+        - $ref: "#/components/parameters/ShopId"
         - in: path
           name: id
           required: true
@@ -175,13 +239,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
 
-  /products/analyze-photo:
+  /shops/{shopId}/products/analyze-photo:
     post:
       operationId: analyzeProductPhoto
       tags: [products]
       summary: Analyze a product photo and return suggested fields
       parameters:
-        - $ref: "#/components/parameters/OwnerId"
+        - $ref: "#/components/parameters/ShopId"
       requestBody:
         required: true
         content:
@@ -196,16 +260,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProductSuggestion"
 
-  /requests:
+  /shops/{shopId}/requests:
     get:
       operationId: listNearbyRequests
       tags: [requests]
-      summary: List active broadcast requests near the owner's shop
       parameters:
-        - $ref: "#/components/parameters/OwnerId"
+        - $ref: "#/components/parameters/ShopId"
       responses:
         "200":
-          description: Broadcast request list
+          description: Active broadcast requests near shop
           content:
             application/json:
               schema:
@@ -213,13 +276,12 @@ paths:
                 items:
                   $ref: "#/components/schemas/BroadcastRequest"
 
-  /requests/{id}/found:
+  /shops/{shopId}/requests/{id}/found:
     post:
       operationId: markRequestFound
       tags: [requests]
-      summary: Confirm availability — mark a broadcast request as found
       parameters:
-        - $ref: "#/components/parameters/OwnerId"
+        - $ref: "#/components/parameters/ShopId"
         - in: path
           name: id
           required: true
@@ -234,13 +296,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/BroadcastRequest"
 
-  /requests/{id}/expire:
+  /shops/{shopId}/requests/{id}/expire:
     post:
       operationId: expireRequest
       tags: [requests]
-      summary: Dismiss / expire a broadcast request from the feed
       parameters:
-        - $ref: "#/components/parameters/OwnerId"
+        - $ref: "#/components/parameters/ShopId"
         - in: path
           name: id
           required: true
@@ -255,30 +316,125 @@ paths:
               schema:
                 $ref: "#/components/schemas/BroadcastRequest"
 
-  /summary:
+  /shops/{shopId}/members:
     get:
-      operationId: getDashboardSummary
-      tags: [shop]
+      operationId: listShopMembers
+      tags: [members]
       parameters:
-        - $ref: "#/components/parameters/OwnerId"
+        - $ref: "#/components/parameters/ShopId"
       responses:
         "200":
-          description: Summary
+          description: Members and pending invitations
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DashboardSummary"
+                $ref: "#/components/schemas/ShopMembersList"
+    post:
+      operationId: inviteShopMember
+      tags: [members]
+      summary: Invite a helper by email (seller only)
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InviteMemberInput"
+      responses:
+        "200":
+          description: Created invitation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShopInvitation"
+
+  /shops/{shopId}/members/{userId}:
+    delete:
+      operationId: removeShopMember
+      tags: [members]
+      summary: Remove a SubSeller from the shop (seller only)
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResult"
+
+  /shops/{shopId}/invitations/{invitationId}:
+    delete:
+      operationId: cancelShopInvitation
+      tags: [members]
+      summary: Cancel a pending invitation (seller only)
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+        - in: path
+          name: invitationId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResult"
+
+  /invitations:
+    get:
+      operationId: listMyInvitations
+      tags: [members]
+      summary: Pending invitations addressed to current user's email
+      responses:
+        "200":
+          description: List of pending invitations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PendingInvitation"
+
+  /invitations/{token}/accept:
+    post:
+      operationId: acceptInvitation
+      tags: [members]
+      summary: Accept an invitation token (creates shop membership)
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Accepted; returns shop with role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShopWithRole"
 
 components:
   parameters:
-    OwnerId:
-      in: header
-      name: X-Owner-Id
+    ShopId:
+      in: path
+      name: shopId
       required: true
-      description: Stable device-generated owner UUID
       schema:
         type: string
         format: uuid
+
   schemas:
     HealthStatus:
       type: object
@@ -287,16 +443,33 @@ components:
           type: string
       required: [status]
 
+    Me:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        shops:
+          type: array
+          items:
+            $ref: "#/components/schemas/ShopWithRole"
+      required: [id, shops]
+
     Shop:
       type: object
       properties:
         id:
           type: string
           format: uuid
-        ownerId:
+        sellerId:
           type: string
           format: uuid
-          nullable: true
         name:
           type: string
         marketName:
@@ -313,17 +486,23 @@ components:
           type: boolean
       required:
         - id
+        - sellerId
         - name
         - latitude
         - longitude
         - isOpen
 
-    ShopOrNull:
-      oneOf:
-        - $ref: "#/components/schemas/Shop"
-        - type: "null"
+    ShopWithRole:
+      type: object
+      properties:
+        shop:
+          $ref: "#/components/schemas/Shop"
+        role:
+          type: string
+          enum: [seller, sub_seller]
+      required: [shop, role]
 
-    ShopUpsertInput:
+    ShopCreateInput:
       type: object
       properties:
         name:
@@ -339,18 +518,31 @@ components:
           type: number
         longitude:
           type: number
-      required:
-        - name
-        - latitude
-        - longitude
+      required: [name, latitude, longitude]
+
+    ShopUpdateInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        marketName:
+          type: string
+          nullable: true
+        stallInfo:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+        longitude:
+          type: number
 
     ShopOpenInput:
       type: object
       properties:
         isOpen:
           type: boolean
-      required:
-        - isOpen
+      required: [isOpen]
 
     Product:
       type: object
@@ -412,8 +604,7 @@ components:
         stockStatus:
           type: string
           enum: [in_stock, out_of_stock]
-      required:
-        - name
+      required: [name]
 
     ProductUpdateInput:
       type: object
@@ -442,9 +633,7 @@ components:
       properties:
         imageBase64:
           type: string
-          description: Base64-encoded image data (without data URL prefix)
-      required:
-        - imageBase64
+      required: [imageBase64]
 
     ProductSuggestion:
       type: object
@@ -459,11 +648,7 @@ components:
           type: array
           items:
             type: string
-      required:
-        - name
-        - category
-        - price
-        - tags
+      required: [name, category, price, tags]
 
     BroadcastRequest:
       type: object
@@ -521,8 +706,80 @@ components:
           type: integer
         activeRequestsCount:
           type: integer
-      required:
-        - totalProducts
-        - inStockCount
-        - outOfStockCount
-        - activeRequestsCount
+      required: [totalProducts, inStockCount, outOfStockCount, activeRequestsCount]
+
+    ShopMember:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        email:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        role:
+          type: string
+          enum: [seller, sub_seller]
+        createdAt:
+          type: string
+      required: [id, userId, role, createdAt]
+
+    ShopInvitation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        role:
+          type: string
+          enum: [seller, sub_seller]
+        createdAt:
+          type: string
+      required: [id, email, role, createdAt]
+
+    ShopMembersList:
+      type: object
+      properties:
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/ShopMember"
+        invitations:
+          type: array
+          items:
+            $ref: "#/components/schemas/ShopInvitation"
+      required: [members, invitations]
+
+    InviteMemberInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required: [email]
+
+    PendingInvitation:
+      type: object
+      properties:
+        token:
+          type: string
+        shopId:
+          type: string
+          format: uuid
+        shopName:
+          type: string
+        role:
+          type: string
+          enum: [seller, sub_seller]
+        invitedByName:
+          type: string
+          nullable: true
+      required: [token, shopId, shopName, role]

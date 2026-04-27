@@ -1,52 +1,59 @@
 import React from "react";
 import { StyleSheet, Text, View, FlatList, RefreshControl, Platform } from "react-native";
 import { useColors } from "@/hooks/useColors";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getListNearbyRequestsQueryOptions,
   getListNearbyRequestsQueryKey,
   useMarkRequestFound,
   useExpireRequest,
+  type BroadcastRequest,
 } from "@workspace/api-client-react";
+import { useLocalSearchParams } from "expo-router";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Feather } from "@expo/vector-icons";
-import { formatDistanceToNow } from "date-fns";
 import * as Haptics from "expo-haptics";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function RequestsScreen() {
   const colors = useColors();
-  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
+  const { shopId } = useLocalSearchParams<{ shopId: string }>();
 
-  const { data: requests, isLoading, refetch, isRefetching } = useQuery(getListNearbyRequestsQueryOptions());
+  const {
+    data: requests,
+    isLoading,
+    refetch,
+    isRefetching,
+  } = useQuery({
+    ...getListNearbyRequestsQueryOptions(shopId as string),
+    enabled: !!shopId,
+  });
 
   const markRequestFound = useMarkRequestFound();
   const expireRequest = useExpireRequest();
 
   const handleAction = (id: string, action: "confirm" | "dismiss") => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    
-    // Optimistic removal
-    queryClient.setQueryData(getListNearbyRequestsQueryKey(), (old: any) => {
+    const queryKey = getListNearbyRequestsQueryKey(shopId as string);
+
+    queryClient.setQueryData(queryKey, (old: BroadcastRequest[] | undefined) => {
       if (!old) return old;
-      return old.filter((r: any) => r.id !== id);
+      return old.filter((r) => r.id !== id);
     });
 
     const mutation = action === "confirm" ? markRequestFound : expireRequest;
-    
-    mutation.mutate({ id }, {
-      onError: () => {
-        queryClient.invalidateQueries({ queryKey: getListNearbyRequestsQueryKey() });
-      },
-    });
+    mutation.mutate(
+      { shopId: shopId as string, id },
+      { onError: () => queryClient.invalidateQueries({ queryKey }) }
+    );
   };
 
-  const renderItem = ({ item }: { item: any }) => {
-    const distanceText = item.distanceMeters < 1000 
-      ? `${Math.round(item.distanceMeters)}m away`
-      : `${(item.distanceMeters / 1000).toFixed(1)}km away`;
+  const renderItem = ({ item }: { item: BroadcastRequest }) => {
+    const distanceText =
+      item.distanceMeters < 1000
+        ? `${Math.round(item.distanceMeters)}m away`
+        : `${(item.distanceMeters / 1000).toFixed(1)}km away`;
 
     return (
       <Card style={styles.card}>
@@ -85,19 +92,19 @@ export default function RequestsScreen() {
     );
   };
 
+  if (!shopId) return null;
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
         data={requests || []}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={[
           styles.listContent,
           Platform.OS === "web" && { paddingTop: 67 + 16, paddingBottom: 84 + 16 },
         ]}
-        refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />
-        }
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
         ListEmptyComponent={
           isLoading ? null : (
             <View style={styles.emptyContainer}>
@@ -119,72 +126,19 @@ export default function RequestsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  listContent: {
-    padding: 16,
-  },
-  card: {
-    padding: 16,
-    marginBottom: 16,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    marginBottom: 16,
-  },
-  iconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 16,
-  },
-  cardContent: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  query: {
-    fontSize: 18,
-    marginBottom: 4,
-  },
-  metaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  meta: {
-    fontSize: 14,
-  },
-  actions: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  actionBtn: {
-    flex: 1,
-  },
-  emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 64,
-    paddingHorizontal: 32,
-  },
-  emptyIconBox: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 24,
-  },
-  emptyTitle: {
-    fontSize: 22,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  emptyDesc: {
-    fontSize: 16,
-    textAlign: "center",
-    lineHeight: 24,
-  },
+  container: { flex: 1 },
+  listContent: { padding: 16 },
+  card: { padding: 16, marginBottom: 16 },
+  cardHeader: { flexDirection: "row", marginBottom: 16 },
+  iconBox: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center", marginRight: 16 },
+  cardContent: { flex: 1, justifyContent: "center" },
+  query: { fontSize: 18, marginBottom: 4 },
+  metaRow: { flexDirection: "row", alignItems: "center" },
+  meta: { fontSize: 14 },
+  actions: { flexDirection: "row", gap: 12 },
+  actionBtn: { flex: 1 },
+  emptyContainer: { alignItems: "center", justifyContent: "center", paddingVertical: 64, paddingHorizontal: 32 },
+  emptyIconBox: { width: 96, height: 96, borderRadius: 48, alignItems: "center", justifyContent: "center", marginBottom: 24 },
+  emptyTitle: { fontSize: 22, marginBottom: 8, textAlign: "center" },
+  emptyDesc: { fontSize: 16, textAlign: "center", lineHeight: 24 },
 });

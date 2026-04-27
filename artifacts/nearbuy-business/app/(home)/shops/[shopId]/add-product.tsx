@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, Platform, Image, KeyboardAvoidingView } from "react-native";
+import { StyleSheet, Text, View, Platform, Image, TouchableOpacity } from "react-native";
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -7,14 +7,20 @@ import { Card } from "@/components/ui/Card";
 import { Feather } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { useCreateProduct, useAnalyzeProductPhoto, getListProductsQueryKey } from "@workspace/api-client-react";
+import {
+  useCreateProduct,
+  useAnalyzeProductPhoto,
+  getListProductsQueryKey,
+  getGetShopSummaryQueryKey,
+} from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 
 export default function AddProductScreen() {
   const colors = useColors();
   const queryClient = useQueryClient();
-  const params = useLocalSearchParams();
+  const params = useLocalSearchParams<{ shopId: string; photoUri?: string; base64?: string }>();
+  const shopId = params.shopId;
 
   const [mode, setMode] = useState<"choose" | "form">("choose");
   const [name, setName] = useState("");
@@ -27,28 +33,25 @@ export default function AddProductScreen() {
   const createProduct = useCreateProduct();
   const analyzePhoto = useAnalyzeProductPhoto();
 
-  // If returning from camera screen with a URI
   useEffect(() => {
     if (params.photoUri) {
       handlePhotoSelected(params.photoUri as string, params.base64 as string);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.photoUri]);
 
   const handlePhotoSelected = (uri: string, base64?: string) => {
     setPhotoUri(uri);
     setMode("form");
-
-    if (base64) {
+    if (base64 && shopId) {
       analyzePhoto.mutate(
-        { data: { imageBase64: base64 } },
+        { shopId, data: { imageBase64: base64 } },
         {
           onSuccess: (data) => {
             setName(data.name);
             setCategory(data.category || "");
             setPriceStr(data.price != null ? (data.price / 100).toFixed(2) : "");
-            if (data.tags) {
-              setTags(data.tags);
-            }
+            if (data.tags) setTags(data.tags);
           },
         }
       );
@@ -63,28 +66,29 @@ export default function AddProductScreen() {
       quality: 0.5,
       base64: true,
     });
-
     if (!result.canceled && result.assets[0].base64) {
       handlePhotoSelected(result.assets[0].uri, result.assets[0].base64);
     }
   };
 
   const handleSave = () => {
+    if (!shopId) return;
     const priceCents = priceStr.trim() ? Math.round(parseFloat(priceStr) * 100) : null;
-    
     createProduct.mutate(
       {
+        shopId,
         data: {
           name,
           category: category.trim() || null,
           price: priceCents,
-          tags: tags,
+          tags,
           stockStatus: "in_stock",
         },
       },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListProductsQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getListProductsQueryKey(shopId) });
+          queryClient.invalidateQueries({ queryKey: getGetShopSummaryQueryKey(shopId) });
           router.back();
         },
       }
@@ -98,19 +102,18 @@ export default function AddProductScreen() {
           <Text style={[styles.title, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
             How would you like to add a product?
           </Text>
-          
-          <Card style={styles.optionCard}>
-            <Button
-              variant="ghost"
-              style={styles.optionBtn}
-              onPress={() => {
-                if (Platform.OS === "web") {
-                  handlePickImage();
-                } else {
-                  router.push("/camera");
-                }
-              }}
-            >
+
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => {
+              if (Platform.OS === "web") {
+                handlePickImage();
+              } else {
+                router.push(`/(home)/shops/${shopId}/camera`);
+              }
+            }}
+          >
+            <Card style={styles.optionCard}>
               <View style={styles.optionBtnContent}>
                 <View style={[styles.iconWrapper, { backgroundColor: colors.accent }]}>
                   <Feather name="camera" size={32} color={colors.accentForeground} />
@@ -124,15 +127,11 @@ export default function AddProductScreen() {
                   </Text>
                 </View>
               </View>
-            </Button>
-          </Card>
+            </Card>
+          </TouchableOpacity>
 
-          <Card style={styles.optionCard}>
-            <Button
-              variant="ghost"
-              style={styles.optionBtn}
-              onPress={() => setMode("form")}
-            >
+          <TouchableOpacity activeOpacity={0.85} onPress={() => setMode("form")}>
+            <Card style={styles.optionCard}>
               <View style={styles.optionBtnContent}>
                 <View style={[styles.iconWrapper, { backgroundColor: colors.muted }]}>
                   <Feather name="edit-3" size={32} color={colors.foreground} />
@@ -146,15 +145,18 @@ export default function AddProductScreen() {
                   </Text>
                 </View>
               </View>
-            </Button>
-          </Card>
+            </Card>
+          </TouchableOpacity>
         </View>
       </View>
     );
   }
 
   return (
-    <KeyboardAwareScrollViewCompat style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.formContent}>
+    <KeyboardAwareScrollViewCompat
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.formContent}
+    >
       {photoUri && (
         <View style={styles.imagePreviewContainer}>
           <Image source={{ uri: photoUri }} style={[styles.imagePreview, { borderRadius: colors.radius }]} />
@@ -168,27 +170,9 @@ export default function AddProductScreen() {
         </View>
       )}
 
-      <Input
-        label="Product Name *"
-        placeholder="e.g. Ripe Bananas"
-        value={name}
-        onChangeText={setName}
-      />
-      
-      <Input
-        label="Category (Optional)"
-        placeholder="e.g. Fruits"
-        value={category}
-        onChangeText={setCategory}
-      />
-      
-      <Input
-        label="Price ($) (Optional)"
-        placeholder="0.00"
-        value={priceStr}
-        onChangeText={setPriceStr}
-        keyboardType="decimal-pad"
-      />
+      <Input label="Product Name *" placeholder="e.g. Ripe Bananas" value={name} onChangeText={setName} />
+      <Input label="Category (Optional)" placeholder="e.g. Fruits" value={category} onChangeText={setCategory} />
+      <Input label="Price ($) (Optional)" placeholder="0.00" value={priceStr} onChangeText={setPriceStr} keyboardType="decimal-pad" />
 
       <View style={{ marginBottom: 16 }}>
         <Input
@@ -196,11 +180,9 @@ export default function AddProductScreen() {
           placeholder="e.g. organic, local (comma separated)"
           value={tagInput}
           onChangeText={(text) => {
-            if (text.endsWith(',')) {
+            if (text.endsWith(",")) {
               const newTag = text.slice(0, -1).trim();
-              if (newTag && !tags.includes(newTag)) {
-                setTags([...tags, newTag]);
-              }
+              if (newTag && !tags.includes(newTag)) setTags([...tags, newTag]);
               setTagInput("");
             } else {
               setTagInput(text);
@@ -208,23 +190,31 @@ export default function AddProductScreen() {
           }}
           onSubmitEditing={() => {
             const newTag = tagInput.trim();
-            if (newTag && !tags.includes(newTag)) {
-              setTags([...tags, newTag]);
-            }
+            if (newTag && !tags.includes(newTag)) setTags([...tags, newTag]);
             setTagInput("");
           }}
         />
         {tags.length > 0 && (
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
-            {tags.map(tag => (
-              <View key={tag} style={{ flexDirection: "row", alignItems: "center", backgroundColor: colors.muted, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 }}>
+            {tags.map((tag) => (
+              <View
+                key={tag}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: colors.muted,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 16,
+                }}
+              >
                 <Text style={{ color: colors.foreground, fontSize: 14 }}>{tag}</Text>
                 <Feather
                   name="x"
                   size={14}
                   color={colors.mutedForeground}
                   style={{ marginLeft: 6 }}
-                  onPress={() => setTags(tags.filter(t => t !== tag))}
+                  onPress={() => setTags(tags.filter((t) => t !== tag))}
                 />
               </View>
             ))}
@@ -233,7 +223,7 @@ export default function AddProductScreen() {
       </View>
 
       <View style={{ flex: 1 }} />
-      
+
       <Button
         title="Save Product"
         size="lg"
@@ -247,65 +237,18 @@ export default function AddProductScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  chooseContent: {
-    padding: 24,
-    flex: 1,
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 32,
-    textAlign: "center",
-  },
-  optionCard: {
-    marginBottom: 16,
-  },
-  optionBtn: {
-    padding: 0,
-    height: "auto",
-  },
-  optionBtnContent: {
-    flexDirection: "row",
-    padding: 20,
-    alignItems: "center",
-  },
-  iconWrapper: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 16,
-  },
-  optionTextWrapper: {
-    flex: 1,
-  },
-  optionTitle: {
-    fontSize: 18,
-    marginBottom: 4,
-  },
-  optionDesc: {
-    fontSize: 14,
-  },
-  formContent: {
-    padding: 24,
-    flexGrow: 1,
-  },
-  imagePreviewContainer: {
-    height: 200,
-    marginBottom: 24,
-    position: "relative",
-  },
-  imagePreview: {
-    width: "100%",
-    height: "100%",
-  },
-  analyzingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  container: { flex: 1 },
+  chooseContent: { padding: 24, flex: 1, justifyContent: "center" },
+  title: { fontSize: 24, marginBottom: 32, textAlign: "center" },
+  optionCard: { marginBottom: 16 },
+  optionBtn: { padding: 0, height: "auto" },
+  optionBtnContent: { flexDirection: "row", padding: 20, alignItems: "center" },
+  iconWrapper: { width: 64, height: 64, borderRadius: 32, alignItems: "center", justifyContent: "center", marginRight: 16 },
+  optionTextWrapper: { flex: 1 },
+  optionTitle: { fontSize: 18, marginBottom: 4 },
+  optionDesc: { fontSize: 14 },
+  formContent: { padding: 24, flexGrow: 1 },
+  imagePreviewContainer: { height: 200, marginBottom: 24, position: "relative" },
+  imagePreview: { width: "100%", height: "100%" },
+  analyzingOverlay: { ...StyleSheet.absoluteFillObject, alignItems: "center", justifyContent: "center" },
 });

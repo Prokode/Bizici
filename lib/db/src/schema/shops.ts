@@ -4,8 +4,10 @@ import {
   text,
   boolean,
   customType,
+  timestamp,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import { usersTable } from "./users";
 
 export const geographyPoint = customType<{
   data: { latitude: number; longitude: number };
@@ -18,19 +20,21 @@ export const geographyPoint = customType<{
     return `SRID=4326;POINT(${value.longitude} ${value.latitude})`;
   },
   fromDriver(value) {
-    // PostGIS returns hex EWKB by default; we always read via ST_X/ST_Y in queries.
     return { latitude: 0, longitude: 0 };
   },
 });
 
 export const shopsTable = pgTable("shops", {
-  id: uuid("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  ownerId: uuid("owner_id"),
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  sellerId: uuid("seller_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   location: geographyPoint("location").notNull(),
   marketName: text("market_name"),
   stallInfo: text("stall_info"),
   isOpen: boolean("is_open").default(true),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .default(sql`now()`),
 });

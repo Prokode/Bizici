@@ -6,13 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface Shop {
-  id: string;
-  sellerId: string;
-  name: string;
+export interface ShopUpdateInput {
+  /** @minLength 1 */
+  name?: string;
   marketName?: string | null;
   stallInfo?: string | null;
-  latitude: number;
-  longitude: number;
-  isOpen: boolean;
+  latitude?: number;
+  longitude?: number;
 }

@@ -5,6 +5,7 @@
  * NearBuy Business API
  * OpenAPI spec version: 0.1.0
  */
-import type { Shop } from "./shop";
 
-export type ShopOrNull = Shop | null;
+export interface InviteMemberInput {
+  email: string;
+}

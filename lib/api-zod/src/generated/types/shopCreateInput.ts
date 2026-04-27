@@ -6,7 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface ShopUpsertInput {
+export interface ShopCreateInput {
   /** @minLength 1 */
   name: string;
   marketName?: string | null;

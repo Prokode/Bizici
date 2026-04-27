@@ -11,7 +11,7 @@ export interface HealthStatus {
 
 export interface Shop {
   id: string;
-  ownerId?: string | null;
+  sellerId: string;
   name: string;
   marketName?: string | null;
   stallInfo?: string | null;
@@ -20,15 +20,42 @@ export interface Shop {
   isOpen: boolean;
 }
 
-export type ShopOrNull = Shop | null;
+export type ShopWithRoleRole =
+  (typeof ShopWithRoleRole)[keyof typeof ShopWithRoleRole];
 
-export interface ShopUpsertInput {
+export const ShopWithRoleRole = {
+  seller: "seller",
+  sub_seller: "sub_seller",
+} as const;
+
+export interface ShopWithRole {
+  shop: Shop;
+  role: ShopWithRoleRole;
+}
+
+export interface Me {
+  id: string;
+  email?: string | null;
+  name?: string | null;
+  shops: ShopWithRole[];
+}
+
+export interface ShopCreateInput {
   /** @minLength 1 */
   name: string;
   marketName?: string | null;
   stallInfo?: string | null;
   latitude: number;
   longitude: number;
+}
+
+export interface ShopUpdateInput {
+  /** @minLength 1 */
+  name?: string;
+  marketName?: string | null;
+  stallInfo?: string | null;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface ShopOpenInput {
@@ -92,7 +119,6 @@ export interface ProductUpdateInput {
 }
 
 export interface AnalyzePhotoInput {
-  /** Base64-encoded image data (without data URL prefix) */
   imageBase64: string;
 }
 
@@ -138,7 +164,59 @@ export interface DashboardSummary {
   activeRequestsCount: number;
 }
 
-/**
- * Stable device-generated owner UUID
- */
-export type OwnerIdParameter = string;
+export type ShopMemberRole =
+  (typeof ShopMemberRole)[keyof typeof ShopMemberRole];
+
+export const ShopMemberRole = {
+  seller: "seller",
+  sub_seller: "sub_seller",
+} as const;
+
+export interface ShopMember {
+  id: string;
+  userId: string;
+  email?: string | null;
+  name?: string | null;
+  role: ShopMemberRole;
+  createdAt: string;
+}
+
+export type ShopInvitationRole =
+  (typeof ShopInvitationRole)[keyof typeof ShopInvitationRole];
+
+export const ShopInvitationRole = {
+  seller: "seller",
+  sub_seller: "sub_seller",
+} as const;
+
+export interface ShopInvitation {
+  id: string;
+  email: string;
+  role: ShopInvitationRole;
+  createdAt: string;
+}
+
+export interface ShopMembersList {
+  members: ShopMember[];
+  invitations: ShopInvitation[];
+}
+
+export interface InviteMemberInput {
+  email: string;
+}
+
+export type PendingInvitationRole =
+  (typeof PendingInvitationRole)[keyof typeof PendingInvitationRole];
+
+export const PendingInvitationRole = {
+  seller: "seller",
+  sub_seller: "sub_seller",
+} as const;
+
+export interface PendingInvitation {
+  token: string;
+  shopId: string;
+  shopName: string;
+  role: PendingInvitationRole;
+  invitedByName?: string | null;
+}

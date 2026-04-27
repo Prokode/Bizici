@@ -14,17 +14,37 @@ export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
 
-export const GetShopHeader = zod.object({
-  "X-Owner-Id": zod
-    .string()
-    .uuid()
-    .describe("Stable device-generated owner UUID"),
+/**
+ * @summary Current authenticated user with their shop memberships
+ */
+export const GetMeResponse = zod.object({
+  id: zod.string().uuid(),
+  email: zod.string().nullish(),
+  name: zod.string().nullish(),
+  shops: zod.array(
+    zod.object({
+      shop: zod.object({
+        id: zod.string().uuid(),
+        sellerId: zod.string().uuid(),
+        name: zod.string(),
+        marketName: zod.string().nullish(),
+        stallInfo: zod.string().nullish(),
+        latitude: zod.number(),
+        longitude: zod.number(),
+        isOpen: zod.boolean(),
+      }),
+      role: zod.enum(["seller", "sub_seller"]),
+    }),
+  ),
 });
 
-export const GetShopResponse = zod.union([
-  zod.object({
+/**
+ * @summary List shops the current user owns or is assigned to
+ */
+export const ListShopsResponseItem = zod.object({
+  shop: zod.object({
     id: zod.string().uuid(),
-    ownerId: zod.string().uuid().nullish(),
+    sellerId: zod.string().uuid(),
     name: zod.string(),
     marketName: zod.string().nullish(),
     stallInfo: zod.string().nullish(),
@@ -32,17 +52,15 @@ export const GetShopResponse = zod.union([
     longitude: zod.number(),
     isOpen: zod.boolean(),
   }),
-  zod.null(),
-]);
-
-export const UpsertShopHeader = zod.object({
-  "X-Owner-Id": zod
-    .string()
-    .uuid()
-    .describe("Stable device-generated owner UUID"),
+  role: zod.enum(["seller", "sub_seller"]),
 });
+export const ListShopsResponse = zod.array(ListShopsResponseItem);
 
-export const UpsertShopBody = zod.object({
+/**
+ * @summary Create a new shop (current user becomes seller)
+ */
+
+export const CreateShopBody = zod.object({
   name: zod.string().min(1),
   marketName: zod.string().nullish(),
   stallInfo: zod.string().nullish(),
@@ -50,9 +68,9 @@ export const UpsertShopBody = zod.object({
   longitude: zod.number(),
 });
 
-export const UpsertShopResponse = zod.object({
+export const CreateShopResponse = zod.object({
   id: zod.string().uuid(),
-  ownerId: zod.string().uuid().nullish(),
+  sellerId: zod.string().uuid(),
   name: zod.string(),
   marketName: zod.string().nullish(),
   stallInfo: zod.string().nullish(),
@@ -61,26 +79,52 @@ export const UpsertShopResponse = zod.object({
   isOpen: zod.boolean(),
 });
 
-export const GetShopQrHeader = zod.object({
-  "X-Owner-Id": zod
-    .string()
-    .uuid()
-    .describe("Stable device-generated owner UUID"),
+export const GetShopParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
 });
 
-export const GetShopQrResponse = zod.object({
-  url: zod.string(),
-  token: zod.string(),
+export const GetShopResponse = zod.object({
+  id: zod.string().uuid(),
+  sellerId: zod.string().uuid(),
+  name: zod.string(),
+  marketName: zod.string().nullish(),
+  stallInfo: zod.string().nullish(),
+  latitude: zod.number(),
+  longitude: zod.number(),
+  isOpen: zod.boolean(),
 });
 
 /**
- * @summary Set whether the shop is currently open
+ * @summary Update shop details (seller only)
  */
-export const SetShopOpenHeader = zod.object({
-  "X-Owner-Id": zod
-    .string()
-    .uuid()
-    .describe("Stable device-generated owner UUID"),
+export const UpdateShopParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
+});
+
+export const UpdateShopBody = zod.object({
+  name: zod.string().min(1).optional(),
+  marketName: zod.string().nullish(),
+  stallInfo: zod.string().nullish(),
+  latitude: zod.number().optional(),
+  longitude: zod.number().optional(),
+});
+
+export const UpdateShopResponse = zod.object({
+  id: zod.string().uuid(),
+  sellerId: zod.string().uuid(),
+  name: zod.string(),
+  marketName: zod.string().nullish(),
+  stallInfo: zod.string().nullish(),
+  latitude: zod.number(),
+  longitude: zod.number(),
+  isOpen: zod.boolean(),
+});
+
+/**
+ * @summary Toggle whether the shop is open
+ */
+export const SetShopOpenParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
 });
 
 export const SetShopOpenBody = zod.object({
@@ -89,7 +133,7 @@ export const SetShopOpenBody = zod.object({
 
 export const SetShopOpenResponse = zod.object({
   id: zod.string().uuid(),
-  ownerId: zod.string().uuid().nullish(),
+  sellerId: zod.string().uuid(),
   name: zod.string(),
   marketName: zod.string().nullish(),
   stallInfo: zod.string().nullish(),
@@ -98,11 +142,28 @@ export const SetShopOpenResponse = zod.object({
   isOpen: zod.boolean(),
 });
 
-export const ListProductsHeader = zod.object({
-  "X-Owner-Id": zod
-    .string()
-    .uuid()
-    .describe("Stable device-generated owner UUID"),
+export const GetShopQrParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
+});
+
+export const GetShopQrResponse = zod.object({
+  url: zod.string(),
+  token: zod.string(),
+});
+
+export const GetShopSummaryParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
+});
+
+export const GetShopSummaryResponse = zod.object({
+  totalProducts: zod.number(),
+  inStockCount: zod.number(),
+  outOfStockCount: zod.number(),
+  activeRequestsCount: zod.number(),
+});
+
+export const ListProductsParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
 });
 
 export const ListProductsResponseItem = zod.object({
@@ -118,11 +179,8 @@ export const ListProductsResponseItem = zod.object({
 });
 export const ListProductsResponse = zod.array(ListProductsResponseItem);
 
-export const CreateProductHeader = zod.object({
-  "X-Owner-Id": zod
-    .string()
-    .uuid()
-    .describe("Stable device-generated owner UUID"),
+export const CreateProductParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
 });
 
 export const createProductBodyPriceMin = 0;
@@ -149,14 +207,8 @@ export const CreateProductResponse = zod.object({
 });
 
 export const UpdateProductParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
   id: zod.coerce.string().uuid(),
-});
-
-export const UpdateProductHeader = zod.object({
-  "X-Owner-Id": zod
-    .string()
-    .uuid()
-    .describe("Stable device-generated owner UUID"),
 });
 
 export const UpdateProductBody = zod.object({
@@ -181,14 +233,8 @@ export const UpdateProductResponse = zod.object({
 });
 
 export const DeleteProductParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
   id: zod.coerce.string().uuid(),
-});
-
-export const DeleteProductHeader = zod.object({
-  "X-Owner-Id": zod
-    .string()
-    .uuid()
-    .describe("Stable device-generated owner UUID"),
 });
 
 export const DeleteProductResponse = zod.object({
@@ -198,17 +244,12 @@ export const DeleteProductResponse = zod.object({
 /**
  * @summary Analyze a product photo and return suggested fields
  */
-export const AnalyzeProductPhotoHeader = zod.object({
-  "X-Owner-Id": zod
-    .string()
-    .uuid()
-    .describe("Stable device-generated owner UUID"),
+export const AnalyzeProductPhotoParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
 });
 
 export const AnalyzeProductPhotoBody = zod.object({
-  imageBase64: zod
-    .string()
-    .describe("Base64-encoded image data (without data URL prefix)"),
+  imageBase64: zod.string(),
 });
 
 export const AnalyzeProductPhotoResponse = zod.object({
@@ -218,14 +259,8 @@ export const AnalyzeProductPhotoResponse = zod.object({
   tags: zod.array(zod.string()),
 });
 
-/**
- * @summary List active broadcast requests near the owner's shop
- */
-export const ListNearbyRequestsHeader = zod.object({
-  "X-Owner-Id": zod
-    .string()
-    .uuid()
-    .describe("Stable device-generated owner UUID"),
+export const ListNearbyRequestsParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
 });
 
 export const ListNearbyRequestsResponseItem = zod.object({
@@ -241,18 +276,9 @@ export const ListNearbyRequestsResponse = zod.array(
   ListNearbyRequestsResponseItem,
 );
 
-/**
- * @summary Confirm availability — mark a broadcast request as found
- */
 export const MarkRequestFoundParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
   id: zod.coerce.string().uuid(),
-});
-
-export const MarkRequestFoundHeader = zod.object({
-  "X-Owner-Id": zod
-    .string()
-    .uuid()
-    .describe("Stable device-generated owner UUID"),
 });
 
 export const MarkRequestFoundResponse = zod.object({
@@ -265,18 +291,9 @@ export const MarkRequestFoundResponse = zod.object({
   distanceMeters: zod.number(),
 });
 
-/**
- * @summary Dismiss / expire a broadcast request from the feed
- */
 export const ExpireRequestParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
   id: zod.coerce.string().uuid(),
-});
-
-export const ExpireRequestHeader = zod.object({
-  "X-Owner-Id": zod
-    .string()
-    .uuid()
-    .describe("Stable device-generated owner UUID"),
 });
 
 export const ExpireRequestResponse = zod.object({
@@ -289,16 +306,104 @@ export const ExpireRequestResponse = zod.object({
   distanceMeters: zod.number(),
 });
 
-export const GetDashboardSummaryHeader = zod.object({
-  "X-Owner-Id": zod
-    .string()
-    .uuid()
-    .describe("Stable device-generated owner UUID"),
+export const ListShopMembersParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
 });
 
-export const GetDashboardSummaryResponse = zod.object({
-  totalProducts: zod.number(),
-  inStockCount: zod.number(),
-  outOfStockCount: zod.number(),
-  activeRequestsCount: zod.number(),
+export const ListShopMembersResponse = zod.object({
+  members: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      userId: zod.string().uuid(),
+      email: zod.string().nullish(),
+      name: zod.string().nullish(),
+      role: zod.enum(["seller", "sub_seller"]),
+      createdAt: zod.string(),
+    }),
+  ),
+  invitations: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      email: zod.string(),
+      role: zod.enum(["seller", "sub_seller"]),
+      createdAt: zod.string(),
+    }),
+  ),
+});
+
+/**
+ * @summary Invite a helper by email (seller only)
+ */
+export const InviteShopMemberParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
+});
+
+export const InviteShopMemberBody = zod.object({
+  email: zod.string().email(),
+});
+
+export const InviteShopMemberResponse = zod.object({
+  id: zod.string().uuid(),
+  email: zod.string(),
+  role: zod.enum(["seller", "sub_seller"]),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Remove a SubSeller from the shop (seller only)
+ */
+export const RemoveShopMemberParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
+  userId: zod.coerce.string().uuid(),
+});
+
+export const RemoveShopMemberResponse = zod.object({
+  success: zod.boolean(),
+});
+
+/**
+ * @summary Cancel a pending invitation (seller only)
+ */
+export const CancelShopInvitationParams = zod.object({
+  shopId: zod.coerce.string().uuid(),
+  invitationId: zod.coerce.string().uuid(),
+});
+
+export const CancelShopInvitationResponse = zod.object({
+  success: zod.boolean(),
+});
+
+/**
+ * @summary Pending invitations addressed to current user's email
+ */
+export const ListMyInvitationsResponseItem = zod.object({
+  token: zod.string(),
+  shopId: zod.string().uuid(),
+  shopName: zod.string(),
+  role: zod.enum(["seller", "sub_seller"]),
+  invitedByName: zod.string().nullish(),
+});
+export const ListMyInvitationsResponse = zod.array(
+  ListMyInvitationsResponseItem,
+);
+
+/**
+ * @summary Accept an invitation token (creates shop membership)
+ */
+export const AcceptInvitationParams = zod.object({
+  token: zod.coerce.string(),
+});
+
+export const AcceptInvitationResponse = zod.object({
+  shop: zod.object({
+    id: zod.string().uuid(),
+    sellerId: zod.string().uuid(),
+    name: zod.string(),
+    marketName: zod.string().nullish(),
+    stallInfo: zod.string().nullish(),
+    latitude: zod.number(),
+    longitude: zod.number(),
+    isOpen: zod.boolean(),
+  }),
+  role: zod.enum(["seller", "sub_seller"]),
 });
