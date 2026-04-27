@@ -1,0 +1,194 @@
+
+const ProductSchema = new Schema({
+        name: {
+            type: String,
+            required: [true, 'Name required']
+        },
+        slug: String,
+        brand: {
+            type: String,
+            required: false,
+            default: null
+        },
+        description: {
+            type: String,
+            default: null,
+            required: false
+        },
+        price: {
+            type: Number,
+            min: [0, 'Minimum price is 0'],
+            required: [true, 'Price required']
+        },
+        quantity: {
+            type: Number,
+            min: [1, 'Minimum quantity is 1'],
+            required: [true, 'Quantity required']
+        },
+        colors: [
+            {
+                type: String
+            }
+        ],
+        photos: [
+            {
+                type: String,
+                required: [true, 'Photo required']
+            }
+        ],
+        sizes: [
+            {
+                type: String,
+                required: false,
+                default: null
+            }
+        ],
+        categories: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Category',
+                required: false,
+                default: null
+            }
+        ],
+        weight: {
+            type: Number,
+            min: 0,
+            required: [false, 'Please add a rating between 1 and 10'],
+            default: null
+        },
+        dimension: new Schema({ 
+            height: {
+                type: Number,
+                min: [0, 'Minimum height is 0'],
+                required: [true, 'field required']
+            }, 
+            length: {
+                type: Number,
+                min: [0, 'Minimum length is 0'],
+                required: [true, 'field required']
+            }, 
+            width: {
+                type: Number,
+                min: [0, 'Minimum width is 0'],
+                required: [true, 'field required']
+            }
+        }),
+        variations: [
+            {
+                sku:  {
+                    type: String,
+                    required: [true, 'field required']
+                },
+                price: {
+                    type: Number,
+                    required: [true, 'field required']
+                },
+                quantity: {
+                    type: Number,
+                    min: [1, 'Minimum quantity is 1'],
+                    required: [true, 'field required']
+                },
+                colors: [
+                    {
+                        type: String
+                    }
+                ],
+                photos: [
+                    {
+                        type: String,
+                        min: [1, 'Minimum photo is 1'],
+                        required: [true, 'field required']
+                    }
+                ],
+                dimension: { 
+                    height: {
+                        type: Number,
+                        min: [0, 'Minimum height is 0'],
+                        required: [true, 'field required']
+                    }, 
+                    length: {
+                        type: Number,
+                        min: [0, 'Minimum length is 0'],
+                        required: [true, 'field required']
+                    }, 
+                    width: {
+                        type: Number,
+                        min: [0, 'Minimum width is 0'],
+                        required: [true, 'field required']
+                    }
+                }
+            }
+        ],
+        shop: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'Shop',
+            required: false,
+            default: null
+        },
+        seller: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'Seller',
+            required: true
+        },
+        rating: {
+            type: Number,
+            min: 1,
+            max: 10,
+            required: [false, 'Please add a rating between 1 and 10'],
+            default: null
+        },
+        reviews: {
+            type: Number,
+            required: [false],
+            default: null
+        },
+        totalSell: {
+            type: Number,
+            required: [false, 'This prioprity is a number'],
+            default: null
+        },
+        applyDiscount: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
+        createdAt: {
+            type: Date,
+            default: new Date(),
+            required: [false, 'field required']
+        },
+        delatedAt: {
+            type: Date,
+            default: null,
+            required: [false, 'field required']
+        },
+        updatedAt: {
+            type: Date,
+            default: null,
+            required: [false, 'field required']
+        }
+    }
+);
+
+
+//Create an slug with the name
+ProductSchema.pre('save', function(next) {
+    console.log('Slugification of ', this.name);
+    this.slug = slugify(this.name, { lower: true });
+    next();
+});
+
+
+//Virtual on discount
+ProductSchema.virtual('discounts', {
+    ref: 'Discount',
+    localField: '_id',
+    foreignField: 'product',
+    justOne: false
+});
+
+
+const Product = mongoose.model('Product', ProductSchema);
+
+module.exports = Product;
