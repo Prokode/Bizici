@@ -1,12 +1,33 @@
-# NearBuy Business
+# NearBuy Suite
 
-Multi-tenant mobile + backend stack for shop owners (street vendors, market stall owners) to digitize their inventory so nearby customers can discover what they sell. Sellers can own multiple shops and invite SubSellers to help manage individual shops. Built as a pnpm monorepo with an Expo React Native app, a Node/Express + MongoDB (Mongoose) backend, and Clerk for authentication.
+Two-sided marketplace built as a pnpm monorepo:
 
-## Artifacts
+- **NearBuy Business** — Expo React Native app for shop owners to digitize their inventory (Sellers + SubSeller helpers).
+- **NearBuy** — Expo React Native app for customers to discover products in nearby shops (map-centric search, visual search, "Still There?" Karma verification, broadcast requests).
 
-- `artifacts/nearbuy-business` — Expo React Native app (mobile + web preview), serves at `/`
-- `artifacts/api-server` — Node/Express API server, port 8080, base path `/api`
-- `artifacts/mockup-sandbox` — Vite preview server for canvas mockups (template, unused)
+Both mobile apps share the same Node/Express + MongoDB (Mongoose) backend and Clerk authentication. Each ships as an independent app with its own bundle ID (`com.nearbuy.business.app` / `com.nearbuy.app`), but only one mobile app is registered in the Replit preview pane at a time (NearBuy Business is the registered one). The customer app runs in parallel on its own port and is reached via QR code in Expo Go or directly on its dev URL.
+
+## Artifacts / Packages
+
+- `artifacts/nearbuy-business` — Expo React Native (seller side), preview at `/`, port 20247.
+- `artifacts/nearbuy` — Expo React Native (customer side), runs on port 20248, accessed via Expo Go QR code from its workflow logs (not registered in the preview pane).
+- `artifacts/api-server` — Node/Express API server, port 8080, base path `/api`.
+- `artifacts/mockup-sandbox` — Vite preview server for canvas mockups (template, unused).
+
+## Code sharing between the two mobile apps
+
+Both apps reuse the same logo (`assets/images/icon.png`), splash animation (`components/AnimatedSplash.tsx`), color palette (`constants/colors.ts`), `useColors` hook, and UI primitives (`components/ui/*`). These are currently duplicated as a copy in each package; if churn becomes a problem, extract them into a shared `lib/mobile-ui` workspace package.
+
+## NearBuy (customer) app structure
+
+- `app/_layout.tsx` — Clerk + React Query providers, AnimatedSplash overlay.
+- `app/index.tsx` — first-launch routing: shows onboarding once (`AsyncStorage` key `nearbuy.consumer.onboarding.seen`), then `(tabs)`.
+- `app/onboarding.tsx` — 4-slide pager with full-bleed gradient hero per slide (welcome / search / visual search / Karma).
+- `app/(tabs)/_layout.tsx` — 4 tabs: Carte (map), Recherche (search), Photo (visual search), Profil (Clerk + Karma).
+- `app/(tabs)/index.tsx` — full-screen `react-native-maps` with GPS permission via `expo-location`, top search bar that hands off to the Search tab. Web fallback shows a placeholder (maps render only on native).
+- `app/(tabs)/search.tsx` — search input + empty-state CTA "Diffuser ma demande" (broadcast). Backend wiring + Fuse.js fuzzy matching pending.
+- `app/(tabs)/camera.tsx` — capture / pick-from-gallery CTAs. Backend visual-search endpoint pending.
+- `app/(tabs)/profile.tsx` — signed-out hero + sign-in CTA, signed-in shows name/email + Karma card. Karma always reads 0 until backend is wired.
 
 ## Roles
 
