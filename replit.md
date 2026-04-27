@@ -34,7 +34,7 @@ Both apps reuse the same logo (`assets/images/icon.png`), splash animation (`com
 - `app/onboarding.tsx` — 4-slide pager with full-bleed gradient hero per slide (welcome / search / visual search / Karma).
 - `app/(tabs)/_layout.tsx` — 4 tabs: Carte (map), Recherche (search), Photo (visual search), Profil (Clerk + Karma).
 - `app/(tabs)/index.tsx` — full-screen `react-native-maps` with GPS permission via `expo-location`, top search bar that hands off to the Search tab. Status pill shows live shop count. Markers use `components/ShopMarker.tsx` (gradient pin + product-count badge) and tap opens `components/ShopBottomSheet.tsx` (modal with shop details + preview products + "Encore là?" Karma CTA stub). Data comes from `lib/publicApi.ts → fetchNearbyShops` calling `GET /api/public/shops`. Web fallback: maps don't render but the status pill + shop count still update from the live API; geolocation falls back to Paris after a 2 s timeout for headless previews.
-- `app/(tabs)/search.tsx` — search input + empty-state CTA "Diffuser ma demande" (broadcast). Backend wiring + Fuse.js fuzzy matching pending.
+- `app/(tabs)/search.tsx` — debounced search input (300 ms) wired to `GET /api/public/search` via `lib/publicApi.ts → fetchSearch`. **Fuse.js** re-ranks results client-side (keys: `name` 0.6 / `brand` 0.2 / `description` 0.1 / `shopName` 0.1, threshold 0.5, `ignoreLocation: true`) so typos like `jeen` still surface `Jean slim brut indigo`. Each result card shows photo / brand / name / price / shop chip / distance + open-status; tapping opens the same `ShopBottomSheet` modal as the map. Empty state: hint card. No-results state: "Diffuser ma demande" CTA (BroadcastRequest endpoint wiring is the next pass).
 - `app/(tabs)/camera.tsx` — capture / pick-from-gallery CTAs. Backend visual-search endpoint pending.
 - `app/(tabs)/profile.tsx` — signed-out hero + sign-in CTA, signed-in shows name/email + Karma card. Karma always reads 0 until backend is wired.
 
@@ -82,6 +82,7 @@ The mobile app:
 - `GET /healthz`
 - `GET /public/shops?lat&lng&radiusKm=5&limit=200` — shops within radius via `$nearSphere`, each with `distanceMeters`, `productCount`, and up to 4 `previewProducts`
 - `GET /public/shops/:shopId` — shop detail + full in-stock products list
+- `GET /public/search?q&lat&lng&radiusKm=5&limit=60` — products in radius matching `q` (case-insensitive regex on `name`/`brand`/`description`/`tags`/`category`); if the strict regex returns nothing, falls back to **all** in-radius products so the client's Fuse.js can fuzzy-match typos (e.g. `jeen` → `Jean slim brut indigo`)
 
 ### Authenticated (Bearer JWT, all under `/api`)
 
