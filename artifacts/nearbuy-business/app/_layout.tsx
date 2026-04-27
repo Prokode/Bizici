@@ -8,7 +8,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -16,6 +16,7 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import { ClerkProvider, ClerkLoaded } from "@clerk/expo";
 import { tokenCache } from "@clerk/expo/token-cache";
 
+import { AnimatedSplash } from "@/components/AnimatedSplash";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { setBaseUrl } from "@workspace/api-client-react";
 
@@ -39,6 +40,7 @@ export default function RootLayout() {
     ...Feather.font,
     ...Ionicons.font,
   });
+  const [animationDone, setAnimationDone] = useState(false);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
@@ -61,6 +63,9 @@ export default function RootLayout() {
               <GestureHandlerRootView style={{ flex: 1 }}>
                 <KeyboardProvider>
                   <Slot />
+                  {!animationDone && (
+                    <AnimatedSplash onFinish={() => setAnimationDone(true)} />
+                  )}
                 </KeyboardProvider>
               </GestureHandlerRootView>
             </QueryClientProvider>
