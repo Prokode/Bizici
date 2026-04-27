@@ -15,6 +15,17 @@ router.get(
       res.status(400).json({ error: "Invalid productId" });
       return;
     }
+    const product = await Product.findOne({
+      _id: new Types.ObjectId(req.params.productId),
+      shop: new Types.ObjectId(req.params.shopId),
+      deletedAt: null,
+    })
+      .select("_id")
+      .lean();
+    if (!product) {
+      res.status(404).json({ error: "Product not found in this shop" });
+      return;
+    }
     const items = await Discount.find({
       product: new Types.ObjectId(req.params.productId),
     })
@@ -76,6 +87,17 @@ router.delete(
       !Types.ObjectId.isValid(req.params.productId)
     ) {
       res.status(400).json({ error: "Invalid id" });
+      return;
+    }
+    const product = await Product.findOne({
+      _id: new Types.ObjectId(req.params.productId),
+      shop: new Types.ObjectId(req.params.shopId),
+      deletedAt: null,
+    })
+      .select("_id")
+      .lean();
+    if (!product) {
+      res.status(404).json({ error: "Product not found in this shop" });
       return;
     }
     const r = await Discount.deleteOne({

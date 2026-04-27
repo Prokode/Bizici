@@ -4,7 +4,7 @@ let connectPromise: Promise<typeof mongoose> | null = null;
 
 export function connectMongo(): Promise<typeof mongoose> {
   if (!process.env.MONGODB_URI) {
-    throw new Error("MONGODB_URI must be set");
+    return Promise.reject(new Error("MONGODB_URI must be set"));
   }
   if (!connectPromise) {
     mongoose.set("strictQuery", true);

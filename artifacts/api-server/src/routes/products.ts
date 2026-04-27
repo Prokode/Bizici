@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { Types } from "mongoose";
-import { Product, Category } from "@workspace/db";
+import { Product, Category, Shop } from "@workspace/db";
 import { requireAuth, requireShopAccess } from "../lib/auth";
 import { serializeProduct } from "../lib/serialize";
 import { analyzeProductPhoto } from "../lib/openai";
@@ -53,9 +53,15 @@ router.post("/shops/:shopId/products", requireShopAccess, async (req, res) => {
       ? [body.imageUrl]
       : [];
 
+  const shopDoc = await Shop.findById(req.params.shopId).select("sellerId").lean();
+  if (!shopDoc) {
+    res.status(404).json({ error: "Shop not found" });
+    return;
+  }
+
   const created = await Product.create({
     shop: new Types.ObjectId(req.params.shopId),
-    seller: new Types.ObjectId(req.userId),
+    seller: shopDoc.sellerId,
     name: String(body.name),
     brand: body.brand ?? null,
     description: body.description ?? null,

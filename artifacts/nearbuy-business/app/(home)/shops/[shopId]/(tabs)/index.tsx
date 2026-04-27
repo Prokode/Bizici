@@ -4,6 +4,7 @@ import {
   Text,
   View,
   FlatList,
+  Image,
   RefreshControl,
   TouchableOpacity,
   Switch,
@@ -65,15 +66,41 @@ export default function InventoryScreen() {
     );
   };
 
-  const renderItem = ({ item }: { item: Product }) => (
+  const renderItem = ({ item }: { item: Product }) => {
+    const firstPhoto = item.photos?.[0] ?? item.imageUrl ?? null;
+    const categoryLabel =
+      (item.categories && item.categories.length > 0 && item.categories.map((c) => c.name).join(", ")) ||
+      item.category ||
+      "No category";
+    return (
     <Card style={styles.card}>
       <View style={styles.cardHeader}>
+        {firstPhoto ? (
+          <Image
+            source={{ uri: firstPhoto }}
+            style={[styles.thumb, { borderRadius: colors.radius, backgroundColor: colors.muted }]}
+          />
+        ) : null}
         <View style={styles.cardTitleArea}>
+          {item.brand ? (
+            <Text
+              style={{
+                color: colors.mutedForeground,
+                fontFamily: "PlusJakartaSans_500Medium",
+                fontSize: 12,
+                marginBottom: 2,
+                textTransform: "uppercase",
+                letterSpacing: 0.5,
+              }}
+            >
+              {item.brand}
+            </Text>
+          ) : null}
           <Text style={[styles.productName, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
             {item.name}
           </Text>
           <Text style={[styles.productCategory, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
-            {item.category || "No category"}
+            {categoryLabel}
           </Text>
         </View>
         <Text style={[styles.productPrice, { color: colors.foreground, fontFamily: "PlusJakartaSans_600SemiBold" }]}>
@@ -105,7 +132,8 @@ export default function InventoryScreen() {
         </View>
       </View>
     </Card>
-  );
+    );
+  };
 
   if (!shopId) return null;
 
@@ -172,6 +200,7 @@ const styles = StyleSheet.create({
   content: { padding: 16, paddingTop: 8 },
   card: { padding: 16, marginBottom: 12 },
   cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 },
+  thumb: { width: 56, height: 56, marginRight: 12 },
   cardTitleArea: { flex: 1, paddingRight: 16 },
   productName: { fontSize: 18, marginBottom: 4 },
   productCategory: { fontSize: 14 },
