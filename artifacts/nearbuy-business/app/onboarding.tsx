@@ -64,7 +64,8 @@ export default function OnboardingScreen() {
         },
       },
       {
-        onSuccess: () => {
+        onSuccess: (newShop) => {
+          queryClient.setQueryData(getGetShopQueryKey(), newShop);
           queryClient.invalidateQueries({ queryKey: getGetShopQueryKey() });
           router.replace("/(tabs)");
         },

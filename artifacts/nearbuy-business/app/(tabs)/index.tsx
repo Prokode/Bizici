@@ -31,7 +31,12 @@ export default function InventoryScreen() {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
 
-  const { data: shop, isLoading: isShopLoading, isError: isShopError } = useQuery({
+  const {
+    data: shop,
+    isLoading: isShopLoading,
+    isFetching: isShopFetching,
+    isError: isShopError,
+  } = useQuery({
     ...getGetShopQueryOptions(),
     retry: false,
   });
@@ -46,12 +51,12 @@ export default function InventoryScreen() {
   const updateProduct = useUpdateProduct();
 
   useEffect(() => {
-    if (!isShopLoading && !shop && !isShopError) {
+    if (!isShopLoading && !isShopFetching && shop === null && !isShopError) {
       router.replace("/onboarding");
     }
-  }, [shop, isShopLoading, isShopError]);
+  }, [shop, isShopLoading, isShopFetching, isShopError]);
 
-  if (isShopLoading) {
+  if (isShopLoading || (shop === undefined && !isShopError)) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.content}>
