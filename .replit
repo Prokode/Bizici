@@ -20,6 +20,10 @@ author = "agent"
 task = "workflow.run"
 args = "artifacts/nearbuy: expo"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "NearBuy Business (background)"
+
 [[workflows.workflow]]
 name = "artifacts/nearbuy: expo"
 author = "agent"
@@ -27,6 +31,17 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "PORT=20248 BASE_PATH=/nearbuy/ pnpm --filter @workspace/nearbuy run dev"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "NearBuy Business (background)"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "PORT=20247 BASE_PATH=/nearbuy-business/ pnpm --filter @workspace/nearbuy-business run dev"
 
 [workflows.workflow.metadata]
 outputType = "console"

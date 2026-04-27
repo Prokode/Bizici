@@ -1,6 +1,6 @@
 kind = "mobile"
 previewPath = "/"
-title = "NearBuy Business"
+title = "NearBuy"
 version = "1.0.0"
 id = "artifacts/nearbuy-business"
 router = "expo-domain"
@@ -13,15 +13,15 @@ version = "1.0.0"
 ensurePreviewReachable = "/status"
 name = "expo"
 paths = [ "/" ]
-localPort = 20247
+localPort = 20248
 
 [services.development]
-run = "pnpm --filter @workspace/nearbuy-business run dev"
+run = "pnpm --filter @workspace/nearbuy run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/nearbuy-business", "run", "build" ]
-run = [ "pnpm", "--filter", "@workspace/nearbuy-business", "run", "serve" ]
+build = [ "pnpm", "--filter", "@workspace/nearbuy", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/nearbuy", "run", "serve" ]
 
 [services.env]
-PORT = "20247"
+PORT = "20248"
 BASE_PATH = "/"

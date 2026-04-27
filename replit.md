@@ -5,14 +5,23 @@ Two-sided marketplace built as a pnpm monorepo:
 - **NearBuy Business** — Expo React Native app for shop owners to digitize their inventory (Sellers + SubSeller helpers).
 - **NearBuy** — Expo React Native app for customers to discover products in nearby shops (map-centric search, visual search, "Still There?" Karma verification, broadcast requests).
 
-Both mobile apps share the same Node/Express + MongoDB (Mongoose) backend and Clerk authentication. Each ships as an independent app with its own bundle ID (`com.nearbuy.business.app` / `com.nearbuy.app`), but only one mobile app is registered in the Replit preview pane at a time (NearBuy Business is the registered one). The customer app runs in parallel on its own port and is reached via QR code in Expo Go or directly on its dev URL.
+Both mobile apps share the same Node/Express + MongoDB (Mongoose) backend and Clerk authentication. Each ships as an independent app with its own bundle ID (`com.nearbuy.business.app` / `com.nearbuy.app`), but only one mobile app can be registered in the Replit preview pane at a time. **NearBuy (customer)** is currently the registered one. The other runs in parallel via a manual workflow and is reached through its dev URL.
 
 ## Artifacts / Packages
 
-- `artifacts/nearbuy-business` — Expo React Native (seller side), preview at `/`, port 20247.
-- `artifacts/nearbuy` — Expo React Native (customer side), runs on port 20248, accessed via Expo Go QR code from its workflow logs (not registered in the preview pane).
+- `artifacts/nearbuy` — Expo React Native (customer side), port 20248. **Currently registered as the mobile artifact in the Replit preview pane** (title "NearBuy", previewPath `/`). Note: the underlying artifact id is still `artifacts/nearbuy-business` because Replit does not allow changing artifact ids after creation; only the toml's title/dir/run/port were swapped.
+- `artifacts/nearbuy-business` — Expo React Native (seller side), runs on port 20247 via the manual workflow `NearBuy Business (background)`. Not in the preview pane; reachable through its dev URL or by re-swapping the registration.
 - `artifacts/api-server` — Node/Express API server, port 8080, base path `/api`.
 - `artifacts/mockup-sandbox` — Vite preview server for canvas mockups (template, unused).
+
+### Swapping which app is in the preview pane
+
+Only one mobile app can be registered at a time. To put the **seller** app back in the preview:
+
+1. `mv artifacts/nearbuy/.replit-artifact/artifact.toml artifacts/nearbuy-business/.replit-artifact/artifact.toml`
+2. Edit a sibling `artifact.edit.toml` to set `title = "NearBuy Business"`, `localPort = 20247`, env `PORT = "20247"`, and run commands pointing to `@workspace/nearbuy-business` (keep `id = "artifacts/nearbuy-business"`).
+3. Call `verifyAndReplaceArtifactToml` to commit.
+4. Configure a manual workflow (e.g. "NearBuy (background)") to keep the customer app running on port 20248.
 
 ## Code sharing between the two mobile apps
 
