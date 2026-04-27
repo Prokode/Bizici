@@ -1,8 +1,43 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "LY9wB6VFmRVCCha8Qc1Ik"
 uri = "file://artifacts/nearbuy-business/assets/images/icon.png"
 type = "image"
 title = "NearBuy App Icon"
+
+[[generated]]
+id = "Xs2kCpiQE0Spx2UC4Vl8c"
+uri = "file://attached_assets/logo_concepts/concept-1-pin-bag.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "q2iCBWo6NfcTRpcN5tmsI"
+uri = "file://attached_assets/logo_concepts/concept-2-nb-pin.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "EgoQrP8VrsTVcCQtUdgkg"
+uri = "file://attached_assets/logo_concepts/concept-3-bag-radar.png"
+type = "image"
+title = "generated_image"
+
+[[outputs]]
+id = "nEsLMAOsSAP1n3KemC4uS"
+uri = "file://attached_assets/logo_concepts/concept-1-pin-bag.png"
+type = "image"
+title = "Concept 1 — Map pin / shopping bag fusion"
+
+[[outputs]]
+id = "CSbBY0zhoL96mPQ3HzrZ3"
+uri = "file://attached_assets/logo_concepts/concept-2-nb-pin.png"
+type = "image"
+title = "Concept 2 — N+B letters in a pin shape"
+
+[[outputs]]
+id = "NmmIazr_O0EY3w5NTpEiF"
+uri = "file://attached_assets/logo_concepts/concept-3-bag-radar.png"
+type = "image"
+title = "Concept 3 — Shopping bag with proximity radar"
