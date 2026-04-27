@@ -24,6 +24,12 @@ uri = "file://attached_assets/logo_concepts/concept-3-bag-radar.png"
 type = "image"
 title = "generated_image"
 
+[[generated]]
+id = "9QE_CMujQ_bbS4pRpcylt"
+uri = "file://attached_assets/logo_concepts/concept-1-pin-bag-NB.png"
+type = "image"
+title = "generated_image"
+
 [[outputs]]
 id = "nEsLMAOsSAP1n3KemC4uS"
 uri = "file://attached_assets/logo_concepts/concept-1-pin-bag.png"
@@ -41,3 +47,9 @@ id = "NmmIazr_O0EY3w5NTpEiF"
 uri = "file://attached_assets/logo_concepts/concept-3-bag-radar.png"
 type = "image"
 title = "Concept 3 — Shopping bag with proximity radar"
+
+[[outputs]]
+id = "v8Wq24Q13DkaPIO5wkAhl"
+uri = "file://attached_assets/logo_concepts/concept-1-pin-bag-NB.png"
+type = "image"
+title = "Concept 1 avec initiales NB"
