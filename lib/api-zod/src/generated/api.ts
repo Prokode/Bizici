@@ -32,6 +32,18 @@ export const GetMeResponse = zod.object({
   ),
 });
 
+export const RegisterPushTokenBody = zod.object({
+  token: zod
+    .string()
+    .min(1)
+    .describe("Expo push token returned by expo-notifications."),
+  platform: zod.enum(["ios", "android", "web"]),
+});
+
+export const UnregisterPushTokenBody = zod.object({
+  token: zod.string().min(1),
+});
+
 export const ListShopsResponseItem = zod.object({
   shop: zod.object({
     id: zod.string(),

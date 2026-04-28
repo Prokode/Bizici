@@ -46,6 +46,14 @@
         {
           "photosPermission": "Allow NearBuy Business to access your photos to select product images."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#16A34A",
+          "defaultChannel": "default"
+        }
       ]
     ],
     "experiments": {

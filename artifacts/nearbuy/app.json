@@ -49,6 +49,14 @@
         {
           "photosPermission": "Autorisez NearBuy à accéder à vos photos pour la recherche visuelle."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#16A34A",
+          "defaultChannel": "default"
+        }
       ]
     ],
     "experiments": {

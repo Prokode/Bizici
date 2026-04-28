@@ -40,6 +40,24 @@ export interface Me {
   shops: ShopWithRole[];
 }
 
+export type PushTokenInputPlatform =
+  (typeof PushTokenInputPlatform)[keyof typeof PushTokenInputPlatform];
+
+export const PushTokenInputPlatform = {
+  ios: "ios",
+  android: "android",
+  web: "web",
+} as const;
+
+export interface PushTokenInput {
+  /**
+   * Expo push token returned by expo-notifications.
+   * @minLength 1
+   */
+  token: string;
+  platform: PushTokenInputPlatform;
+}
+
 export interface ShopCreateInput {
   /** @minLength 1 */
   name: string;
@@ -366,6 +384,11 @@ export interface ChatMessageCreateInput {
    */
   text: string;
 }
+
+export type UnregisterPushTokenBody = {
+  /** @minLength 1 */
+  token: string;
+};
 
 export type ListConversations200 = {
   conversations: ChatConversation[];

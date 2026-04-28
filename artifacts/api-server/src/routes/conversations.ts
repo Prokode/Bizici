@@ -10,6 +10,7 @@ import {
 } from "@workspace/db";
 
 import { requireAuth, getShopAccess } from "../lib/auth";
+import { sendPushToUsers } from "../lib/push";
 
 const router: IRouter = Router();
 
@@ -345,6 +346,62 @@ router.post("/conversations/:id/messages", async (req: Request, res: Response) =
       mine: true,
     },
   });
+
+  // Fire-and-forget push notification to the OTHER side. We do this AFTER
+  // sending the response so the client never waits on Expo's servers; failures
+  // are logged inside sendPushToUsers and never surface to the user.
+  void (async () => {
+    try {
+      // Resolve recipient user ids
+      let recipientUserIds: Types.ObjectId[] = [];
+      if (role === "customer") {
+        // Notify every seller / sub_seller of this shop
+        const members = await ShopMember.find({ shopId: conv.shopId })
+          .select({ userId: 1, _id: 0 })
+          .lean();
+        recipientUserIds = members.map(
+          (m: { userId: Types.ObjectId }) => m.userId,
+        );
+      } else {
+        recipientUserIds = [conv.customerUserId];
+      }
+
+      // Resolve a friendly title based on the shop name (sellers know their
+      // shop, customers see the boutique they wrote to).
+      const shop = await Shop.findById(conv.shopId)
+        .select({ name: 1, _id: 0 })
+        .lean();
+      const shopName = shop?.name ?? "NearBuy";
+
+      let title: string;
+      if (role === "customer") {
+        const sender = await User.findById(req.userId)
+          .select({ name: 1, _id: 0 })
+          .lean();
+        const senderLabel = sender?.name?.trim() || "Un client";
+        title = `${senderLabel} · ${shopName}`;
+      } else {
+        title = shopName;
+      }
+
+      // Truncate body so the OS preview stays readable.
+      const body = text.length > 140 ? `${text.slice(0, 137)}…` : text;
+
+      await sendPushToUsers(recipientUserIds, {
+        title,
+        body,
+        threadId: String(conv._id),
+        data: {
+          type: "chat_message",
+          conversationId: String(conv._id),
+          shopId: String(conv.shopId),
+          senderRole: role,
+        },
+      });
+    } catch (err) {
+      req.log.error({ err }, "Failed to send chat push notification");
+    }
+  })();
 });
 
 // POST /conversations/:id/read → reset current side's unread to 0
