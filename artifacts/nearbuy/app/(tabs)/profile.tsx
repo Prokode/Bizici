@@ -17,6 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
 import { fetchMyKarma, type KarmaEvent } from "@/lib/publicApi";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const API_BASE = process.env.EXPO_PUBLIC_DOMAIN
   ? `https://${process.env.EXPO_PUBLIC_DOMAIN}`
@@ -238,6 +239,10 @@ export default function ProfileTab() {
           ))}
         </View>
       )}
+
+      <View style={{ marginBottom: 16 }}>
+        <LanguageSwitcher />
+      </View>
 
       <Pressable
         onPress={() => signOut()}

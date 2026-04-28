@@ -20,6 +20,7 @@ import QRCode from "react-native-qrcode-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth, useClerk } from "@clerk/expo";
 import { HelpersSection } from "@/components/HelpersSection";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function ProfileScreen() {
   const colors = useColors();
@@ -143,7 +144,11 @@ export default function ProfileScreen() {
 
       {isSeller && <HelpersSection shopId={shopId as string} />}
 
-      <View style={{ marginTop: 24 }}>
+      <View style={{ marginTop: 24, marginBottom: 8 }}>
+        <LanguageSwitcher />
+      </View>
+
+      <View style={{ marginTop: 8 }}>
         <Button
           title="Switch shop"
           variant="ghost"

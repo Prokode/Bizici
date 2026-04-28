@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard,
   Users,
@@ -16,32 +17,34 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
   href: string;
-  label: string;
+  labelKey: string;
   icon: typeof LayoutDashboard;
   superOnly?: boolean;
 };
 
 const NAV: NavItem[] = [
-  { href: "/", label: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/users", label: "Utilisateurs", icon: Users },
-  { href: "/shops", label: "Boutiques", icon: Store },
-  { href: "/products", label: "Produits", icon: Package },
-  { href: "/categories", label: "Catégories", icon: Tag },
-  { href: "/conversations", label: "Messages", icon: MessageSquare },
-  { href: "/invitations", label: "Invitations", icon: Mail },
-  { href: "/broadcasts", label: "Recherches", icon: Megaphone },
-  { href: "/karma", label: "Karma", icon: Sparkles },
-  { href: "/reviews", label: "Avis", icon: Star },
-  { href: "/admins", label: "Administrateurs", icon: Shield, superOnly: true },
+  { href: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { href: "/users", labelKey: "nav.users", icon: Users },
+  { href: "/shops", labelKey: "nav.shops", icon: Store },
+  { href: "/products", labelKey: "nav.products", icon: Package },
+  { href: "/categories", labelKey: "nav.categories", icon: Tag },
+  { href: "/conversations", labelKey: "nav.conversations", icon: MessageSquare },
+  { href: "/invitations", labelKey: "nav.invitations", icon: Mail },
+  { href: "/broadcasts", labelKey: "nav.broadcasts", icon: Megaphone },
+  { href: "/karma", labelKey: "nav.karma", icon: Sparkles },
+  { href: "/reviews", labelKey: "nav.reviews", icon: Star },
+  { href: "/admins", labelKey: "nav.admins", icon: Shield, superOnly: true },
 ];
 
 export function AdminLayout({ children }: { children: ReactNode }) {
   const { admin, logout } = useAuth();
   const [location] = useLocation();
+  const { t } = useTranslation();
 
   const items = NAV.filter(
     (item) => !item.superOnly || admin?.role === "super_admin",
@@ -51,29 +54,33 @@ export function AdminLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex bg-background text-foreground">
       <aside className="w-64 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border">
         <div className="px-5 py-5 border-b border-sidebar-border">
-          <div className="flex items-center gap-2">
-            <div className="size-8 rounded-md bg-sidebar-primary text-sidebar-primary-foreground flex items-center justify-center font-bold">
-              N
-            </div>
-            <div>
-              <div className="font-semibold leading-tight">NearBuy</div>
-              <div className="text-xs text-sidebar-foreground/70 leading-tight">
-                Espace admin
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="size-8 rounded-md bg-sidebar-primary text-sidebar-primary-foreground flex items-center justify-center font-bold">
+                N
+              </div>
+              <div>
+                <div className="font-semibold leading-tight">NearBuy</div>
+                <div className="text-xs text-sidebar-foreground/70 leading-tight">
+                  Admin
+                </div>
               </div>
             </div>
+            <LanguageSwitcher />
           </div>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           {items.map((item) => {
             const Icon = item.icon;
+            const label = t(item.labelKey);
             const active =
               location === item.href ||
               (item.href !== "/" && location.startsWith(item.href));
             return (
               <Link key={item.href} href={item.href}>
                 <a
-                  data-testid={`nav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
+                  data-testid={`nav-${item.href.replace(/\//g, "") || "home"}`}
                   className={cn(
                     "flex items-center gap-3 rounded-md px-3 py-2 text-sm hover-elevate active-elevate-2 border border-transparent",
                     active
@@ -82,7 +89,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                   )}
                 >
                   <Icon className="size-4" />
-                  {item.label}
+                  {label}
                 </a>
               </Link>
             );
@@ -101,7 +108,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                   ? "Super admin"
                   : admin?.role === "admin"
                     ? "Admin"
-                    : "Modérateur"}
+                    : "Moderator"}
             </div>
           </div>
           <Button
@@ -111,7 +118,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             data-testid="button-logout"
           >
             <LogOut className="size-4" />
-            Se déconnecter
+            {t("nav.signOut")}
           </Button>
         </div>
       </aside>
