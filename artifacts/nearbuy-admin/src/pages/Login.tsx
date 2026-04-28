@@ -6,6 +6,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { AnimatedSplash } from "@/components/AnimatedSplash";
+
+const SPLASH_FLAG_KEY = "nearbuy_admin_splash_played";
+
+function shouldPlaySplash(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.sessionStorage.getItem(SPLASH_FLAG_KEY) !== "1";
+  } catch {
+    return true;
+  }
+}
+
+function markSplashPlayed(): void {
+  try {
+    window.sessionStorage.setItem(SPLASH_FLAG_KEY, "1");
+  } catch {
+    /* sessionStorage unavailable — splash will replay; harmless */
+  }
+}
 
 export default function LoginPage() {
   const { login, admin, loading } = useAuth();
@@ -14,6 +34,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSplash, setShowSplash] = useState<boolean>(() => shouldPlaySplash());
 
   useEffect(() => {
     if (!loading && admin) navigate("/", { replace: true });
@@ -41,6 +62,14 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      {showSplash ? (
+        <AnimatedSplash
+          onFinish={() => {
+            markSplashPlayed();
+            setShowSplash(false);
+          }}
+        />
+      ) : null}
       <Card className="w-full max-w-md">
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
