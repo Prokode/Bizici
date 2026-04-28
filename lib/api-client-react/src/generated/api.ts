@@ -18,10 +18,14 @@ import type {
 
 import type {
   AnalyzePhotoInput,
+  Basket,
+  BasketItemInput,
   BroadcastRequest,
   Category,
   ChatConversationCreateInput,
   ChatMessageCreateInput,
+  CoursePlan,
+  CourseStartInput,
   CreateConversation200,
   DashboardSummary,
   DeleteResult,
@@ -347,6 +351,383 @@ export const useUnregisterPushToken = <
   TContext
 > => {
   return useMutation(getUnregisterPushTokenMutationOptions(options));
+};
+
+export const getGetMyBasketUrl = () => {
+  return `/api/me/basket`;
+};
+
+export const getMyBasket = async (options?: RequestInit): Promise<Basket> => {
+  return customFetch<Basket>(getGetMyBasketUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetMyBasketQueryKey = () => {
+  return [`/api/me/basket`] as const;
+};
+
+export const getGetMyBasketQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyBasket>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getMyBasket>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyBasketQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyBasket>>> = ({
+    signal,
+  }) => getMyBasket({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyBasket>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetMyBasketQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyBasket>>
+>;
+export type GetMyBasketQueryError = ErrorType<unknown>;
+
+export function useGetMyBasket<
+  TData = Awaited<ReturnType<typeof getMyBasket>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getMyBasket>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetMyBasketQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getAddBasketItemUrl = () => {
+  return `/api/me/basket/items`;
+};
+
+export const addBasketItem = async (
+  basketItemInput: BasketItemInput,
+  options?: RequestInit,
+): Promise<Basket> => {
+  return customFetch<Basket>(getAddBasketItemUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(basketItemInput),
+  });
+};
+
+export const getAddBasketItemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addBasketItem>>,
+    TError,
+    { data: BodyType<BasketItemInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof addBasketItem>>,
+  TError,
+  { data: BodyType<BasketItemInput> },
+  TContext
+> => {
+  const mutationKey = ["addBasketItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof addBasketItem>>,
+    { data: BodyType<BasketItemInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return addBasketItem(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AddBasketItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof addBasketItem>>
+>;
+export type AddBasketItemMutationBody = BodyType<BasketItemInput>;
+export type AddBasketItemMutationError = ErrorType<unknown>;
+
+export const useAddBasketItem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addBasketItem>>,
+    TError,
+    { data: BodyType<BasketItemInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof addBasketItem>>,
+  TError,
+  { data: BodyType<BasketItemInput> },
+  TContext
+> => {
+  return useMutation(getAddBasketItemMutationOptions(options));
+};
+
+export const getRemoveBasketItemUrl = (itemId: string) => {
+  return `/api/me/basket/items/${itemId}`;
+};
+
+export const removeBasketItem = async (
+  itemId: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getRemoveBasketItemUrl(itemId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getRemoveBasketItemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeBasketItem>>,
+    TError,
+    { itemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof removeBasketItem>>,
+  TError,
+  { itemId: string },
+  TContext
+> => {
+  const mutationKey = ["removeBasketItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof removeBasketItem>>,
+    { itemId: string }
+  > = (props) => {
+    const { itemId } = props ?? {};
+
+    return removeBasketItem(itemId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RemoveBasketItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof removeBasketItem>>
+>;
+
+export type RemoveBasketItemMutationError = ErrorType<unknown>;
+
+export const useRemoveBasketItem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeBasketItem>>,
+    TError,
+    { itemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof removeBasketItem>>,
+  TError,
+  { itemId: string },
+  TContext
+> => {
+  return useMutation(getRemoveBasketItemMutationOptions(options));
+};
+
+export const getClearBasketUrl = () => {
+  return `/api/me/basket/clear`;
+};
+
+export const clearBasket = async (options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getClearBasketUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getClearBasketMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof clearBasket>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof clearBasket>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["clearBasket"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof clearBasket>>,
+    void
+  > = () => {
+    return clearBasket(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ClearBasketMutationResult = NonNullable<
+  Awaited<ReturnType<typeof clearBasket>>
+>;
+
+export type ClearBasketMutationError = ErrorType<unknown>;
+
+export const useClearBasket = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof clearBasket>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof clearBasket>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getClearBasketMutationOptions(options));
+};
+
+export const getStartCourseUrl = () => {
+  return `/api/me/basket/start-course`;
+};
+
+export const startCourse = async (
+  courseStartInput: CourseStartInput,
+  options?: RequestInit,
+): Promise<CoursePlan> => {
+  return customFetch<CoursePlan>(getStartCourseUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(courseStartInput),
+  });
+};
+
+export const getStartCourseMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof startCourse>>,
+    TError,
+    { data: BodyType<CourseStartInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof startCourse>>,
+  TError,
+  { data: BodyType<CourseStartInput> },
+  TContext
+> => {
+  const mutationKey = ["startCourse"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof startCourse>>,
+    { data: BodyType<CourseStartInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return startCourse(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type StartCourseMutationResult = NonNullable<
+  Awaited<ReturnType<typeof startCourse>>
+>;
+export type StartCourseMutationBody = BodyType<CourseStartInput>;
+export type StartCourseMutationError = ErrorType<unknown>;
+
+export const useStartCourse = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof startCourse>>,
+    TError,
+    { data: BodyType<CourseStartInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof startCourse>>,
+  TError,
+  { data: BodyType<CourseStartInput> },
+  TContext
+> => {
+  return useMutation(getStartCourseMutationOptions(options));
 };
 
 export const getGetMyReviewUrl = (shopId: string) => {

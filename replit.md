@@ -37,6 +37,7 @@ The NearBuy suite operates as a pnpm monorepo, utilizing a shared Node.js/Expres
 - **Admin Web Space (NearBuy Admin):** A separate React + Vite SPA for platform administration, featuring its own JWT authentication system. It includes comprehensive CRUD operations for users, shops, products, categories, and moderation tools for conversations and reviews. Supports `super_admin`, `admin`, and `moderator` roles with fine-grained access control.
 - **Internationalization (FR/EN):** All three applications (customer, seller, admin) use `i18next` for full French and English localization, with dynamic language switching.
 - **Public Marketing Site (NearBuy — Site vitrine):** A public-facing React + Vite SPA for marketing and account deletion requests, ensuring compliance with data privacy regulations.
+- **Course (Shopping Run):** Customers build a basket of free-text product queries (max 30, case-insensitive de-dup), then start a "course" that resolves each query against in-radius shops via a single `$nearSphere` lookup plus regex matching on product name/brand/description/tags. The mobile UI walks through one stop at a time, sorted by distance, with "Diriger" (deep-links to native maps via `maps://`/`geo:`/Google Maps fallback) and "Suivant" buttons. Backend: `Basket` model (singleton per user) + `/me/basket*` and `/me/basket/start-course` endpoints. Mobile: `app/course/` stack (basket + run screens) accessible from the Profile tab.
 
 ## External Dependencies
 

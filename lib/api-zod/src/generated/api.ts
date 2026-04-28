@@ -58,6 +58,99 @@ export const UnregisterPushTokenBody = zod.object({
   token: zod.string().min(1),
 });
 
+export const getMyBasketResponseItemsItemQueryMax = 120;
+
+export const GetMyBasketResponse = zod.object({
+  items: zod.array(
+    zod.object({
+      id: zod.string(),
+      query: zod.string().max(getMyBasketResponseItemsItemQueryMax),
+      addedAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+export const addBasketItemBodyQueryMax = 120;
+
+export const AddBasketItemBody = zod.object({
+  query: zod
+    .string()
+    .min(1)
+    .max(addBasketItemBodyQueryMax)
+    .describe("Free-text product the customer wants to find on their course."),
+});
+
+export const addBasketItemResponseItemsItemQueryMax = 120;
+
+export const AddBasketItemResponse = zod.object({
+  items: zod.array(
+    zod.object({
+      id: zod.string(),
+      query: zod.string().max(addBasketItemResponseItemsItemQueryMax),
+      addedAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+export const RemoveBasketItemParams = zod.object({
+  itemId: zod.coerce.string(),
+});
+
+export const startCourseBodyRadiusKmDefault = 5;
+export const startCourseBodyRadiusKmMin = 0.5;
+export const startCourseBodyRadiusKmMax = 50;
+
+export const StartCourseBody = zod.object({
+  lat: zod.number(),
+  lng: zod.number(),
+  radiusKm: zod
+    .number()
+    .min(startCourseBodyRadiusKmMin)
+    .max(startCourseBodyRadiusKmMax)
+    .default(startCourseBodyRadiusKmDefault),
+});
+
+export const startCourseResponseStopsItemNearestShopOneDistanceMetersMin = 0;
+
+export const startCourseResponseStopsItemProductsItemPriceMin = 0;
+
+export const StartCourseResponse = zod.object({
+  stops: zod.array(
+    zod.object({
+      itemId: zod.string(),
+      query: zod.string(),
+      nearestShop: zod
+        .union([
+          zod.object({
+            id: zod.string(),
+            name: zod.string(),
+            marketName: zod.string().nullish(),
+            latitude: zod.number(),
+            longitude: zod.number(),
+            isOpen: zod.boolean(),
+            distanceMeters: zod
+              .number()
+              .min(startCourseResponseStopsItemNearestShopOneDistanceMetersMin),
+          }),
+          zod.null(),
+        ])
+        .describe(
+          "Nearest in-radius shop carrying a matching product, or null when none was found.",
+        ),
+      products: zod.array(
+        zod.object({
+          id: zod.string(),
+          name: zod.string(),
+          price: zod
+            .number()
+            .min(startCourseResponseStopsItemProductsItemPriceMin),
+          photo: zod.string().nullish(),
+        }),
+      ),
+    }),
+  ),
+});
+
 export const GetMyReviewParams = zod.object({
   shopId: zod.coerce.string(),
 });

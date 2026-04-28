@@ -239,6 +239,35 @@ export default function ProfileTab() {
         </View>
       )}
 
+      <Pressable
+        onPress={() => router.push("/course" as Href)}
+        style={[
+          styles.courseEntry,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        <LinearGradient
+          colors={["#FF6B35", "#FF3D7F"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.courseIcon}
+        >
+          <Feather name="shopping-bag" size={22} color="#ffffff" />
+        </LinearGradient>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.courseTitle, { color: colors.foreground }]}>
+            {t("course.entry")}
+          </Text>
+          <Text
+            style={[styles.courseHint, { color: colors.mutedForeground }]}
+            numberOfLines={1}
+          >
+            {t("course.entryHint")}
+          </Text>
+        </View>
+        <Feather name="chevron-right" size={20} color={colors.mutedForeground} />
+      </Pressable>
+
       <View style={{ marginBottom: 16 }}>
         <LanguageSwitcher />
       </View>
@@ -283,6 +312,24 @@ const styles = StyleSheet.create({
   },
   createLink: { alignItems: "center", paddingVertical: 16 },
   createLinkText: { fontSize: 15, fontWeight: "600" },
+  courseEntry: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  courseIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  courseTitle: { fontSize: 15, fontWeight: "700" },
+  courseHint: { fontSize: 13, marginTop: 2 },
   card: {
     alignItems: "center",
     padding: 20,

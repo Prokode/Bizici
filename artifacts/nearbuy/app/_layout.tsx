@@ -10,6 +10,7 @@ import { router, Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
 import React, { useEffect, useState } from "react";
+import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -47,6 +48,8 @@ function AuthTokenBridge() {
  */
 function NotificationTapHandler() {
   useEffect(() => {
+    // expo-notifications cold-start + listener APIs are not implemented on web.
+    if (Platform.OS === "web") return;
     const handleResponse = (response: Notifications.NotificationResponse) => {
       const data = response.notification.request.content.data as
         | Record<string, unknown>

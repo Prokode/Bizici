@@ -22,6 +22,7 @@ export {
   type PushPlatform,
   PUSH_PLATFORMS,
 } from "./PushToken";
+export { Basket, type BasketDoc, type BasketItemDoc } from "./Basket";
 export {
   AccountDeletionRequest,
   type AccountDeletionRequestDoc,

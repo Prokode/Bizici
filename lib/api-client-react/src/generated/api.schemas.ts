@@ -69,6 +69,67 @@ export interface PushTokenInput {
   platform: PushTokenInputPlatform;
 }
 
+export interface BasketItem {
+  id: string;
+  /** @maxLength 120 */
+  query: string;
+  addedAt: string;
+}
+
+export interface Basket {
+  items: BasketItem[];
+}
+
+export interface BasketItemInput {
+  /**
+   * Free-text product the customer wants to find on their course.
+   * @minLength 1
+   * @maxLength 120
+   */
+  query: string;
+}
+
+export interface CourseStartInput {
+  lat: number;
+  lng: number;
+  /**
+   * @minimum 0.5
+   * @maximum 50
+   */
+  radiusKm?: number;
+}
+
+export interface CourseStopShop {
+  id: string;
+  name: string;
+  marketName?: string | null;
+  latitude: number;
+  longitude: number;
+  isOpen: boolean;
+  /** @minimum 0 */
+  distanceMeters: number;
+}
+
+export interface CourseStopProduct {
+  id: string;
+  name: string;
+  /** @minimum 0 */
+  price: number;
+  photo?: string | null;
+}
+
+export interface CourseStop {
+  itemId: string;
+  query: string;
+  /** Nearest in-radius shop carrying a matching product, or null when none was found. */
+  nearestShop: CourseStopShop | null;
+  products: CourseStopProduct[];
+}
+
+export interface CoursePlan {
+  stops: CourseStop[];
+}
+
 export interface ShopReview {
   id: string;
   shopId: string;

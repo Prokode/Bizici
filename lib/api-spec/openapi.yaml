@@ -69,6 +69,70 @@ paths:
         "204":
           description: Token removed (no-op if it did not belong to user)
 
+  /me/basket:
+    get:
+      operationId: getMyBasket
+      tags: [me]
+      responses:
+        "200":
+          description: Current user's course basket
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Basket" }
+
+  /me/basket/items:
+    post:
+      operationId: addBasketItem
+      tags: [me]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BasketItemInput" }
+      responses:
+        "200":
+          description: Updated basket
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Basket" }
+
+  /me/basket/items/{itemId}:
+    delete:
+      operationId: removeBasketItem
+      tags: [me]
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Item removed (no-op if not present)
+
+  /me/basket/clear:
+    post:
+      operationId: clearBasket
+      tags: [me]
+      responses:
+        "204":
+          description: All basket items removed
+
+  /me/basket/start-course:
+    post:
+      operationId: startCourse
+      tags: [me]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CourseStartInput" }
+      responses:
+        "200":
+          description: Ordered list of stops (one per basket item)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CoursePlan" }
+
   /me/reviews/{shopId}:
     get:
       operationId: getMyReview
@@ -688,6 +752,94 @@ components:
           type: string
           enum: [ios, android, web]
       required: [token, platform]
+
+    BasketItem:
+      type: object
+      properties:
+        id: { type: string }
+        query: { type: string, maxLength: 120 }
+        addedAt: { type: string, format: date-time }
+      required: [id, query, addedAt]
+
+    Basket:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/BasketItem" }
+      required: [items]
+
+    BasketItemInput:
+      type: object
+      properties:
+        query:
+          type: string
+          minLength: 1
+          maxLength: 120
+          description: Free-text product the customer wants to find on their course.
+      required: [query]
+
+    CourseStartInput:
+      type: object
+      properties:
+        lat: { type: number }
+        lng: { type: number }
+        radiusKm:
+          type: number
+          minimum: 0.5
+          maximum: 50
+          default: 5
+      required: [lat, lng]
+
+    CourseStopShop:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        marketName: { type: string, nullable: true }
+        latitude: { type: number }
+        longitude: { type: number }
+        isOpen: { type: boolean }
+        distanceMeters: { type: integer, minimum: 0 }
+      required:
+        - id
+        - name
+        - latitude
+        - longitude
+        - isOpen
+        - distanceMeters
+
+    CourseStopProduct:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        price: { type: number, minimum: 0 }
+        photo: { type: string, nullable: true }
+      required: [id, name, price]
+
+    CourseStop:
+      type: object
+      properties:
+        itemId: { type: string }
+        query: { type: string }
+        nearestShop:
+          oneOf:
+            - $ref: "#/components/schemas/CourseStopShop"
+            - type: "null"
+          description: Nearest in-radius shop carrying a matching product, or null when none was found.
+        products:
+          type: array
+          items: { $ref: "#/components/schemas/CourseStopProduct" }
+      required: [itemId, query, nearestShop, products]
+
+    CoursePlan:
+      type: object
+      properties:
+        stops:
+          type: array
+          items: { $ref: "#/components/schemas/CourseStop" }
+      required: [stops]
 
     Shop:
       type: object
