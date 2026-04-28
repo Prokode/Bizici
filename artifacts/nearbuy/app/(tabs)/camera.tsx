@@ -224,6 +224,8 @@ export default function CameraTab() {
       longitude: 0,
       latitude: 0,
       isOpen: m.shopIsOpen,
+      ratingAvg: 0,
+      ratingCount: 0,
       distanceMeters: m.distanceMeters,
       productCount: 0,
       previewProducts: [

@@ -20,8 +20,14 @@ import { useAuth } from "@clerk/expo";
 
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
-import { fetchShopDetail, type PublicShop } from "@/lib/publicApi";
+import {
+  fetchShopDetail,
+  fetchShopReviews,
+  type PublicShop,
+  type PublicShopReview,
+} from "@/lib/publicApi";
 import { getOrCreateConversation } from "@/lib/chatApi";
+import { ReviewModal } from "@/components/ReviewModal";
 
 type Props = {
   shop: PublicShop | null;
@@ -44,10 +50,23 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
   const { isSignedIn, isLoaded } = useAuth();
   const visible = shop !== null;
   const [chatLoading, setChatLoading] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["public-shop", shop?.id],
     queryFn: () => fetchShopDetail(shop!.id),
+    enabled: !!shop,
+  });
+
+  // Live count from the server-side aggregate (kept in sync by review CUD).
+  // Falls back to whatever was on the shop object passed in (from the map
+  // markers list) until the detail fetch lands.
+  const ratingAvg = data?.shop?.ratingAvg ?? shop?.ratingAvg ?? 0;
+  const ratingCount = data?.shop?.ratingCount ?? shop?.ratingCount ?? 0;
+
+  const reviewsQuery = useQuery({
+    queryKey: ["shop-reviews", shop?.id],
+    queryFn: () => fetchShopReviews(shop!.id, { limit: 5 }),
     enabled: !!shop,
   });
 
@@ -223,6 +242,19 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                     {data?.products?.length ?? shop.productCount} produits
                   </Text>
                 </View>
+                {ratingCount > 0 && (
+                  <View
+                    style={[
+                      styles.chip,
+                      { backgroundColor: "#F59E0B22", borderColor: "#F59E0B" },
+                    ]}
+                  >
+                    <Feather name="star" size={12} color="#F59E0B" />
+                    <Text style={[styles.chipText, { color: "#F59E0B" }]}>
+                      {ratingAvg.toFixed(1)} ({ratingCount})
+                    </Text>
+                  </View>
+                )}
               </View>
 
               {isLoading && !data ? (
@@ -244,6 +276,28 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                     >
                       Aucun produit listé pour cette boutique pour le moment.
                     </Text>
+                  }
+                  ListFooterComponent={
+                    <ReviewsSection
+                      reviews={reviewsQuery.data?.reviews ?? []}
+                      isLoading={reviewsQuery.isLoading}
+                      isError={reviewsQuery.isError}
+                      onRetry={() => reviewsQuery.refetch()}
+                      ratingCount={ratingCount}
+                      onWritePress={() => {
+                        if (!isLoaded) return;
+                        if (!isSignedIn) {
+                          onClose();
+                          router.push(
+                            `/(auth)/sign-in?next=${encodeURIComponent(
+                              `/`,
+                            )}` as Href,
+                          );
+                          return;
+                        }
+                        setReviewModalOpen(true);
+                      }}
+                    />
                   }
                   renderItem={({ item }) => (
                     <View
@@ -358,7 +412,119 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
           )}
         </Pressable>
       </Pressable>
+      <ReviewModal
+        shopId={reviewModalOpen && shop ? shop.id : null}
+        shopName={shop?.name ?? null}
+        onClose={() => setReviewModalOpen(false)}
+      />
     </Modal>
+  );
+}
+
+function StarRow({ rating }: { rating: number }) {
+  return (
+    <View style={{ flexDirection: "row", gap: 2 }}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Feather
+          key={n}
+          name="star"
+          size={12}
+          color={n <= rating ? "#F59E0B" : "#D1D5DB"}
+        />
+      ))}
+    </View>
+  );
+}
+
+function ReviewsSection({
+  reviews,
+  isLoading,
+  isError,
+  onRetry,
+  ratingCount,
+  onWritePress,
+}: {
+  reviews: PublicShopReview[];
+  isLoading: boolean;
+  isError: boolean;
+  onRetry: () => void;
+  ratingCount: number;
+  onWritePress: () => void;
+}) {
+  const colors = useColors();
+  return (
+    <View style={{ marginTop: 16 }}>
+      <View style={styles.reviewsHeader}>
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+          Avis ({ratingCount})
+        </Text>
+        <Pressable onPress={onWritePress} hitSlop={8} style={styles.writeButton}>
+          <Feather name="edit-2" size={12} color={colors.primary} />
+          <Text style={[styles.writeButtonText, { color: colors.primary }]}>
+            Écrire un avis
+          </Text>
+        </Pressable>
+      </View>
+      {isLoading ? (
+        <ActivityIndicator
+          color={colors.primary}
+          style={{ marginVertical: 16 }}
+        />
+      ) : isError ? (
+        <Pressable onPress={onRetry} style={{ paddingVertical: 16 }}>
+          <Text
+            style={[styles.empty, { color: colors.mutedForeground }]}
+          >
+            Impossible de charger les avis. Toucher pour réessayer.
+          </Text>
+        </Pressable>
+      ) : reviews.length === 0 ? (
+        <Text style={[styles.empty, { color: colors.mutedForeground }]}>
+          Aucun avis pour le moment. Soyez le premier !
+        </Text>
+      ) : (
+        <View style={{ gap: 10 }}>
+          {reviews.map((r) => (
+            <View
+              key={r.id}
+              style={[
+                styles.reviewCard,
+                { backgroundColor: colors.card, borderColor: colors.border },
+              ]}
+            >
+              <View style={styles.reviewTop}>
+                <Text
+                  style={[styles.reviewName, { color: colors.foreground }]}
+                  numberOfLines={1}
+                >
+                  {r.customerName ?? "Client"}
+                </Text>
+                <StarRow rating={r.rating} />
+              </View>
+              {r.comment ? (
+                <Text
+                  style={[
+                    styles.reviewComment,
+                    { color: colors.mutedForeground },
+                  ]}
+                >
+                  {r.comment}
+                </Text>
+              ) : null}
+              <Text
+                style={[styles.reviewDate, { color: colors.mutedForeground }]}
+              >
+                {new Date(r.createdAt).toLocaleDateString("fr-FR", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -441,4 +607,33 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
   },
+  reviewsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  sectionTitle: { fontSize: 15, fontWeight: "800" },
+  writeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  writeButtonText: { fontSize: 12, fontWeight: "700" },
+  reviewCard: {
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  reviewTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  reviewName: { fontSize: 13, fontWeight: "700", flex: 1, marginRight: 8 },
+  reviewComment: { fontSize: 13, lineHeight: 18, marginTop: 2 },
+  reviewDate: { fontSize: 11, marginTop: 6 },
 });

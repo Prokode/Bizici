@@ -2,11 +2,17 @@ import express, { Router, type IRouter } from "express";
 import {
   Shop,
   Product,
+  ShopReview,
   AccountDeletionRequest,
   ACCOUNT_DELETION_TYPES,
   type AccountDeletionType,
 } from "@workspace/db";
-import { serializeShop, serializeProduct } from "../lib/serialize";
+import { Types } from "mongoose";
+import {
+  serializeShop,
+  serializeProduct,
+  serializeReview,
+} from "../lib/serialize";
 
 const router: IRouter = Router();
 
@@ -370,6 +376,50 @@ router.get("/public/shops/:shopId", async (req, res) => {
   res.json({
     shop: serializeShop(shop),
     products: products.map(serializeProduct),
+  });
+});
+
+/**
+ * Public, paginated list of reviews for a shop. Sorted newest first. Cursor
+ * is the ISO timestamp of the last item from the previous page (`before`).
+ *
+ * Anyone — including signed-out visitors — can read reviews to make a buying
+ * decision; only writes require authentication (see /api/me/reviews/:shopId).
+ */
+router.get("/public/shops/:shopId/reviews", async (req, res) => {
+  const { shopId } = req.params;
+  if (typeof shopId !== "string" || !Types.ObjectId.isValid(shopId)) {
+    res.status(400).json({ error: "invalid shopId" });
+    return;
+  }
+  const limit = clamp(Number(req.query.limit ?? 20), 1, 50);
+  const beforeRaw =
+    typeof req.query.before === "string" ? req.query.before : undefined;
+  const beforeDate = beforeRaw ? new Date(beforeRaw) : null;
+
+  const filter: Record<string, unknown> = {
+    shopId: new Types.ObjectId(shopId),
+  };
+  if (beforeDate && !Number.isNaN(beforeDate.getTime())) {
+    filter.createdAt = { $lt: beforeDate };
+  }
+
+  const reviews = await ShopReview.find(filter)
+    .populate("customerUserId", "name")
+    .sort({ createdAt: -1 })
+    .limit(limit + 1)
+    .lean();
+
+  const hasMore = reviews.length > limit;
+  const page = hasMore ? reviews.slice(0, limit) : reviews;
+  const nextCursor =
+    hasMore && page.length > 0
+      ? (page[page.length - 1] as any).createdAt.toISOString()
+      : null;
+
+  res.json({
+    reviews: page.map(serializeReview),
+    nextCursor,
   });
 });
 

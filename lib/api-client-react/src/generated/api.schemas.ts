@@ -18,6 +18,17 @@ export interface Shop {
   latitude: number;
   longitude: number;
   isOpen: boolean;
+  /**
+   * Mean rating across all reviews (0 when none).
+   * @minimum 0
+   * @maximum 5
+   */
+  ratingAvg: number;
+  /**
+   * Number of reviews used for the average.
+   * @minimum 0
+   */
+  ratingCount: number;
 }
 
 export type ShopWithRoleRole =
@@ -56,6 +67,32 @@ export interface PushTokenInput {
    */
   token: string;
   platform: PushTokenInputPlatform;
+}
+
+export interface ShopReview {
+  id: string;
+  shopId: string;
+  customerUserId: string;
+  customerName?: string | null;
+  /**
+   * @minimum 1
+   * @maximum 5
+   */
+  rating: number;
+  /** @maxLength 1000 */
+  comment?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ShopReviewInput {
+  /**
+   * @minimum 1
+   * @maximum 5
+   */
+  rating: number;
+  /** @maxLength 1000 */
+  comment?: string | null;
 }
 
 export interface ShopCreateInput {

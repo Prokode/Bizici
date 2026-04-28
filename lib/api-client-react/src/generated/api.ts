@@ -48,6 +48,8 @@ import type {
   ShopInvitation,
   ShopMembersList,
   ShopOpenInput,
+  ShopReview,
+  ShopReviewInput,
   ShopUpdateInput,
   ShopWithRole,
   UnregisterPushTokenBody,
@@ -344,6 +346,245 @@ export const useUnregisterPushToken = <
   TContext
 > => {
   return useMutation(getUnregisterPushTokenMutationOptions(options));
+};
+
+export const getGetMyReviewUrl = (shopId: string) => {
+  return `/api/me/reviews/${shopId}`;
+};
+
+export const getMyReview = async (
+  shopId: string,
+  options?: RequestInit,
+): Promise<ShopReview | null> => {
+  return customFetch<ShopReview | null>(getGetMyReviewUrl(shopId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetMyReviewQueryKey = (shopId: string) => {
+  return [`/api/me/reviews/${shopId}`] as const;
+};
+
+export const getGetMyReviewQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyReview>>,
+  TError = ErrorType<unknown>,
+>(
+  shopId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMyReview>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyReviewQueryKey(shopId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyReview>>> = ({
+    signal,
+  }) => getMyReview(shopId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!shopId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyReview>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetMyReviewQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyReview>>
+>;
+export type GetMyReviewQueryError = ErrorType<unknown>;
+
+export function useGetMyReview<
+  TData = Awaited<ReturnType<typeof getMyReview>>,
+  TError = ErrorType<unknown>,
+>(
+  shopId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMyReview>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetMyReviewQueryOptions(shopId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getUpsertMyReviewUrl = (shopId: string) => {
+  return `/api/me/reviews/${shopId}`;
+};
+
+export const upsertMyReview = async (
+  shopId: string,
+  shopReviewInput: ShopReviewInput,
+  options?: RequestInit,
+): Promise<ShopReview> => {
+  return customFetch<ShopReview>(getUpsertMyReviewUrl(shopId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(shopReviewInput),
+  });
+};
+
+export const getUpsertMyReviewMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof upsertMyReview>>,
+    TError,
+    { shopId: string; data: BodyType<ShopReviewInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof upsertMyReview>>,
+  TError,
+  { shopId: string; data: BodyType<ShopReviewInput> },
+  TContext
+> => {
+  const mutationKey = ["upsertMyReview"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof upsertMyReview>>,
+    { shopId: string; data: BodyType<ShopReviewInput> }
+  > = (props) => {
+    const { shopId, data } = props ?? {};
+
+    return upsertMyReview(shopId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpsertMyReviewMutationResult = NonNullable<
+  Awaited<ReturnType<typeof upsertMyReview>>
+>;
+export type UpsertMyReviewMutationBody = BodyType<ShopReviewInput>;
+export type UpsertMyReviewMutationError = ErrorType<unknown>;
+
+export const useUpsertMyReview = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof upsertMyReview>>,
+    TError,
+    { shopId: string; data: BodyType<ShopReviewInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof upsertMyReview>>,
+  TError,
+  { shopId: string; data: BodyType<ShopReviewInput> },
+  TContext
+> => {
+  return useMutation(getUpsertMyReviewMutationOptions(options));
+};
+
+export const getDeleteMyReviewUrl = (shopId: string) => {
+  return `/api/me/reviews/${shopId}`;
+};
+
+export const deleteMyReview = async (
+  shopId: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteMyReviewUrl(shopId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteMyReviewMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteMyReview>>,
+    TError,
+    { shopId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteMyReview>>,
+  TError,
+  { shopId: string },
+  TContext
+> => {
+  const mutationKey = ["deleteMyReview"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteMyReview>>,
+    { shopId: string }
+  > = (props) => {
+    const { shopId } = props ?? {};
+
+    return deleteMyReview(shopId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteMyReviewMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteMyReview>>
+>;
+
+export type DeleteMyReviewMutationError = ErrorType<unknown>;
+
+export const useDeleteMyReview = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteMyReview>>,
+    TError,
+    { shopId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteMyReview>>,
+  TError,
+  { shopId: string },
+  TContext
+> => {
+  return useMutation(getDeleteMyReviewMutationOptions(options));
 };
 
 export const getListShopsUrl = () => {

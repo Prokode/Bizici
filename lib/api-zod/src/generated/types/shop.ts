@@ -15,4 +15,15 @@ export interface Shop {
   latitude: number;
   longitude: number;
   isOpen: boolean;
+  /**
+   * Mean rating across all reviews (0 when none).
+   * @minimum 0
+   * @maximum 5
+   */
+  ratingAvg: number;
+  /**
+   * Number of reviews used for the average.
+   * @minimum 0
+   */
+  ratingCount: number;
 }

@@ -158,6 +158,8 @@ export default function SearchTab() {
       longitude: 0,
       latitude: 0,
       isOpen: hit.shopIsOpen,
+      ratingAvg: 0,
+      ratingCount: 0,
       distanceMeters: hit.distanceMeters,
       productCount: 0,
       previewProducts: [

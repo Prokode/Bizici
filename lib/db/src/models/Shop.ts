@@ -23,6 +23,11 @@ const ShopSchema = new Schema(
     stallInfo: { type: String, default: null },
     location: { type: PointSchema, required: true },
     isOpen: { type: Boolean, default: true },
+    // Denormalized aggregates kept in sync by the reviews endpoints. Storing
+    // them here lets list/map/search queries return ratings without an extra
+    // aggregation pass on every shop card.
+    ratingAvg: { type: Number, default: 0, min: 0, max: 5 },
+    ratingCount: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true },
 );

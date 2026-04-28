@@ -227,3 +227,24 @@ export type KarmaEvent = {
   note: string | null;
   createdAt: string;
 };
+
+export type AdminShopReview = {
+  id: string;
+  shopId: string;
+  shopName: string | null;
+  shopMarketName: string | null;
+  customerUserId: string;
+  customerName: string | null;
+  customerEmail: string | null;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AdminReviewsResponse = {
+  reviews: AdminShopReview[];
+  page: number;
+  pageSize: number;
+  total: number;
+};

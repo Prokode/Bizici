@@ -53,6 +53,8 @@ export * from "./shopMember";
 export * from "./shopMemberRole";
 export * from "./shopMembersList";
 export * from "./shopOpenInput";
+export * from "./shopReview";
+export * from "./shopReviewInput";
 export * from "./shopUpdateInput";
 export * from "./shopWithRole";
 export * from "./shopWithRoleRole";

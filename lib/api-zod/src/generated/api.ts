@@ -11,6 +11,11 @@ export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
 
+export const getMeResponseShopsItemShopRatingAvgMin = 0;
+export const getMeResponseShopsItemShopRatingAvgMax = 5;
+
+export const getMeResponseShopsItemShopRatingCountMin = 0;
+
 export const GetMeResponse = zod.object({
   id: zod.string(),
   email: zod.string().nullish(),
@@ -26,6 +31,15 @@ export const GetMeResponse = zod.object({
         latitude: zod.number(),
         longitude: zod.number(),
         isOpen: zod.boolean(),
+        ratingAvg: zod
+          .number()
+          .min(getMeResponseShopsItemShopRatingAvgMin)
+          .max(getMeResponseShopsItemShopRatingAvgMax)
+          .describe("Mean rating across all reviews (0 when none)."),
+        ratingCount: zod
+          .number()
+          .min(getMeResponseShopsItemShopRatingCountMin)
+          .describe("Number of reviews used for the average."),
       }),
       role: zod.enum(["seller", "sub_seller"]),
     }),
@@ -44,6 +58,65 @@ export const UnregisterPushTokenBody = zod.object({
   token: zod.string().min(1),
 });
 
+export const GetMyReviewParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const getMyReviewResponseOneRatingMax = 5;
+
+export const getMyReviewResponseOneCommentMax = 1000;
+
+export const GetMyReviewResponse = zod.union([
+  zod.object({
+    id: zod.string(),
+    shopId: zod.string(),
+    customerUserId: zod.string(),
+    customerName: zod.string().nullish(),
+    rating: zod.number().min(1).max(getMyReviewResponseOneRatingMax),
+    comment: zod.string().max(getMyReviewResponseOneCommentMax).nullish(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+  zod.null(),
+]);
+
+export const UpsertMyReviewParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const upsertMyReviewBodyRatingMax = 5;
+
+export const upsertMyReviewBodyCommentMax = 1000;
+
+export const UpsertMyReviewBody = zod.object({
+  rating: zod.number().min(1).max(upsertMyReviewBodyRatingMax),
+  comment: zod.string().max(upsertMyReviewBodyCommentMax).nullish(),
+});
+
+export const upsertMyReviewResponseRatingMax = 5;
+
+export const upsertMyReviewResponseCommentMax = 1000;
+
+export const UpsertMyReviewResponse = zod.object({
+  id: zod.string(),
+  shopId: zod.string(),
+  customerUserId: zod.string(),
+  customerName: zod.string().nullish(),
+  rating: zod.number().min(1).max(upsertMyReviewResponseRatingMax),
+  comment: zod.string().max(upsertMyReviewResponseCommentMax).nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+export const DeleteMyReviewParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const listShopsResponseShopRatingAvgMin = 0;
+export const listShopsResponseShopRatingAvgMax = 5;
+
+export const listShopsResponseShopRatingCountMin = 0;
+
 export const ListShopsResponseItem = zod.object({
   shop: zod.object({
     id: zod.string(),
@@ -54,6 +127,15 @@ export const ListShopsResponseItem = zod.object({
     latitude: zod.number(),
     longitude: zod.number(),
     isOpen: zod.boolean(),
+    ratingAvg: zod
+      .number()
+      .min(listShopsResponseShopRatingAvgMin)
+      .max(listShopsResponseShopRatingAvgMax)
+      .describe("Mean rating across all reviews (0 when none)."),
+    ratingCount: zod
+      .number()
+      .min(listShopsResponseShopRatingCountMin)
+      .describe("Number of reviews used for the average."),
   }),
   role: zod.enum(["seller", "sub_seller"]),
 });
@@ -67,6 +149,11 @@ export const CreateShopBody = zod.object({
   longitude: zod.number(),
 });
 
+export const createShopResponseRatingAvgMin = 0;
+export const createShopResponseRatingAvgMax = 5;
+
+export const createShopResponseRatingCountMin = 0;
+
 export const CreateShopResponse = zod.object({
   id: zod.string(),
   sellerId: zod.string(),
@@ -76,11 +163,25 @@ export const CreateShopResponse = zod.object({
   latitude: zod.number(),
   longitude: zod.number(),
   isOpen: zod.boolean(),
+  ratingAvg: zod
+    .number()
+    .min(createShopResponseRatingAvgMin)
+    .max(createShopResponseRatingAvgMax)
+    .describe("Mean rating across all reviews (0 when none)."),
+  ratingCount: zod
+    .number()
+    .min(createShopResponseRatingCountMin)
+    .describe("Number of reviews used for the average."),
 });
 
 export const GetShopParams = zod.object({
   shopId: zod.coerce.string(),
 });
+
+export const getShopResponseRatingAvgMin = 0;
+export const getShopResponseRatingAvgMax = 5;
+
+export const getShopResponseRatingCountMin = 0;
 
 export const GetShopResponse = zod.object({
   id: zod.string(),
@@ -91,6 +192,15 @@ export const GetShopResponse = zod.object({
   latitude: zod.number(),
   longitude: zod.number(),
   isOpen: zod.boolean(),
+  ratingAvg: zod
+    .number()
+    .min(getShopResponseRatingAvgMin)
+    .max(getShopResponseRatingAvgMax)
+    .describe("Mean rating across all reviews (0 when none)."),
+  ratingCount: zod
+    .number()
+    .min(getShopResponseRatingCountMin)
+    .describe("Number of reviews used for the average."),
 });
 
 export const UpdateShopParams = zod.object({
@@ -105,6 +215,11 @@ export const UpdateShopBody = zod.object({
   longitude: zod.number().optional(),
 });
 
+export const updateShopResponseRatingAvgMin = 0;
+export const updateShopResponseRatingAvgMax = 5;
+
+export const updateShopResponseRatingCountMin = 0;
+
 export const UpdateShopResponse = zod.object({
   id: zod.string(),
   sellerId: zod.string(),
@@ -114,6 +229,15 @@ export const UpdateShopResponse = zod.object({
   latitude: zod.number(),
   longitude: zod.number(),
   isOpen: zod.boolean(),
+  ratingAvg: zod
+    .number()
+    .min(updateShopResponseRatingAvgMin)
+    .max(updateShopResponseRatingAvgMax)
+    .describe("Mean rating across all reviews (0 when none)."),
+  ratingCount: zod
+    .number()
+    .min(updateShopResponseRatingCountMin)
+    .describe("Number of reviews used for the average."),
 });
 
 export const SetShopOpenParams = zod.object({
@@ -124,6 +248,11 @@ export const SetShopOpenBody = zod.object({
   isOpen: zod.boolean(),
 });
 
+export const setShopOpenResponseRatingAvgMin = 0;
+export const setShopOpenResponseRatingAvgMax = 5;
+
+export const setShopOpenResponseRatingCountMin = 0;
+
 export const SetShopOpenResponse = zod.object({
   id: zod.string(),
   sellerId: zod.string(),
@@ -133,6 +262,15 @@ export const SetShopOpenResponse = zod.object({
   latitude: zod.number(),
   longitude: zod.number(),
   isOpen: zod.boolean(),
+  ratingAvg: zod
+    .number()
+    .min(setShopOpenResponseRatingAvgMin)
+    .max(setShopOpenResponseRatingAvgMax)
+    .describe("Mean rating across all reviews (0 when none)."),
+  ratingCount: zod
+    .number()
+    .min(setShopOpenResponseRatingCountMin)
+    .describe("Number of reviews used for the average."),
 });
 
 export const GetShopQrParams = zod.object({
@@ -787,6 +925,11 @@ export const AcceptInvitationParams = zod.object({
   token: zod.coerce.string(),
 });
 
+export const acceptInvitationResponseShopRatingAvgMin = 0;
+export const acceptInvitationResponseShopRatingAvgMax = 5;
+
+export const acceptInvitationResponseShopRatingCountMin = 0;
+
 export const AcceptInvitationResponse = zod.object({
   shop: zod.object({
     id: zod.string(),
@@ -797,6 +940,15 @@ export const AcceptInvitationResponse = zod.object({
     latitude: zod.number(),
     longitude: zod.number(),
     isOpen: zod.boolean(),
+    ratingAvg: zod
+      .number()
+      .min(acceptInvitationResponseShopRatingAvgMin)
+      .max(acceptInvitationResponseShopRatingAvgMax)
+      .describe("Mean rating across all reviews (0 when none)."),
+    ratingCount: zod
+      .number()
+      .min(acceptInvitationResponseShopRatingCountMin)
+      .describe("Number of reviews used for the average."),
   }),
   role: zod.enum(["seller", "sub_seller"]),
 });

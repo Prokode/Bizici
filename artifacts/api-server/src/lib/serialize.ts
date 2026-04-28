@@ -18,6 +18,31 @@ export function serializeShop(s: any) {
     longitude: Number(coords[0] ?? 0),
     latitude: Number(coords[1] ?? 0),
     isOpen: !!s.isOpen,
+    ratingAvg: typeof s.ratingAvg === "number" ? s.ratingAvg : 0,
+    ratingCount: typeof s.ratingCount === "number" ? s.ratingCount : 0,
+  };
+}
+
+export function serializeReview(r: any) {
+  // `customerUserId` may be either a raw ObjectId or a populated User doc
+  // (when the route does .populate("customerUserId", "name")).
+  const u = r.customerUserId;
+  const populated = u && typeof u === "object" && "_id" in u;
+  return {
+    id: String(r._id),
+    shopId: String(r.shopId?._id ?? r.shopId),
+    customerUserId: populated ? String(u._id) : String(u),
+    customerName: populated ? (u.name ?? null) : null,
+    rating: Number(r.rating ?? 0),
+    comment: r.comment ?? null,
+    createdAt: (r.createdAt instanceof Date
+      ? r.createdAt
+      : new Date(r.createdAt)
+    ).toISOString(),
+    updatedAt: (r.updatedAt instanceof Date
+      ? r.updatedAt
+      : new Date(r.updatedAt)
+    ).toISOString(),
   };
 }
 

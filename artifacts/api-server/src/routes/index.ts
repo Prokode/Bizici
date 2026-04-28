@@ -10,6 +10,7 @@ import invitationsRouter from "./invitations";
 import categoriesRouter from "./categories";
 import discountsRouter from "./discounts";
 import conversationsRouter from "./conversations";
+import reviewsRouter from "./reviews";
 import adminRouter from "./admin";
 
 const router: IRouter = Router();
@@ -30,5 +31,6 @@ router.use(invitationsRouter);
 router.use(categoriesRouter);
 router.use(discountsRouter);
 router.use(conversationsRouter);
+router.use(reviewsRouter);
 
 export default router;

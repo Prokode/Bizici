@@ -14,7 +14,9 @@ import {
   Message,
   KarmaEvent,
   BroadcastRequest,
+  ShopReview,
 } from "@workspace/db";
+import { recomputeShopRating } from "../lib/reviews";
 import {
   hashPassword,
   verifyPassword,
@@ -995,5 +997,75 @@ router.delete("/admin/karma-events/:id", requireWriter, async (req: Request, res
   await KarmaEvent.deleteOne({ _id: oid });
   res.json({ ok: true });
 });
+
+// ---------------------------------------------------------------------------
+// Shop reviews — moderation
+// ---------------------------------------------------------------------------
+
+router.get("/admin/reviews", async (req: Request, res: Response) => {
+  const page = clampPage(req.query.page);
+  const pageSize = Math.min(
+    100,
+    Math.max(1, Number(req.query.pageSize) || 20),
+  );
+  const search =
+    typeof req.query.search === "string" ? req.query.search.trim() : "";
+
+  const filter: Record<string, unknown> = {};
+  if (search.length > 0) {
+    filter.comment = { $regex: search, $options: "i" };
+  }
+
+  const total = await ShopReview.countDocuments(filter);
+  const reviews = await ShopReview.find(filter)
+    .populate("customerUserId", "name email")
+    .populate("shopId", "name marketName")
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * pageSize)
+    .limit(pageSize)
+    .lean();
+
+  res.json({
+    reviews: reviews.map((r: any) => ({
+      id: String(r._id),
+      shopId: r.shopId?._id ? String(r.shopId._id) : String(r.shopId),
+      shopName: r.shopId?.name ?? null,
+      shopMarketName: r.shopId?.marketName ?? null,
+      customerUserId: r.customerUserId?._id
+        ? String(r.customerUserId._id)
+        : String(r.customerUserId),
+      customerName: r.customerUserId?.name ?? null,
+      customerEmail: r.customerUserId?.email ?? null,
+      rating: Number(r.rating ?? 0),
+      comment: r.comment ?? null,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+    })),
+    page,
+    pageSize,
+    total,
+  });
+});
+
+router.delete(
+  "/admin/reviews/:id",
+  requireWriter,
+  async (req: Request, res: Response) => {
+    const oid = objectId(req.params.id);
+    if (!oid) {
+      res.status(400).json({ error: "Invalid review id" });
+      return;
+    }
+    const review = await ShopReview.findOneAndDelete({ _id: oid });
+    if (review) {
+      try {
+        await recomputeShopRating(review.shopId);
+      } catch {
+        // tolerated — see lib/reviews.ts rationale
+      }
+    }
+    res.json({ ok: true });
+  },
+);
 
 export default router;

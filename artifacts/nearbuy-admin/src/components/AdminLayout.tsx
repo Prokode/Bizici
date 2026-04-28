@@ -11,6 +11,7 @@ import {
   Mail,
   Megaphone,
   Sparkles,
+  Star,
   LogOut,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -34,6 +35,7 @@ const NAV: NavItem[] = [
   { href: "/invitations", label: "Invitations", icon: Mail },
   { href: "/broadcasts", label: "Recherches", icon: Megaphone },
   { href: "/karma", label: "Karma", icon: Sparkles },
+  { href: "/reviews", label: "Avis", icon: Star },
   { href: "/admins", label: "Administrateurs", icon: Shield, superOnly: true },
 ];
 

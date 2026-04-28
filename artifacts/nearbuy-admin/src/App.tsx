@@ -15,6 +15,7 @@ import AdminsPage from "@/pages/Admins";
 import InvitationsPage from "@/pages/Invitations";
 import BroadcastsPage from "@/pages/Broadcasts";
 import KarmaPage from "@/pages/Karma";
+import ReviewsPage from "@/pages/Reviews";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -50,6 +51,7 @@ function ProtectedRoutes() {
           <Route path="/invitations" component={InvitationsPage} />
           <Route path="/broadcasts" component={BroadcastsPage} />
           <Route path="/karma" component={KarmaPage} />
+          <Route path="/reviews" component={ReviewsPage} />
           <Route component={NotFound} />
         </Switch>
       </AdminLayout>

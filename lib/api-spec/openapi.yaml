@@ -69,6 +69,46 @@ paths:
         "204":
           description: Token removed (no-op if it did not belong to user)
 
+  /me/reviews/{shopId}:
+    get:
+      operationId: getMyReview
+      tags: [me]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+      responses:
+        "200":
+          description: The current user's review of this shop, or null
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ShopReview"
+                  - type: "null"
+    post:
+      operationId: upsertMyReview
+      tags: [me]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ShopReviewInput" }
+      responses:
+        "200":
+          description: The created or updated review
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ShopReview" }
+    delete:
+      operationId: deleteMyReview
+      tags: [me]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+      responses:
+        "204":
+          description: Review removed (no-op if it didn't exist)
+
   /shops:
     get:
       operationId: listShops
@@ -647,7 +687,62 @@ components:
         latitude: { type: number }
         longitude: { type: number }
         isOpen: { type: boolean }
-      required: [id, sellerId, name, latitude, longitude, isOpen]
+        ratingAvg:
+          type: number
+          minimum: 0
+          maximum: 5
+          description: Mean rating across all reviews (0 when none).
+        ratingCount:
+          type: integer
+          minimum: 0
+          description: Number of reviews used for the average.
+      required:
+        - id
+        - sellerId
+        - name
+        - latitude
+        - longitude
+        - isOpen
+        - ratingAvg
+        - ratingCount
+
+    ShopReview:
+      type: object
+      properties:
+        id: { type: string }
+        shopId: { type: string }
+        customerUserId: { type: string }
+        customerName: { type: string, nullable: true }
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+          nullable: true
+          maxLength: 1000
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required:
+        - id
+        - shopId
+        - customerUserId
+        - rating
+        - createdAt
+        - updatedAt
+
+    ShopReviewInput:
+      type: object
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+          nullable: true
+          maxLength: 1000
+      required: [rating]
 
     ShopWithRole:
       type: object

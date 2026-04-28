@@ -20,9 +20,22 @@ export type PublicShop = {
   longitude: number;
   latitude: number;
   isOpen: boolean;
+  ratingAvg: number;
+  ratingCount: number;
   distanceMeters: number;
   productCount: number;
   previewProducts: PublicProductPreview[];
+};
+
+export type PublicShopReview = {
+  id: string;
+  shopId: string;
+  customerUserId: string;
+  customerName: string | null;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type KarmaEvent = {
@@ -138,6 +151,24 @@ export async function fetchShopDetail(
     throw new Error(`fetchShopDetail failed: ${res.status}`);
   }
   return (await res.json()) as PublicShopDetail;
+}
+
+export async function fetchShopReviews(
+  shopId: string,
+  opts?: { limit?: number; before?: string; signal?: AbortSignal },
+): Promise<{ reviews: PublicShopReview[]; nextCursor: string | null }> {
+  const qs = new URLSearchParams();
+  if (opts?.limit) qs.set("limit", String(opts.limit));
+  if (opts?.before) qs.set("before", opts.before);
+  const url = `${getApiBase()}/public/shops/${shopId}/reviews${qs.toString() ? `?${qs}` : ""}`;
+  const res = await fetch(url, { signal: opts?.signal });
+  if (!res.ok) {
+    throw new Error(`fetchShopReviews failed: ${res.status}`);
+  }
+  return (await res.json()) as {
+    reviews: PublicShopReview[];
+    nextCursor: string | null;
+  };
 }
 
 export type VisualMatch = PublicSearchHit & { confidence: number };
