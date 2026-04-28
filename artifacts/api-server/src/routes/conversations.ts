@@ -108,21 +108,41 @@ router.post("/conversations", async (req: Request, res: Response) => {
 
   const customerOid = new Types.ObjectId(req.userId);
   const shopOid = new Types.ObjectId(shopId);
-  const conv = await Conversation.findOneAndUpdate(
-    { shopId: shopOid, customerUserId: customerOid },
-    {
-      $setOnInsert: {
+  let conv;
+  try {
+    conv = await Conversation.findOneAndUpdate(
+      { shopId: shopOid, customerUserId: customerOid },
+      {
+        $setOnInsert: {
+          shopId: shopOid,
+          customerUserId: customerOid,
+          lastMessageAt: new Date(),
+          lastMessageText: "",
+          lastMessageSenderRole: null,
+          customerUnreadCount: 0,
+          sellerUnreadCount: 0,
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+  } catch (err: unknown) {
+    // Two concurrent upserts may both attempt INSERT and one will hit the
+    // unique {shopId, customerUserId} index — fall back to a plain read so
+    // the endpoint stays idempotent under load.
+    const code = (err as { code?: number } | null)?.code;
+    if (code === 11000) {
+      conv = await Conversation.findOne({
         shopId: shopOid,
         customerUserId: customerOid,
-        lastMessageAt: new Date(),
-        lastMessageText: "",
-        lastMessageSenderRole: null,
-        customerUnreadCount: 0,
-        sellerUnreadCount: 0,
-      },
-    },
-    { upsert: true, new: true, setDefaultsOnInsert: true },
-  );
+      });
+    } else {
+      throw err;
+    }
+  }
+  if (!conv) {
+    res.status(500).json({ error: "Failed to create conversation" });
+    return;
+  }
 
   const enriched = await enrich(conv as ConversationDoc, "customer");
   if (!enriched) {
@@ -207,12 +227,29 @@ router.get("/conversations/:id/messages", async (req: Request, res: Response) =>
     return;
   }
 
-  const before = typeof req.query.before === "string" ? new Date(req.query.before) : null;
+  let before: Date | null = null;
+  if (req.query.before !== undefined) {
+    if (typeof req.query.before !== "string" || req.query.before.length === 0) {
+      res.status(400).json({
+        error:
+          "Invalid 'before' query: must be a single ISO-8601 datetime string",
+      });
+      return;
+    }
+    const parsed = new Date(req.query.before);
+    if (Number.isNaN(parsed.getTime())) {
+      res
+        .status(400)
+        .json({ error: "Invalid 'before' query: must be an ISO-8601 datetime" });
+      return;
+    }
+    before = parsed;
+  }
   const limitRaw = Number(req.query.limit ?? 50);
   const limit = Math.min(Math.max(Number.isFinite(limitRaw) ? limitRaw : 50, 1), 100);
 
   const filter: Record<string, unknown> = { conversationId: conv._id };
-  if (before && !Number.isNaN(before.getTime())) {
+  if (before) {
     filter.createdAt = { $lt: before };
   }
 

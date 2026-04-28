@@ -314,3 +314,89 @@ export interface DiscountCreateInput {
   validTo?: string | null;
   isActive?: boolean;
 }
+
+export type ChatRole = (typeof ChatRole)[keyof typeof ChatRole];
+
+export const ChatRole = {
+  customer: "customer",
+  seller: "seller",
+} as const;
+
+export type ChatConversationShop = {
+  id: string;
+  name: string;
+  marketName?: string | null;
+};
+
+export type ChatConversationCustomer = {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+};
+
+export interface ChatConversation {
+  id: string;
+  shop: ChatConversationShop;
+  customer: ChatConversationCustomer;
+  lastMessageAt: string;
+  lastMessageText: string;
+  lastMessageSenderRole?: ChatRole | null;
+  /** @minimum 0 */
+  unreadCount: number;
+  myRole: ChatRole;
+}
+
+export interface ChatConversationCreateInput {
+  shopId: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  conversationId: string;
+  senderRole: ChatRole;
+  text: string;
+  createdAt: string;
+  mine: boolean;
+}
+
+export interface ChatMessageCreateInput {
+  /**
+   * @minLength 1
+   * @maxLength 2000
+   */
+  text: string;
+}
+
+export type ListConversations200 = {
+  conversations: ChatConversation[];
+};
+
+export type CreateConversation200 = {
+  conversation: ChatConversation;
+};
+
+export type GetConversation200 = {
+  conversation: ChatConversation;
+};
+
+export type ListConversationMessagesParams = {
+  before?: string;
+  /**
+   * @minimum 1
+   * @maximum 100
+   */
+  limit?: number;
+};
+
+export type ListConversationMessages200 = {
+  messages: ChatMessage[];
+  hasMore: boolean;
+};
+
+export type PostConversationMessage201 = {
+  message: ChatMessage;
+};
+
+export type MarkConversationRead200 = {
+  ok: boolean;
+};

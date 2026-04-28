@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/site/"
+title = "NearBuy — Site vitrine"
+version = "1.0.0"
+id = "artifacts/nearbuy-site"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/site/" ]
+localPort = 22692
+
+[services.development]
+run = "pnpm --filter @workspace/nearbuy-site run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/nearbuy-site", "run", "build" ]
+publicDir = "artifacts/nearbuy-site/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22692"
+BASE_PATH = "/site/"

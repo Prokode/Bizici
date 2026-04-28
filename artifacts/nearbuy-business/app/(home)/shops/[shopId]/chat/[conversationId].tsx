@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -45,7 +45,6 @@ export default function SellerChatThreadScreen() {
   const router = useRouter();
   const qc = useQueryClient();
   const [draft, setDraft] = useState("");
-  const listRef = useRef<FlatList<ChatMessage>>(null);
 
   const conversationQuery = useQuery({
     queryKey: ["chat-conv", conversationId],
@@ -82,9 +81,15 @@ export default function SellerChatThreadScreen() {
       );
       void qc.invalidateQueries({ queryKey: ["chat-conv-list"] });
       setDraft("");
-      setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
     },
   });
+
+  // API returns chronological (oldest → newest); inverted FlatList wants
+  // newest first. Reverse once per query update.
+  const invertedData = useMemo(
+    () => (messagesQuery.data?.messages ?? []).slice().reverse(),
+    [messagesQuery.data?.messages],
+  );
 
   const onSend = useCallback(() => {
     const text = draft.trim();
@@ -145,10 +150,14 @@ export default function SellerChatThreadScreen() {
           </View>
         ) : (
           <FlatList
-            ref={listRef}
-            data={messagesQuery.data?.messages ?? []}
+            inverted
+            data={invertedData}
             keyExtractor={(m) => m.id}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={
+              invertedData.length === 0
+                ? styles.listContentEmpty
+                : styles.listContent
+            }
             ListEmptyComponent={
               <View style={styles.empty}>
                 <Feather
@@ -162,9 +171,6 @@ export default function SellerChatThreadScreen() {
                   No messages yet.
                 </Text>
               </View>
-            }
-            onContentSizeChange={() =>
-              listRef.current?.scrollToEnd({ animated: false })
             }
             renderItem={({ item }) => {
               const mine = item.mine;
@@ -291,7 +297,8 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 16, fontWeight: "700" },
   headerSubtitle: { fontSize: 12, marginTop: 2 },
   loading: { flex: 1, justifyContent: "center", alignItems: "center" },
-  listContent: { padding: 12, gap: 8, flexGrow: 1 },
+  listContent: { padding: 12, gap: 8 },
+  listContentEmpty: { padding: 12, gap: 8, flexGrow: 1 },
   empty: {
     flex: 1,
     alignItems: "center",

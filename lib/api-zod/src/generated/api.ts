@@ -797,3 +797,141 @@ export const ListCategoriesResponseItem = zod.object({
   icon: zod.string().nullish(),
 });
 export const ListCategoriesResponse = zod.array(ListCategoriesResponseItem);
+
+export const listConversationsResponseConversationsItemUnreadCountMin = 0;
+
+export const ListConversationsResponse = zod.object({
+  conversations: zod.array(
+    zod.object({
+      id: zod.string(),
+      shop: zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        marketName: zod.string().nullish(),
+      }),
+      customer: zod.object({
+        id: zod.string(),
+        name: zod.string().nullish(),
+        email: zod.string().nullish(),
+      }),
+      lastMessageAt: zod.coerce.date(),
+      lastMessageText: zod.string(),
+      lastMessageSenderRole: zod
+        .union([zod.enum(["customer", "seller"]), zod.null()])
+        .optional(),
+      unreadCount: zod
+        .number()
+        .min(listConversationsResponseConversationsItemUnreadCountMin),
+      myRole: zod.enum(["customer", "seller"]),
+    }),
+  ),
+});
+
+export const CreateConversationBody = zod.object({
+  shopId: zod.string(),
+});
+
+export const createConversationResponseConversationUnreadCountMin = 0;
+
+export const CreateConversationResponse = zod.object({
+  conversation: zod.object({
+    id: zod.string(),
+    shop: zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      marketName: zod.string().nullish(),
+    }),
+    customer: zod.object({
+      id: zod.string(),
+      name: zod.string().nullish(),
+      email: zod.string().nullish(),
+    }),
+    lastMessageAt: zod.coerce.date(),
+    lastMessageText: zod.string(),
+    lastMessageSenderRole: zod
+      .union([zod.enum(["customer", "seller"]), zod.null()])
+      .optional(),
+    unreadCount: zod
+      .number()
+      .min(createConversationResponseConversationUnreadCountMin),
+    myRole: zod.enum(["customer", "seller"]),
+  }),
+});
+
+export const GetConversationParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const getConversationResponseConversationUnreadCountMin = 0;
+
+export const GetConversationResponse = zod.object({
+  conversation: zod.object({
+    id: zod.string(),
+    shop: zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      marketName: zod.string().nullish(),
+    }),
+    customer: zod.object({
+      id: zod.string(),
+      name: zod.string().nullish(),
+      email: zod.string().nullish(),
+    }),
+    lastMessageAt: zod.coerce.date(),
+    lastMessageText: zod.string(),
+    lastMessageSenderRole: zod
+      .union([zod.enum(["customer", "seller"]), zod.null()])
+      .optional(),
+    unreadCount: zod
+      .number()
+      .min(getConversationResponseConversationUnreadCountMin),
+    myRole: zod.enum(["customer", "seller"]),
+  }),
+});
+
+export const ListConversationMessagesParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const listConversationMessagesQueryLimitMax = 100;
+
+export const ListConversationMessagesQueryParams = zod.object({
+  before: zod.date().optional(),
+  limit: zod.coerce
+    .number()
+    .min(1)
+    .max(listConversationMessagesQueryLimitMax)
+    .optional(),
+});
+
+export const ListConversationMessagesResponse = zod.object({
+  messages: zod.array(
+    zod.object({
+      id: zod.string(),
+      conversationId: zod.string(),
+      senderRole: zod.enum(["customer", "seller"]),
+      text: zod.string(),
+      createdAt: zod.coerce.date(),
+      mine: zod.boolean(),
+    }),
+  ),
+  hasMore: zod.boolean(),
+});
+
+export const PostConversationMessageParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const postConversationMessageBodyTextMax = 2000;
+
+export const PostConversationMessageBody = zod.object({
+  text: zod.string().min(1).max(postConversationMessageBodyTextMax),
+});
+
+export const MarkConversationReadParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const MarkConversationReadResponse = zod.object({
+  ok: zod.boolean(),
+});
