@@ -1,0 +1,47 @@
+{
+  "nav": {
+    "map": "Carte",
+    "search": "Recherche",
+    "camera": "Caméra",
+    "messages": "Messages",
+    "profile": "Profil"
+  },
+  "common": {
+    "loading": "Chargement…",
+    "retry": "Toucher pour réessayer",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter",
+    "language": "Langue",
+    "languageFr": "Français",
+    "languageEn": "Anglais",
+    "error": "Une erreur est survenue"
+  },
+  "shop": {
+    "openNow": "Ouvert",
+    "closed": "Fermé",
+    "callShop": "Appeler",
+    "directions": "Itinéraire",
+    "chat": "Discuter avec le vendeur",
+    "reviews": "Avis",
+    "writeReview": "Écrire un avis",
+    "noReviews": "Aucun avis pour l'instant.",
+    "reviewsCount_one": "{{count}} avis",
+    "reviewsCount_other": "{{count}} avis",
+    "ratingAvg": "Note moyenne"
+  },
+  "review": {
+    "title": "Votre avis",
+    "ratingPrompt": "Votre note",
+    "commentPlaceholder": "Partagez votre expérience (facultatif)…",
+    "submit": "Publier",
+    "update": "Mettre à jour",
+    "deleteMine": "Supprimer mon avis",
+    "deleteConfirm": "Supprimer votre avis ?",
+    "selfReviewError": "Vous ne pouvez pas noter votre propre boutique."
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "nav": {
+    "map": "Map",
+    "search": "Search",
+    "camera": "Camera",
+    "messages": "Messages",
+    "profile": "Profile"
+  },
+  "common": {
+    "loading": "Loading…",
+    "retry": "Tap to retry",
+    "save": "Save",
+    "saving": "Saving…",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "close": "Close",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "language": "Language",
+    "languageFr": "French",
+    "languageEn": "English",
+    "error": "Something went wrong"
+  },
+  "shop": {
+    "openNow": "Open",
+    "closed": "Closed",
+    "callShop": "Call",
+    "directions": "Directions",
+    "chat": "Chat with the seller",
+    "reviews": "Reviews",
+    "writeReview": "Write a review",
+    "noReviews": "No reviews yet.",
+    "reviewsCount_one": "{{count}} review",
+    "reviewsCount_other": "{{count}} reviews",
+    "ratingAvg": "Average rating"
+  },
+  "review": {
+    "title": "Your review",
+    "ratingPrompt": "Your rating",
+    "commentPlaceholder": "Share your experience (optional)…",
+    "submit": "Post",
+    "update": "Update",
+    "deleteMine": "Delete my review",
+    "deleteConfirm": "Delete your review?",
+    "selfReviewError": "You can't rate your own shop."
+  }
+}

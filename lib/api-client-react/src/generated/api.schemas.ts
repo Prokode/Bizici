@@ -288,6 +288,19 @@ export interface DashboardSummary {
   activeRequestsCount: number;
 }
 
+export interface ShopDashboard {
+  totalProducts: number;
+  inStockCount: number;
+  outOfStockCount: number;
+  activeRequestsCount: number;
+  reviewCount: number;
+  ratingAvg?: number | null;
+  conversationCount: number;
+  unreadCount: number;
+  messages7d: number;
+  lastMessageAt?: string | null;
+}
+
 export type ShopMemberRole =
   (typeof ShopMemberRole)[keyof typeof ShopMemberRole];
 

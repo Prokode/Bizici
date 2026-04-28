@@ -45,6 +45,7 @@ import type {
   QrPayload,
   Shop,
   ShopCreateInput,
+  ShopDashboard,
   ShopInvitation,
   ShopMembersList,
   ShopOpenInput,
@@ -1109,6 +1110,87 @@ export function useGetShopSummary<
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetShopSummaryQueryOptions(shopId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetShopDashboardUrl = (shopId: string) => {
+  return `/api/shops/${shopId}/dashboard`;
+};
+
+export const getShopDashboard = async (
+  shopId: string,
+  options?: RequestInit,
+): Promise<ShopDashboard> => {
+  return customFetch<ShopDashboard>(getGetShopDashboardUrl(shopId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetShopDashboardQueryKey = (shopId: string) => {
+  return [`/api/shops/${shopId}/dashboard`] as const;
+};
+
+export const getGetShopDashboardQueryOptions = <
+  TData = Awaited<ReturnType<typeof getShopDashboard>>,
+  TError = ErrorType<unknown>,
+>(
+  shopId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getShopDashboard>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetShopDashboardQueryKey(shopId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getShopDashboard>>
+  > = ({ signal }) => getShopDashboard(shopId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!shopId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getShopDashboard>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetShopDashboardQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getShopDashboard>>
+>;
+export type GetShopDashboardQueryError = ErrorType<unknown>;
+
+export function useGetShopDashboard<
+  TData = Awaited<ReturnType<typeof getShopDashboard>>,
+  TError = ErrorType<unknown>,
+>(
+  shopId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getShopDashboard>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetShopDashboardQueryOptions(shopId, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

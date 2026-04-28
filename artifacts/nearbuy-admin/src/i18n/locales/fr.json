@@ -1,0 +1,41 @@
+{
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "users": "Utilisateurs",
+    "shops": "Boutiques",
+    "products": "Produits",
+    "categories": "Catégories",
+    "conversations": "Conversations",
+    "invitations": "Invitations",
+    "broadcasts": "Demandes",
+    "karma": "Karma",
+    "reviews": "Avis",
+    "admins": "Administrateurs",
+    "signOut": "Se déconnecter"
+  },
+  "common": {
+    "loading": "Chargement…",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "search": "Rechercher…",
+    "page": "Page {{page}} / {{total}}",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "language": "Langue",
+    "languageFr": "FR",
+    "languageEn": "EN",
+    "noResults": "Aucun résultat",
+    "error": "Une erreur est survenue"
+  },
+  "login": {
+    "title": "Espace administrateur",
+    "subtitle": "Connectez-vous pour accéder à la console.",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "submitting": "Connexion…",
+    "invalidCredentials": "Identifiants invalides"
+  }
+}

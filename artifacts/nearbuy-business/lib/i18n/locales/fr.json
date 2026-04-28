@@ -1,0 +1,57 @@
+{
+  "nav": {
+    "inventory": "Inventaire",
+    "dashboard": "Tableau",
+    "requests": "Demandes",
+    "messages": "Messages",
+    "profile": "Profil"
+  },
+  "common": {
+    "loading": "Chargement…",
+    "retry": "Toucher pour réessayer",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "error": "Une erreur est survenue",
+    "signOut": "Se déconnecter",
+    "language": "Langue",
+    "languageFr": "Français",
+    "languageEn": "Anglais",
+    "today": "aujourd'hui",
+    "yesterday": "hier"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "subtitle": "Vue d'ensemble de votre boutique sur les 7 derniers jours.",
+    "products": "Produits",
+    "productsHint": "{{count}} en stock",
+    "outOfStock": "Rupture",
+    "outOfStockNeed": "À réapprovisionner",
+    "outOfStockOk": "Tout est dispo",
+    "conversations": "Conversations",
+    "conversationsUnread": "{{count}} non lus",
+    "conversationsAllRead": "Tout est lu",
+    "messagesReceived": "Messages reçus",
+    "messagesReceivedHint": "7 derniers jours",
+    "ratingAvg": "Note moyenne",
+    "ratingCount": "{{count}} avis",
+    "noReviews": "Aucun avis pour l'instant",
+    "nearbyRequests": "Demandes proches",
+    "nearbyRequestsHint": "Dans un rayon de 5 km",
+    "lastMessage": "Dernier message",
+    "noMessage": "Aucun message",
+    "loadFailed": "Impossible de charger le tableau de bord."
+  },
+  "inventory": {
+    "title": "Inventaire",
+    "emptyTitle": "Aucun produit",
+    "emptyHint": "Ajoutez votre premier produit avec le bouton +.",
+    "inStock": "En stock",
+    "outOfStock": "Rupture",
+    "noCategory": "Sans catégorie",
+    "addProduct": "Ajouter un produit"
+  }
+}

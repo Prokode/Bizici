@@ -1,0 +1,41 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "shops": "Shops",
+    "products": "Products",
+    "categories": "Categories",
+    "conversations": "Conversations",
+    "invitations": "Invitations",
+    "broadcasts": "Requests",
+    "karma": "Karma",
+    "reviews": "Reviews",
+    "admins": "Admins",
+    "signOut": "Sign out"
+  },
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search…",
+    "page": "Page {{page}} / {{total}}",
+    "previous": "Previous",
+    "next": "Next",
+    "language": "Language",
+    "languageFr": "FR",
+    "languageEn": "EN",
+    "noResults": "No results",
+    "error": "Something went wrong"
+  },
+  "login": {
+    "title": "Admin console",
+    "subtitle": "Sign in to access the console.",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "invalidCredentials": "Invalid credentials"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "nav": {
+    "language": "Language",
+    "languageFr": "FR",
+    "languageEn": "EN"
+  },
+  "hero": {
+    "tagline": "Local shopping, on the map",
+    "title": "Discover the shops next door.",
+    "subtitle": "NearBuy connects neighborhood shops with their customers. Search a product, chat with the shopkeeper, pick it up in store.",
+    "ctaCustomer": "Get the customer app",
+    "ctaSeller": "I'm a shopkeeper"
+  },
+  "how": {
+    "title": "How it works",
+    "step1Title": "Search nearby",
+    "step1Body": "Find in seconds a product available in your neighborhood.",
+    "step2Title": "Chat with the seller",
+    "step2Body": "Confirm availability and reserve by direct message.",
+    "step3Title": "Pick it up",
+    "step3Body": "No delivery, no hidden fees — you collect your product in store."
+  },
+  "footer": {
+    "tagline": "NearBuy — Local shopping, right next door.",
+    "deletion": "Request to delete my account",
+    "rights": "© {{year}} NearBuy. All rights reserved."
+  },
+  "deletion": {
+    "pageTitle": "Delete my account",
+    "intro": "To delete your NearBuy account (customer or shopkeeper), fill out this form. You don't need to be signed in.",
+    "fullName": "Full name",
+    "email": "Account email",
+    "accountType": "Account type",
+    "accountTypeCustomer": "Customer",
+    "accountTypeSeller": "Shopkeeper",
+    "accountTypeBoth": "Both",
+    "reason": "Reason (optional)",
+    "confirm": "I confirm I want to permanently delete my account.",
+    "submit": "Submit request",
+    "submitting": "Sending…",
+    "successTitle": "Request received",
+    "successBody": "Your request has been recorded. Our team will process it within 30 days."
+  }
+}

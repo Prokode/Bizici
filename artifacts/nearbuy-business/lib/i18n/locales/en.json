@@ -1,0 +1,57 @@
+{
+  "nav": {
+    "inventory": "Inventory",
+    "dashboard": "Dashboard",
+    "requests": "Requests",
+    "messages": "Messages",
+    "profile": "Profile"
+  },
+  "common": {
+    "loading": "Loading…",
+    "retry": "Tap to retry",
+    "save": "Save",
+    "saving": "Saving…",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "error": "Something went wrong",
+    "signOut": "Sign out",
+    "language": "Language",
+    "languageFr": "French",
+    "languageEn": "English",
+    "today": "today",
+    "yesterday": "yesterday"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Overview of your shop over the last 7 days.",
+    "products": "Products",
+    "productsHint": "{{count}} in stock",
+    "outOfStock": "Out of stock",
+    "outOfStockNeed": "Restock needed",
+    "outOfStockOk": "All available",
+    "conversations": "Conversations",
+    "conversationsUnread": "{{count}} unread",
+    "conversationsAllRead": "All read",
+    "messagesReceived": "Messages received",
+    "messagesReceivedHint": "Last 7 days",
+    "ratingAvg": "Average rating",
+    "ratingCount": "{{count}} reviews",
+    "noReviews": "No reviews yet",
+    "nearbyRequests": "Nearby requests",
+    "nearbyRequestsHint": "Within a 5 km radius",
+    "lastMessage": "Last message",
+    "noMessage": "No message",
+    "loadFailed": "Could not load the dashboard."
+  },
+  "inventory": {
+    "title": "Inventory",
+    "emptyTitle": "No products",
+    "emptyHint": "Add your first product with the + button.",
+    "inStock": "In stock",
+    "outOfStock": "Out of stock",
+    "noCategory": "No category",
+    "addProduct": "Add a product"
+  }
+}

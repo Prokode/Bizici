@@ -293,6 +293,23 @@ export const GetShopSummaryResponse = zod.object({
   activeRequestsCount: zod.number(),
 });
 
+export const GetShopDashboardParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const GetShopDashboardResponse = zod.object({
+  totalProducts: zod.number(),
+  inStockCount: zod.number(),
+  outOfStockCount: zod.number(),
+  activeRequestsCount: zod.number(),
+  reviewCount: zod.number(),
+  ratingAvg: zod.number().nullish(),
+  conversationCount: zod.number(),
+  unreadCount: zod.number(),
+  messages7d: zod.number(),
+  lastMessageAt: zod.string().nullish(),
+});
+
 export const ListProductsParams = zod.object({
   shopId: zod.coerce.string(),
 });

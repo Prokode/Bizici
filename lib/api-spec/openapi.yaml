@@ -209,6 +209,19 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/DashboardSummary" }
 
+  /shops/{shopId}/dashboard:
+    get:
+      operationId: getShopDashboard
+      tags: [shops]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+      responses:
+        "200":
+          description: Mini dashboard metrics for the shop
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ShopDashboard" }
+
   /shops/{shopId}/products:
     get:
       operationId: listProducts
@@ -1007,6 +1020,29 @@ components:
         outOfStockCount: { type: integer }
         activeRequestsCount: { type: integer }
       required: [totalProducts, inStockCount, outOfStockCount, activeRequestsCount]
+
+    ShopDashboard:
+      type: object
+      properties:
+        totalProducts: { type: integer }
+        inStockCount: { type: integer }
+        outOfStockCount: { type: integer }
+        activeRequestsCount: { type: integer }
+        reviewCount: { type: integer }
+        ratingAvg: { type: number, nullable: true }
+        conversationCount: { type: integer }
+        unreadCount: { type: integer }
+        messages7d: { type: integer }
+        lastMessageAt: { type: string, nullable: true }
+      required:
+        - totalProducts
+        - inStockCount
+        - outOfStockCount
+        - activeRequestsCount
+        - reviewCount
+        - conversationCount
+        - unreadCount
+        - messages7d
 
     ShopMember:
       type: object

@@ -1,0 +1,44 @@
+{
+  "nav": {
+    "language": "Langue",
+    "languageFr": "FR",
+    "languageEn": "EN"
+  },
+  "hero": {
+    "tagline": "Le commerce local, à portée de carte",
+    "title": "Découvrez les boutiques près de chez vous.",
+    "subtitle": "NearBuy met en relation les boutiques de quartier et leurs clients. Recherchez un produit, discutez avec le vendeur, passez le récupérer.",
+    "ctaCustomer": "Télécharger l'app client",
+    "ctaSeller": "Je suis commerçant"
+  },
+  "how": {
+    "title": "Comment ça marche",
+    "step1Title": "Cherchez près de vous",
+    "step1Body": "Trouvez en quelques secondes un produit disponible dans votre quartier.",
+    "step2Title": "Discutez avec le vendeur",
+    "step2Body": "Confirmez la disponibilité et réservez par message en direct.",
+    "step3Title": "Passez le récupérer",
+    "step3Body": "Pas de livraison, pas de frais cachés : vous prenez votre produit en boutique."
+  },
+  "footer": {
+    "tagline": "NearBuy — Le commerce local, près de chez vous.",
+    "deletion": "Demander la suppression de mon compte",
+    "rights": "© {{year}} NearBuy. Tous droits réservés."
+  },
+  "deletion": {
+    "pageTitle": "Suppression de mon compte",
+    "intro": "Pour supprimer votre compte NearBuy (client ou commerçant), remplissez ce formulaire. Vous n'avez pas besoin d'être connecté.",
+    "fullName": "Nom complet",
+    "email": "Email du compte",
+    "accountType": "Type de compte",
+    "accountTypeCustomer": "Client",
+    "accountTypeSeller": "Commerçant",
+    "accountTypeBoth": "Les deux",
+    "reason": "Raison (facultatif)",
+    "confirm": "Je confirme demander la suppression définitive de mon compte.",
+    "submit": "Envoyer la demande",
+    "submitting": "Envoi…",
+    "successTitle": "Demande reçue",
+    "successBody": "Votre demande a bien été enregistrée. Notre équipe la traitera sous 30 jours."
+  }
+}

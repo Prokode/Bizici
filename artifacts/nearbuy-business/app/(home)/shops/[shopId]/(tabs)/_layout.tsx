@@ -33,6 +33,10 @@ function NativeTabLayout({ unread }: { unread: number }) {
         <Icon sf={{ default: "cube.box", selected: "cube.box.fill" }} />
         <Label>Inventory</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="dashboard">
+        <Icon sf={{ default: "chart.bar", selected: "chart.bar.fill" }} />
+        <Label>Tableau</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="requests">
         <Icon sf={{ default: "dot.radiowaves.left.and.right", selected: "dot.radiowaves.left.and.right" }} />
         <Label>Requests</Label>
@@ -104,6 +108,18 @@ function ClassicTabLayout({ unread }: { unread: number }) {
               <SymbolView name="cube.box" tintColor={color} size={24} />
             ) : (
               <Feather name="grid" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard"
+        options={{
+          title: "Tableau",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="chart.bar" tintColor={color} size={24} />
+            ) : (
+              <Feather name="bar-chart-2" size={22} color={color} />
             ),
         }}
       />

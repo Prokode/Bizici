@@ -1,6 +1,14 @@
 import { Router, type IRouter } from "express";
 import { Types } from "mongoose";
-import { Shop, ShopMember, BroadcastRequest, Product } from "@workspace/db";
+import {
+  Shop,
+  ShopMember,
+  BroadcastRequest,
+  Product,
+  Conversation,
+  Message,
+  ShopReview,
+} from "@workspace/db";
 import { requireAuth, requireShopAccess, requireSeller } from "../lib/auth";
 import { serializeShop } from "../lib/serialize";
 import crypto from "node:crypto";
@@ -133,8 +141,106 @@ router.get("/shops/:shopId/qr", requireShopAccess, async (req, res) => {
   res.json({ url, token });
 });
 
+router.get("/shops/:shopId/dashboard", requireShopAccess, async (req, res) => {
+  const shopObjectId = new Types.ObjectId(req.params.shopId as string);
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  const [
+    totalProducts,
+    inStockCount,
+    outOfStockCount,
+    shop,
+    convAgg,
+    reviewAgg,
+    convIds,
+  ] = await Promise.all([
+    Product.countDocuments({ shop: shopObjectId, deletedAt: null }),
+    Product.countDocuments({
+      shop: shopObjectId,
+      deletedAt: null,
+      stockStatus: "in_stock",
+    }),
+    Product.countDocuments({
+      shop: shopObjectId,
+      deletedAt: null,
+      stockStatus: "out_of_stock",
+    }),
+    Shop.findById(shopObjectId).lean(),
+    Conversation.aggregate<{
+      _id: null;
+      count: number;
+      unread: number;
+      lastMessageAt: Date | null;
+    }>([
+      { $match: { shopId: shopObjectId } },
+      {
+        $group: {
+          _id: null,
+          count: { $sum: 1 },
+          unread: { $sum: "$sellerUnreadCount" },
+          lastMessageAt: { $max: "$lastMessageAt" },
+        },
+      },
+    ]),
+    ShopReview.aggregate<{ _id: null; count: number; avg: number }>([
+      { $match: { shopId: shopObjectId } },
+      {
+        $group: {
+          _id: null,
+          count: { $sum: 1 },
+          avg: { $avg: "$rating" },
+        },
+      },
+    ]),
+    Conversation.find({ shopId: shopObjectId }, { _id: 1 }).lean(),
+  ]);
+
+  let activeRequestsCount = 0;
+  if (shop) {
+    activeRequestsCount = await BroadcastRequest.countDocuments({
+      status: "active",
+      location: {
+        $nearSphere: {
+          $geometry: shop.location as any,
+          $maxDistance: 5000,
+        },
+      },
+    });
+  }
+
+  const messages7d =
+    convIds.length > 0
+      ? await Message.countDocuments({
+          conversationId: { $in: convIds.map((c) => c._id) },
+          senderRole: "customer",
+          createdAt: { $gte: sevenDaysAgo },
+        })
+      : 0;
+
+  const conv = convAgg[0] ?? { count: 0, unread: 0, lastMessageAt: null };
+  const review = reviewAgg[0] ?? { count: 0, avg: null };
+
+  res.json({
+    totalProducts,
+    inStockCount,
+    outOfStockCount,
+    activeRequestsCount,
+    reviewCount: review.count,
+    ratingAvg:
+      review.avg !== null && review.avg !== undefined
+        ? Math.round(review.avg * 10) / 10
+        : null,
+    conversationCount: conv.count,
+    unreadCount: conv.unread,
+    messages7d,
+    lastMessageAt: conv.lastMessageAt
+      ? new Date(conv.lastMessageAt).toISOString()
+      : null,
+  });
+});
+
 router.get("/shops/:shopId/summary", requireShopAccess, async (req, res) => {
-  const shopObjectId = new Types.ObjectId(req.params.shopId);
+  const shopObjectId = new Types.ObjectId(req.params.shopId as string);
   const [totalProducts, inStockCount, outOfStockCount, shop] = await Promise.all([
     Product.countDocuments({ shop: shopObjectId, deletedAt: null }),
     Product.countDocuments({

@@ -47,6 +47,7 @@ export * from "./pushTokenInputPlatform";
 export * from "./qrPayload";
 export * from "./shop";
 export * from "./shopCreateInput";
+export * from "./shopDashboard";
 export * from "./shopInvitation";
 export * from "./shopInvitationRole";
 export * from "./shopMember";

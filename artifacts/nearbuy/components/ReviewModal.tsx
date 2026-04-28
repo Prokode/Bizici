@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
@@ -36,6 +37,7 @@ type Props = {
 export function ReviewModal({ shopId, shopName, onClose }: Props) {
   const colors = useColors();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const visible = shopId !== null;
 
   // The orval-generated wrapper supplies a default queryKey/queryFn, so
@@ -70,7 +72,7 @@ export function ReviewModal({ shopId, shopName, onClose }: Props) {
   const handleSubmit = async () => {
     if (!shopId) return;
     if (rating < 1 || rating > 5) {
-      Alert.alert("Note requise", "Choisissez de 1 à 5 étoiles.");
+      Alert.alert(t("review.ratingPrompt"), "1 – 5");
       return;
     }
     try {
@@ -87,52 +89,39 @@ export function ReviewModal({ shopId, shopName, onClose }: Props) {
     } catch (err: any) {
       const status = err?.status as number | undefined;
       if (status === 403) {
-        Alert.alert(
-          "Avis impossible",
-          "Vous ne pouvez pas évaluer une boutique dont vous êtes vendeur.",
-        );
+        Alert.alert(t("common.error"), t("review.selfReviewError"));
       } else {
-        Alert.alert(
-          "Erreur",
-          err?.message ?? "Impossible d'enregistrer votre avis.",
-        );
+        Alert.alert(t("common.error"), err?.message ?? t("common.error"));
       }
     }
   };
 
   const handleDelete = async () => {
     if (!shopId) return;
-    Alert.alert(
-      "Supprimer mon avis",
-      "Voulez-vous vraiment retirer votre avis sur cette boutique ?",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await remove.mutateAsync({ shopId });
-              await Promise.all([
-                queryClient.invalidateQueries({
-                  queryKey: ["shop-reviews", shopId],
-                }),
-                queryClient.invalidateQueries({
-                  queryKey: ["public-shop", shopId],
-                }),
-                queryClient.invalidateQueries({ queryKey: ["nearby-shops"] }),
-              ]);
-              onClose();
-            } catch (err: any) {
-              Alert.alert(
-                "Erreur",
-                err?.message ?? "Impossible de supprimer votre avis.",
-              );
-            }
-          },
+    Alert.alert(t("review.deleteConfirm"), "", [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("common.delete"),
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await remove.mutateAsync({ shopId });
+            await Promise.all([
+              queryClient.invalidateQueries({
+                queryKey: ["shop-reviews", shopId],
+              }),
+              queryClient.invalidateQueries({
+                queryKey: ["public-shop", shopId],
+              }),
+              queryClient.invalidateQueries({ queryKey: ["nearby-shops"] }),
+            ]);
+            onClose();
+          } catch (err: any) {
+            Alert.alert(t("common.error"), err?.message ?? t("common.error"));
+          }
         },
-      ],
-    );
+      },
+    ]);
   };
 
   return (
@@ -152,7 +141,7 @@ export function ReviewModal({ shopId, shopName, onClose }: Props) {
         >
           <View style={styles.header}>
             <Text style={[styles.title, { color: colors.foreground }]}>
-              {isEditing ? "Modifier mon avis" : "Donner mon avis"}
+              {t("review.title")}
             </Text>
             <Pressable onPress={onClose} hitSlop={16}>
               <Feather name="x" size={22} color={colors.mutedForeground} />
@@ -193,7 +182,7 @@ export function ReviewModal({ shopId, shopName, onClose }: Props) {
               <TextInput
                 value={comment}
                 onChangeText={setComment}
-                placeholder="Commentaire (optionnel, 1000 car. max)"
+                placeholder={t("review.commentPlaceholder")}
                 placeholderTextColor={colors.mutedForeground}
                 multiline
                 maxLength={1000}
@@ -213,7 +202,7 @@ export function ReviewModal({ shopId, shopName, onClose }: Props) {
               </Text>
 
               <Button
-                title={isEditing ? "Mettre à jour" : "Publier mon avis"}
+                title={isEditing ? t("review.update") : t("review.submit")}
                 onPress={handleSubmit}
                 loading={upsert.isPending}
                 disabled={submitting || rating < 1}
@@ -226,7 +215,7 @@ export function ReviewModal({ shopId, shopName, onClose }: Props) {
                   style={styles.deleteRow}
                 >
                   <Feather name="trash-2" size={14} color="#EF4444" />
-                  <Text style={styles.deleteText}>Supprimer mon avis</Text>
+                  <Text style={styles.deleteText}>{t("review.deleteMine")}</Text>
                 </Pressable>
               )}
             </>
