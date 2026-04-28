@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/admin/"
+title = "NearBuy Admin"
+version = "1.0.0"
+id = "artifacts/nearbuy-admin"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/admin/" ]
+localPort = 18600
+
+[services.development]
+run = "pnpm --filter @workspace/nearbuy-admin run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/nearbuy-admin", "run", "build" ]
+publicDir = "artifacts/nearbuy-admin/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18600"
+BASE_PATH = "/admin/"

@@ -9,6 +9,7 @@ import {
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { connectMongo, seedDefaultCategories, seedDemoShops } from "@workspace/db";
+import { bootstrapRootAdmin } from "./lib/adminAuth";
 
 const app: Express = express();
 
@@ -62,6 +63,11 @@ connectMongo()
       }
     } catch (err) {
       logger.error({ err }, "Failed to seed demo shops");
+    }
+    try {
+      await bootstrapRootAdmin();
+    } catch (err) {
+      logger.error({ err }, "Failed to bootstrap root admin");
     }
   })
   .catch((err) => {

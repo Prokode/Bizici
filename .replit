@@ -67,6 +67,10 @@ localPort = 8082
 externalPort = 3001
 
 [[ports]]
+localPort = 18600
+externalPort = 3003
+
+[[ports]]
 localPort = 20247
 externalPort = 3000
 
@@ -85,3 +89,6 @@ channel = "stable-25_05"
 
 [userenv.shared]
 VITE_CLERK_PUBLISHABLE_KEY = "pk_test_bWFnaWNhbC1ib2EtMy5jbGVyay5hY2NvdW50cy5kZXYk"
+ROOT_ADMIN_USERNAME = "root"
+ROOT_ADMIN_PASSWORD = "iAck65ASTuw7Xszs!A1"
+ADMIN_JWT_SECRET = "29f8aac115e9b01628dd9c16a7e8829a99833bedc0975fb5a457bc9101683848dc0d3a346fffa441177952a40280c241"

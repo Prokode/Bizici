@@ -9,3 +9,9 @@ export { Discount, type DiscountDoc } from "./Discount";
 export { KarmaEvent, type KarmaEventDoc } from "./KarmaEvent";
 export { Conversation, type ConversationDoc } from "./Conversation";
 export { Message, type MessageDoc } from "./Message";
+export {
+  Admin,
+  type AdminDoc,
+  type AdminRole,
+  ADMIN_ROLES,
+} from "./Admin";
