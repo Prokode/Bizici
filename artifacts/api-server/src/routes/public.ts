@@ -1,5 +1,11 @@
 import express, { Router, type IRouter } from "express";
-import { Shop, Product } from "@workspace/db";
+import {
+  Shop,
+  Product,
+  AccountDeletionRequest,
+  ACCOUNT_DELETION_TYPES,
+  type AccountDeletionType,
+} from "@workspace/db";
 import { serializeShop, serializeProduct } from "../lib/serialize";
 
 const router: IRouter = Router();
@@ -364,6 +370,147 @@ router.get("/public/shops/:shopId", async (req, res) => {
   res.json({
     shop: serializeShop(shop),
     products: products.map(serializeProduct),
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Account deletion request — public, unauthenticated
+//
+// Anyone (NearBuy customer or seller) can submit a request to have their
+// account deleted from the marketing site. Requests are stored in MongoDB so
+// the support team can process them manually (RGPD / Play Store / App Store
+// compliance). Rate-limited per IP to discourage abuse.
+// ---------------------------------------------------------------------------
+
+const RFC5322_EMAIL_RE =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+
+// In-memory sliding window: max 5 deletion requests per IP per hour.
+// The map is bounded to MAX_TRACKED_IPS entries to prevent attackers from
+// growing memory by rotating spoofed source IPs; once the cap is reached the
+// oldest entry (lowest most-recent timestamp) is evicted.
+const DELETION_RATE_LIMIT_MAX = 5;
+const DELETION_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const MAX_TRACKED_IPS = 10_000;
+const deletionAttempts = new Map<string, number[]>();
+
+function pruneStaleAttempts(now: number): void {
+  const cutoff = now - DELETION_RATE_LIMIT_WINDOW_MS;
+  for (const [k, arr] of deletionAttempts) {
+    if (arr.length === 0 || arr[arr.length - 1]! <= cutoff) {
+      deletionAttempts.delete(k);
+    }
+  }
+}
+
+function rateLimitDeletion(ip: string): { ok: boolean; retryAfter: number } {
+  const now = Date.now();
+  const cutoff = now - DELETION_RATE_LIMIT_WINDOW_MS;
+
+  // Defensive cap on stored key length so an attacker cannot grow per-entry
+  // memory by sending pathologically long IPs / forwarded chains.
+  const key = ip.length > 64 ? ip.slice(0, 64) : ip;
+
+  if (deletionAttempts.size >= MAX_TRACKED_IPS) {
+    pruneStaleAttempts(now);
+    if (deletionAttempts.size >= MAX_TRACKED_IPS) {
+      // Drop the very first entry (Map preserves insertion order) — this is
+      // a soft fairness penalty, the dropped IP simply gets a fresh window.
+      const firstKey = deletionAttempts.keys().next().value;
+      if (firstKey !== undefined) deletionAttempts.delete(firstKey);
+    }
+  }
+
+  const arr = (deletionAttempts.get(key) ?? []).filter((t) => t > cutoff);
+  if (arr.length >= DELETION_RATE_LIMIT_MAX) {
+    const oldest = arr[0]!;
+    return {
+      ok: false,
+      retryAfter: Math.ceil((oldest + DELETION_RATE_LIMIT_WINDOW_MS - now) / 1000),
+    };
+  }
+  arr.push(now);
+  deletionAttempts.set(key, arr);
+  return { ok: true, retryAfter: 0 };
+}
+
+router.post("/public/account-deletion-requests", async (req, res) => {
+  // `req.ip` is parsed from `x-forwarded-for` only because we configured
+  // `app.set("trust proxy", 1)` to trust exactly one hop (the Replit edge
+  // proxy). This prevents a remote attacker from spoofing their address by
+  // injecting their own forwarded-for header through an untrusted hop.
+  const ip = req.ip || req.socket.remoteAddress || "unknown";
+
+  const limit = rateLimitDeletion(ip);
+  if (!limit.ok) {
+    res.setHeader("Retry-After", String(limit.retryAfter));
+    res
+      .status(429)
+      .json({ error: "Trop de demandes. Réessayez plus tard." });
+    return;
+  }
+
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const fullName =
+    typeof body.fullName === "string" ? body.fullName.trim() : "";
+  const email =
+    typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  const accountTypeRaw =
+    typeof body.accountType === "string" ? body.accountType : "";
+  const reason = typeof body.reason === "string" ? body.reason.trim() : "";
+  const confirmed = body.confirmed === true;
+
+  if (!fullName || fullName.length < 2 || fullName.length > 200) {
+    res.status(400).json({ error: "Nom complet requis (2 à 200 caractères)." });
+    return;
+  }
+  if (!email || email.length > 320 || !RFC5322_EMAIL_RE.test(email)) {
+    res.status(400).json({ error: "Adresse e-mail invalide." });
+    return;
+  }
+  if (
+    !ACCOUNT_DELETION_TYPES.includes(accountTypeRaw as AccountDeletionType)
+  ) {
+    res.status(400).json({
+      error:
+        "Type de compte invalide (attendu: customer, seller ou both).",
+    });
+    return;
+  }
+  if (reason.length > 2000) {
+    res
+      .status(400)
+      .json({ error: "Motif trop long (2000 caractères maximum)." });
+    return;
+  }
+  if (!confirmed) {
+    res.status(400).json({
+      error:
+        "Vous devez confirmer que vous avez compris les conséquences de la suppression.",
+    });
+    return;
+  }
+
+  const userAgent = (req.headers["user-agent"] as string | undefined)?.slice(
+    0,
+    500,
+  );
+
+  const created = await AccountDeletionRequest.create({
+    fullName,
+    email,
+    accountType: accountTypeRaw as AccountDeletionType,
+    reason,
+    confirmed,
+    sourceIp: ip,
+    userAgent: userAgent ?? null,
+  });
+
+  res.status(201).json({
+    id: String(created._id),
+    receivedAt: created.createdAt,
+    message:
+      "Votre demande a bien été enregistrée. Notre équipe la traitera sous 30 jours et vous contactera à l'adresse indiquée.",
   });
 });
 

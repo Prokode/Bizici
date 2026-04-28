@@ -13,6 +13,13 @@ import { bootstrapRootAdmin } from "./lib/adminAuth";
 
 const app: Express = express();
 
+// Trust the platform proxy so that `req.ip` returns the real client IP
+// (parsed from a verified `x-forwarded-for`) rather than the loopback
+// address of the proxy. We trust exactly one hop — the Replit edge — to
+// avoid letting a remote attacker spoof their IP by sending an
+// `x-forwarded-for` header through an untrusted hop.
+app.set("trust proxy", 1);
+
 app.use(
   pinoHttp({
     logger,

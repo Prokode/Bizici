@@ -15,3 +15,11 @@ export {
   type AdminRole,
   ADMIN_ROLES,
 } from "./Admin";
+export {
+  AccountDeletionRequest,
+  type AccountDeletionRequestDoc,
+  type AccountDeletionType,
+  type AccountDeletionStatus,
+  ACCOUNT_DELETION_TYPES,
+  ACCOUNT_DELETION_STATUSES,
+} from "./AccountDeletionRequest";
