@@ -14,11 +14,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter, type Href } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
 import { fetchMyKarma, type KarmaEvent } from "@/lib/publicApi";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ONBOARDING_SEEN_KEY } from "@/app/onboarding";
 
 const API_BASE = process.env.EXPO_PUBLIC_DOMAIN
   ? `https://${process.env.EXPO_PUBLIC_DOMAIN}`
@@ -273,6 +275,39 @@ export default function ProfileTab() {
       </View>
 
       <Pressable
+        onPress={async () => {
+          try {
+            await AsyncStorage.removeItem(ONBOARDING_SEEN_KEY);
+          } catch {
+            // ignore
+          }
+          router.push("/onboarding" as Href);
+        }}
+        style={[
+          styles.replayEntry,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        <View
+          style={[styles.replayIcon, { backgroundColor: colors.muted }]}
+        >
+          <Feather name="play-circle" size={20} color={colors.primary} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.replayTitle, { color: colors.foreground }]}>
+            {t("onboarding.replay")}
+          </Text>
+          <Text
+            style={[styles.replayHint, { color: colors.mutedForeground }]}
+            numberOfLines={1}
+          >
+            {t("onboarding.replayHint")}
+          </Text>
+        </View>
+        <Feather name="chevron-right" size={20} color={colors.mutedForeground} />
+      </Pressable>
+
+      <Pressable
         onPress={() => signOut()}
         style={[
           styles.signOut,
@@ -330,6 +365,24 @@ const styles = StyleSheet.create({
   },
   courseTitle: { fontSize: 15, fontWeight: "700" },
   courseHint: { fontSize: 13, marginTop: 2 },
+  replayEntry: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  replayIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  replayTitle: { fontSize: 15, fontWeight: "700" },
+  replayHint: { fontSize: 13, marginTop: 2 },
   card: {
     alignItems: "center",
     padding: 20,

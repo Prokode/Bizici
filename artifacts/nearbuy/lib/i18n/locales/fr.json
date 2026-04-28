@@ -171,7 +171,12 @@
     "slide3Body": "Une photo d'un objet suffit pour identifier des produits similaires en stock autour de vous.",
     "slide4Chip": "COMMUNAUTÉ",
     "slide4Title": "Confirmez les stocks, gagnez du Karma",
-    "slide4Body": "Une boutique vide ou bien achalandée ? Aidez la communauté en un tap et collectez des points."
+    "slide4Body": "Une boutique vide ou bien achalandée ? Aidez la communauté en un tap et collectez des points.",
+    "slide5Chip": "MA COURSE",
+    "slide5Title": "Préparez votre course en un clin d'œil",
+    "slide5Body": "Ajoutez vos articles, on les regroupe par boutique pour une virée ultra-rapide.",
+    "replay": "Revoir l'introduction",
+    "replayHint": "Refaire le tour de l'application"
   },
   "notFound": {
     "title": "Cette page n'existe pas.",

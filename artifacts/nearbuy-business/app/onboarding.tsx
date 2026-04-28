@@ -10,6 +10,13 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from "react-native";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  type SharedValue,
+} from "react-native-reanimated";
 import { useRouter, type Href } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -30,6 +37,7 @@ type Slide = {
   descriptionKey: string;
   visual: "logo" | "icon";
   iconName?: keyof typeof Feather.glyphMap;
+  gradient: [string, string];
 };
 
 const slides: Slide[] = [
@@ -38,6 +46,7 @@ const slides: Slide[] = [
     titleKey: "onboarding.slide1Title",
     descriptionKey: "onboarding.slide1Body",
     visual: "logo",
+    gradient: ["#FF6B35", "#FF3D7F"],
   },
   {
     key: "inventory",
@@ -45,6 +54,7 @@ const slides: Slide[] = [
     descriptionKey: "onboarding.slide2Body",
     visual: "icon",
     iconName: "package",
+    gradient: ["#FF8A3D", "#FF5E62"],
   },
   {
     key: "nearby",
@@ -52,8 +62,149 @@ const slides: Slide[] = [
     descriptionKey: "onboarding.slide3Body",
     visual: "icon",
     iconName: "map-pin",
+    gradient: ["#F97316", "#EAB308"],
   },
 ];
+
+type SlideProps = {
+  slide: Slide;
+  index: number;
+  scrollX: SharedValue<number>;
+};
+
+function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
+  const colors = useColors();
+  const { t } = useTranslation();
+
+  const inputRange = [
+    (index - 1) * SCREEN_W,
+    index * SCREEN_W,
+    (index + 1) * SCREEN_W,
+  ];
+
+  const visualStyle = useAnimatedStyle(() => {
+    const scale = interpolate(
+      scrollX.value,
+      inputRange,
+      [0.8, 1, 0.8],
+      Extrapolation.CLAMP,
+    );
+    const opacity = interpolate(
+      scrollX.value,
+      inputRange,
+      [0.5, 1, 0.5],
+      Extrapolation.CLAMP,
+    );
+    return { transform: [{ scale }], opacity };
+  });
+
+  const titleStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      scrollX.value,
+      inputRange,
+      [0, 1, 0],
+      Extrapolation.CLAMP,
+    );
+    const ty = interpolate(
+      scrollX.value,
+      inputRange,
+      [40, 0, 40],
+      Extrapolation.CLAMP,
+    );
+    return { opacity, transform: [{ translateY: ty }] };
+  });
+
+  const bodyStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      scrollX.value,
+      inputRange,
+      [0, 1, 0],
+      Extrapolation.CLAMP,
+    );
+    const ty = interpolate(
+      scrollX.value,
+      inputRange,
+      [60, 0, 60],
+      Extrapolation.CLAMP,
+    );
+    return { opacity, transform: [{ translateY: ty }] };
+  });
+
+  return (
+    <View style={[styles.slide, { width: SCREEN_W }]}>
+      <Animated.View style={[styles.visualWrap, visualStyle]}>
+        {slide.visual === "logo" ? (
+          <Image
+            source={require("../assets/images/icon.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        ) : (
+          <LinearGradient
+            colors={slide.gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.iconCircle}
+          >
+            <Feather
+              name={slide.iconName ?? "circle"}
+              size={80}
+              color="#ffffff"
+            />
+          </LinearGradient>
+        )}
+      </Animated.View>
+      <Animated.Text
+        style={[styles.title, { color: colors.foreground }, titleStyle]}
+      >
+        {t(slide.titleKey)}
+      </Animated.Text>
+      <Animated.Text
+        style={[
+          styles.description,
+          { color: colors.mutedForeground },
+          bodyStyle,
+        ]}
+      >
+        {t(slide.descriptionKey)}
+      </Animated.Text>
+    </View>
+  );
+}
+
+type DotProps = {
+  i: number;
+  scrollX: SharedValue<number>;
+  color: string;
+};
+
+function Dot({ i, scrollX, color }: DotProps) {
+  const inputRange = [
+    (i - 1) * SCREEN_W,
+    i * SCREEN_W,
+    (i + 1) * SCREEN_W,
+  ];
+  const style = useAnimatedStyle(() => {
+    const w = interpolate(
+      scrollX.value,
+      inputRange,
+      [8, 24, 8],
+      Extrapolation.CLAMP,
+    );
+    const opacity = interpolate(
+      scrollX.value,
+      inputRange,
+      [0.3, 1, 0.3],
+      Extrapolation.CLAMP,
+    );
+    return { width: w, opacity };
+  });
+  return (
+    <Animated.View
+      style={[styles.dot, { backgroundColor: color }, style]}
+    />
+  );
+}
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -62,6 +213,7 @@ export default function OnboardingScreen() {
   const { t } = useTranslation();
   const listRef = useRef<FlatList<Slide>>(null);
   const [index, setIndex] = useState(0);
+  const scrollX = useSharedValue(0);
 
   const finish = useCallback(async () => {
     try {
@@ -73,13 +225,22 @@ export default function OnboardingScreen() {
   }, [router]);
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    scrollX.value = e.nativeEvent.contentOffset.x;
+  };
+
+  const onMomentumEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const i = Math.round(e.nativeEvent.contentOffset.x / SCREEN_W);
     if (i !== index) setIndex(i);
   };
 
   const next = () => {
     if (index < slides.length - 1) {
-      listRef.current?.scrollToIndex({ index: index + 1, animated: true });
+      const nextIndex = index + 1;
+      listRef.current?.scrollToOffset({
+        offset: nextIndex * SCREEN_W,
+        animated: true,
+      });
+      setIndex(nextIndex);
     } else {
       finish();
     }
@@ -105,57 +266,22 @@ export default function OnboardingScreen() {
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => item.key}
         onScroll={onScroll}
+        onMomentumScrollEnd={onMomentumEnd}
         scrollEventThrottle={16}
-        renderItem={({ item }) => (
-          <View style={[styles.slide, { width: SCREEN_W }]}>
-            <View style={styles.visualWrap}>
-              {item.visual === "logo" ? (
-                <Image
-                  source={require("../assets/images/icon.png")}
-                  style={styles.logo}
-                  resizeMode="contain"
-                />
-              ) : (
-                <LinearGradient
-                  colors={["#FF6B35", "#FF3D7F"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.iconCircle}
-                >
-                  <Feather
-                    name={item.iconName ?? "circle"}
-                    size={80}
-                    color="#ffffff"
-                  />
-                </LinearGradient>
-              )}
-            </View>
-            <Text style={[styles.title, { color: colors.foreground }]}>
-              {t(item.titleKey)}
-            </Text>
-            <Text
-              style={[styles.description, { color: colors.mutedForeground }]}
-            >
-              {t(item.descriptionKey)}
-            </Text>
-          </View>
+        getItemLayout={(_, i) => ({
+          length: SCREEN_W,
+          offset: SCREEN_W * i,
+          index: i,
+        })}
+        renderItem={({ item, index: i }) => (
+          <OnboardingSlide slide={item} index={i} scrollX={scrollX} />
         )}
       />
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 24 }]}>
         <View style={styles.dots}>
           {slides.map((s, i) => (
-            <View
-              key={s.key}
-              style={[
-                styles.dot,
-                {
-                  backgroundColor:
-                    i === index ? colors.primary : colors.border,
-                  width: i === index ? 24 : 8,
-                },
-              ]}
-            />
+            <Dot key={s.key} i={i} scrollX={scrollX} color={colors.primary} />
           ))}
         </View>
         <Button

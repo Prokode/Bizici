@@ -171,7 +171,12 @@
     "slide3Body": "A single photo identifies similar products in stock around you.",
     "slide4Chip": "COMMUNITY",
     "slide4Title": "Confirm stock, earn Karma",
-    "slide4Body": "Empty shop or fully stocked? Help the community in one tap and collect points."
+    "slide4Body": "Empty shop or fully stocked? Help the community in one tap and collect points.",
+    "slide5Chip": "MY RUN",
+    "slide5Title": "Plan your shopping run in a glance",
+    "slide5Body": "Add your items — we group them by shop for a lightning-fast outing.",
+    "replay": "Replay the intro",
+    "replayHint": "Take the app tour again"
   },
   "notFound": {
     "title": "This page doesn't exist.",

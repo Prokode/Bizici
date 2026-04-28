@@ -189,7 +189,9 @@
     "slide2Title": "Manage your inventory",
     "slide2Body": "Add products with photos, brand, price and categories in seconds.",
     "slide3Title": "Be visible locally",
-    "slide3Body": "Customers nearby find your products instantly, no detour."
+    "slide3Body": "Customers nearby find your products instantly, no detour.",
+    "replay": "Replay the intro",
+    "replayHint": "Take the app tour again"
   },
   "notFound": {
     "title": "This screen doesn't exist.",

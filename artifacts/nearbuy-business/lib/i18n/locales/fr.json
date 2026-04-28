@@ -189,7 +189,9 @@
     "slide2Title": "Gérez votre inventaire",
     "slide2Body": "Ajoutez vos produits avec photos, marque, prix et catégories en quelques secondes.",
     "slide3Title": "Soyez visible en local",
-    "slide3Body": "Les clients à proximité trouvent vos produits instantanément, sans détour."
+    "slide3Body": "Les clients à proximité trouvent vos produits instantanément, sans détour.",
+    "replay": "Revoir l'introduction",
+    "replayHint": "Refaire le tour de l'application"
   },
   "notFound": {
     "title": "Cet écran n'existe pas.",

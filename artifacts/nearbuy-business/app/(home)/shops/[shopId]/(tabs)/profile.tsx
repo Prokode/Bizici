@@ -22,6 +22,8 @@ import { useAuth, useClerk } from "@clerk/expo";
 import { HelpersSection } from "@/components/HelpersSection";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ONBOARDING_SEEN_KEY } from "@/app/onboarding";
 
 export default function ProfileScreen() {
   const colors = useColors();
@@ -152,10 +154,24 @@ export default function ProfileScreen() {
 
       <View style={{ marginTop: 8 }}>
         <Button
+          title={t("onboarding.replay")}
+          variant="ghost"
+          icon={<Feather name="play-circle" size={18} color={colors.primary} />}
+          onPress={async () => {
+            try {
+              await AsyncStorage.removeItem(ONBOARDING_SEEN_KEY);
+            } catch {
+              // ignore
+            }
+            router.push("/onboarding");
+          }}
+        />
+        <Button
           title={t("profile.switchShop")}
           variant="ghost"
           icon={<Feather name="repeat" size={18} color={colors.foreground} />}
           onPress={() => router.replace("/(home)")}
+          style={{ marginTop: 4 }}
         />
         <Button
           title={t("common.signOut")}
