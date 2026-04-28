@@ -7,10 +7,12 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
+import { useTranslation } from "react-i18next";
 
 export default function CameraScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
@@ -24,13 +26,13 @@ export default function CameraScreen() {
       <View style={[styles.permissionContainer, { backgroundColor: colors.background }]}>
         <Feather name="camera" size={64} color={colors.mutedForeground} style={{ marginBottom: 24 }} />
         <Text style={[styles.permissionTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-          Camera Access Required
+          {t("camera.permTitle")}
         </Text>
         <Text style={[styles.permissionDesc, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
-          We need access to your camera so you can take photos of your products.
+          {t("camera.permDesc")}
         </Text>
-        <Button title="Grant Permission" onPress={requestPermission} />
-        <Button title="Cancel" variant="ghost" onPress={() => router.back()} style={{ marginTop: 12 }} />
+        <Button title={t("camera.grant")} onPress={requestPermission} />
+        <Button title={t("common.cancel")} variant="ghost" onPress={() => router.back()} style={{ marginTop: 12 }} />
       </View>
     );
   }

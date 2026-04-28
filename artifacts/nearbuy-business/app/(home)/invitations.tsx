@@ -1,5 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View, FlatList, Alert } from "react-native";
+import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -16,6 +17,7 @@ import { router } from "expo-router";
 
 export default function InvitationsScreen() {
   const colors = useColors();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: invitations, isLoading } = useQuery(getListMyInvitationsQueryOptions());
   const acceptInvitation = useAcceptInvitation();
@@ -30,7 +32,7 @@ export default function InvitationsScreen() {
           router.replace(`/(home)/shops/${result.shop.id}`);
         },
         onError: (err: any) => {
-          Alert.alert("Could not accept invitation", err?.message ?? "Please try again later");
+          Alert.alert(t("invitations.acceptError"), err?.message ?? t("invitations.tryAgain"));
         },
       }
     );
@@ -55,12 +57,14 @@ export default function InvitationsScreen() {
                   {item.shopName}
                 </Text>
                 <Text style={[styles.role, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_500Medium" }]}>
-                  Invited as {item.role === "seller" ? "Seller" : "Helper"}
+                  {t("invitations.invitedAs", {
+                    role: item.role === "seller" ? t("shopList.seller") : t("shopList.helper"),
+                  })}
                 </Text>
               </View>
             </View>
             <Button
-              title="Accept invitation"
+              title={t("invitations.accept")}
               onPress={() => handleAccept(item)}
               loading={acceptInvitation.isPending}
               style={{ marginTop: 12 }}
@@ -71,10 +75,10 @@ export default function InvitationsScreen() {
           <View style={styles.empty}>
             <Feather name="inbox" size={48} color={colors.mutedForeground} style={{ marginBottom: 16 }} />
             <Text style={[styles.emptyTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-              No pending invitations
+              {t("invitations.emptyTitle")}
             </Text>
             <Text style={[styles.emptyDesc, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
-              When a seller invites you to help with a shop, it'll show up here.
+              {t("invitations.emptyHint")}
             </Text>
           </View>
         }

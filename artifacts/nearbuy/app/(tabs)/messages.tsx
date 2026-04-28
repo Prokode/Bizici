@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -14,33 +14,44 @@ import { useRouter, type Href } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import { useTranslation } from "react-i18next";
 
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
 import { listConversations, type ConversationSummary } from "@/lib/chatApi";
 
-function formatRelative(iso: string): string {
-  try {
-    const d = new Date(iso);
-    const now = new Date();
-    const diff = now.getTime() - d.getTime();
-    const min = Math.floor(diff / 60000);
-    if (min < 1) return "à l'instant";
-    if (min < 60) return `il y a ${min} min`;
-    const hours = Math.floor(min / 60);
-    if (hours < 24) return `il y a ${hours} h`;
-    const days = Math.floor(hours / 24);
-    if (days < 7) return `il y a ${days} j`;
-    return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
-  } catch {
-    return "";
-  }
+function useFormatRelative() {
+  const { t, i18n } = useTranslation();
+  return useCallback(
+    (iso: string): string => {
+      try {
+        const d = new Date(iso);
+        const now = new Date();
+        const diff = now.getTime() - d.getTime();
+        const min = Math.floor(diff / 60000);
+        if (min < 1) return t("common.justNow");
+        if (min < 60) return t("common.minAgo", { count: min });
+        const hours = Math.floor(min / 60);
+        if (hours < 24) return t("common.hAgo", { count: hours });
+        const days = Math.floor(hours / 24);
+        if (days < 7) return t("common.dAgo", { count: days });
+        return d.toLocaleDateString(i18n.language === "en" ? "en-US" : "fr-FR", {
+          day: "numeric",
+          month: "short",
+        });
+      } catch {
+        return "";
+      }
+    },
+    [t, i18n.language],
+  );
 }
 
 function SignedOutHero() {
   const colors = useColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
 
   return (
     <View
@@ -58,15 +69,14 @@ function SignedOutHero() {
         <Feather name="message-circle" size={32} color="#ffffff" />
       </LinearGradient>
       <Text style={[styles.heroTitle, { color: colors.foreground }]}>
-        Discutez avec les vendeurs
+        {t("messages.heroTitle")}
       </Text>
       <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
-        Connectez-vous pour poser vos questions à un vendeur, vérifier la
-        disponibilité d'un produit ou réserver.
+        {t("messages.heroSubtitle")}
       </Text>
       <View style={styles.heroActions}>
         <Button
-          title="Se connecter"
+          title={t("common.signIn")}
           size="lg"
           onPress={() =>
             router.push(
@@ -77,7 +87,7 @@ function SignedOutHero() {
           }
         />
         <Button
-          title="Créer un compte"
+          title={t("common.createAccount")}
           variant="outline"
           size="lg"
           onPress={() =>
@@ -98,6 +108,8 @@ export default function MessagesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
+  const { t } = useTranslation();
+  const formatRelative = useFormatRelative();
 
   const query = useQuery({
     queryKey: ["chat-conv-list"],
@@ -122,7 +134,7 @@ export default function MessagesScreen() {
   const renderItem = ({ item }: { item: ConversationSummary }) => {
     const otherName =
       item.myRole === "seller"
-        ? (item.customer.name ?? item.customer.email ?? "Client")
+        ? (item.customer.name ?? item.customer.email ?? t("messages.customer"))
         : item.shop.name;
     const otherSubtitle =
       item.myRole === "seller"
@@ -181,7 +193,7 @@ export default function MessagesScreen() {
                 ? `${otherSubtitle} · ${item.lastMessageText}`
                 : (item.lastMessageText ||
                   otherSubtitle ||
-                  "Démarrer la conversation")}
+                  t("messages.startConversation"))}
             </Text>
             {item.unreadCount > 0 && (
               <View
@@ -211,7 +223,7 @@ export default function MessagesScreen() {
       ]}
     >
       <Text style={[styles.heading, { color: colors.foreground }]}>
-        Messages
+        {t("messages.headerTitle")}
       </Text>
       <FlatList
         data={query.data ?? []}
@@ -243,8 +255,7 @@ export default function MessagesScreen() {
               <Text
                 style={[styles.emptyText, { color: colors.mutedForeground }]}
               >
-                Aucune discussion pour l'instant. Ouvrez une fiche boutique sur
-                la carte et appuyez sur « Discuter avec le vendeur ».
+                {t("messages.emptyHint")}
               </Text>
             </View>
           )
@@ -308,7 +319,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: { textAlign: "center", fontSize: 14, lineHeight: 20 },
-  // Hero
   heroWrap: {
     flex: 1,
     paddingHorizontal: 24,

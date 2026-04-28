@@ -11,6 +11,7 @@ import * as AuthSession from "expo-auth-session";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -30,6 +31,7 @@ export default function SignInScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { t } = useTranslation();
   const { next } = useLocalSearchParams<{ next?: string }>();
   const { signIn, errors, fetchStatus } = useSignIn();
   const { startSSOFlow } = useSSO();
@@ -54,7 +56,7 @@ export default function SignInScreen() {
         setSubmitError(
           error.errors?.[0]?.longMessage ??
             error.message ??
-            "Identifiants invalides",
+            t("auth.errorSignIn"),
         );
         return;
       }
@@ -67,7 +69,7 @@ export default function SignInScreen() {
         });
       }
     } catch (err: any) {
-      setSubmitError(err?.message ?? "Une erreur est survenue");
+      setSubmitError(err?.message ?? t("auth.errorGeneric"));
     }
   };
 
@@ -88,9 +90,9 @@ export default function SignInScreen() {
         });
       }
     } catch (err: any) {
-      setSubmitError(err?.message ?? "Connexion Google impossible");
+      setSubmitError(err?.message ?? t("auth.errorGoogle"));
     }
-  }, [goHome, startSSOFlow]);
+  }, [goHome, startSSOFlow, t]);
 
   return (
     <View
@@ -103,7 +105,7 @@ export default function SignInScreen() {
         <Pressable style={styles.back} onPress={() => router.back()}>
           <Feather name="arrow-left" size={20} color={colors.foreground} />
           <Text style={[styles.backText, { color: colors.foreground }]}>
-            Retour
+            {t("auth.back")}
           </Text>
         </Pressable>
 
@@ -125,7 +127,7 @@ export default function SignInScreen() {
               },
             ]}
           >
-            Bon retour !
+            {t("auth.signInTitle")}
           </Text>
           <Text
             style={[
@@ -136,13 +138,13 @@ export default function SignInScreen() {
               },
             ]}
           >
-            Connectez-vous pour gagner du Karma et confirmer les stocks.
+            {t("auth.signInSubtitle")}
           </Text>
         </View>
 
         <Card style={styles.card}>
           <Button
-            title="Continuer avec Google"
+            title={t("auth.continueGoogle")}
             variant="secondary"
             icon={
               <Feather
@@ -162,7 +164,7 @@ export default function SignInScreen() {
             <Text
               style={[styles.dividerText, { color: colors.mutedForeground }]}
             >
-              ou
+              {t("common.or")}
             </Text>
             <View
               style={[styles.divider, { backgroundColor: colors.border }]}
@@ -170,8 +172,8 @@ export default function SignInScreen() {
           </View>
 
           <Input
-            label="E-mail"
-            placeholder="vous@exemple.com"
+            label={t("auth.email")}
+            placeholder={t("auth.emailPlaceholder")}
             value={emailAddress}
             onChangeText={setEmailAddress}
             autoCapitalize="none"
@@ -184,7 +186,7 @@ export default function SignInScreen() {
           )}
 
           <Input
-            label="Mot de passe"
+            label={t("auth.password")}
             placeholder="••••••••"
             value={password}
             onChangeText={setPassword}
@@ -202,7 +204,7 @@ export default function SignInScreen() {
           )}
 
           <Button
-            title="Se connecter"
+            title={t("auth.signInButton")}
             size="lg"
             disabled={!emailAddress || !password || fetchStatus === "fetching"}
             loading={fetchStatus === "fetching"}
@@ -213,7 +215,7 @@ export default function SignInScreen() {
 
         <View style={styles.footer}>
           <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
-            Pas encore de compte ?{" "}
+            {t("auth.noAccount")}{" "}
           </Text>
           <Link
             href={
@@ -231,7 +233,7 @@ export default function SignInScreen() {
                 },
               ]}
             >
-              Créer un compte
+              {t("auth.signUp")}
             </Text>
           </Link>
         </View>

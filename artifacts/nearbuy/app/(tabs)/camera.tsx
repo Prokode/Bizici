@@ -18,6 +18,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
 import * as ImagePicker from "expo-image-picker";
 import { useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
@@ -44,6 +45,7 @@ type Stage = "idle" | "captured" | "analyzing" | "results";
 export default function CameraTab() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [stage, setStage] = useState<Stage>("idle");
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
@@ -99,7 +101,7 @@ export default function CameraTab() {
   // Visual search mutation
   const visualSearchMutation = useMutation({
     mutationFn: async () => {
-      if (!center) throw new Error("Position non disponible");
+      if (!center) throw new Error(t("camera.positionUnavailable"));
       return fetchVisualSearch({
         lat: center.lat,
         lng: center.lng,
@@ -130,11 +132,11 @@ export default function CameraTab() {
       const perm = await ImagePicker.requestCameraPermissionsAsync();
       if (!perm.granted) {
         Alert.alert(
-          "Caméra non disponible",
-          "Pour photographier un produit, autorisez l'accès à la caméra dans les réglages, ou choisissez une image dans votre galerie.",
+          t("camera.permTitle"),
+          t("camera.permBody"),
           [
-            { text: "Annuler", style: "cancel" },
-            { text: "Ouvrir la galerie", onPress: launchGallery },
+            { text: t("common.cancel"), style: "cancel" },
+            { text: t("camera.permOpenGallery"), onPress: launchGallery },
           ],
         );
         return;
@@ -151,7 +153,7 @@ export default function CameraTab() {
         setStage("captured");
       }
     } catch {
-      Alert.alert("Erreur", "Impossible d'ouvrir la caméra. Réessayez.");
+      Alert.alert(t("camera.errorLabel"), t("camera.openCameraError"));
     }
   };
 
@@ -163,8 +165,8 @@ export default function CameraTab() {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
       Alert.alert(
-        "Galerie non disponible",
-        "Autorisez l'accès à vos photos dans les réglages pour pouvoir choisir une image.",
+        t("camera.galleryUnavailable"),
+        t("camera.galleryUnavailableBody"),
       );
       return;
     }
@@ -251,17 +253,20 @@ export default function CameraTab() {
       </View>
 
       <Text style={[styles.title, { color: colors.foreground }]}>
-        Recherche visuelle
+        {t("camera.title")}
       </Text>
       <Text style={[styles.body, { color: colors.mutedForeground }]}>
-        Photographiez un objet et nous trouverons des produits similaires en
-        stock dans les boutiques autour de vous.
+        {t("camera.subtitle")}
       </Text>
 
       <View style={{ height: 24 }} />
 
       <Button
-        title={Platform.OS === "web" ? "Téléverser une photo" : "Prendre une photo"}
+        title={
+          Platform.OS === "web"
+            ? t("camera.uploadPhoto")
+            : t("camera.takePhoto")
+        }
         size="lg"
         fullWidth
         onPress={launchCamera}
@@ -271,7 +276,7 @@ export default function CameraTab() {
         <>
           <View style={{ height: 12 }} />
           <Button
-            title="Choisir dans la galerie"
+            title={t("camera.pickGallery")}
             size="lg"
             variant="outline"
             fullWidth
@@ -303,17 +308,17 @@ export default function CameraTab() {
         <Image source={{ uri: photoUri }} style={styles.previewImg} />
       )}
       <Text style={[styles.label, { color: colors.foreground, marginTop: 16 }]}>
-        Indice (optionnel)
+        {t("camera.hintLabel")}
       </Text>
       <Text
         style={[styles.labelHelp, { color: colors.mutedForeground }]}
       >
-        Décrivez l'objet pour affiner les résultats (ex : « chaussure marron »).
+        {t("camera.hintHelp")}
       </Text>
       <TextInput
         value={hint}
         onChangeText={setHint}
-        placeholder="Ex : robe rouge à fleurs"
+        placeholder={t("camera.hintPlaceholder")}
         placeholderTextColor={colors.mutedForeground}
         editable={!analyzing}
         style={[
@@ -328,13 +333,13 @@ export default function CameraTab() {
 
       {visualSearchMutation.isError && (
         <Text style={[styles.errorText, { color: colors.destructive }]}>
-          Erreur lors de l'analyse. Réessayez.
+          {t("camera.analyzeError")}
         </Text>
       )}
 
       <View style={{ height: 16 }} />
       <Button
-        title={analyzing ? "Analyse en cours…" : "Analyser"}
+        title={analyzing ? t("camera.analyzing") : t("camera.analyze")}
         size="lg"
         fullWidth
         onPress={onAnalyze}
@@ -349,7 +354,7 @@ export default function CameraTab() {
       />
       <View style={{ height: 8 }} />
       <Button
-        title="Reprendre une photo"
+        title={t("camera.retake")}
         variant="ghost"
         fullWidth
         onPress={reset}
@@ -368,13 +373,13 @@ export default function CameraTab() {
         <View style={{ flex: 1 }}>
           <Text style={[styles.resultsTitle, { color: colors.foreground }]}>
             {matches.length > 0
-              ? `${matches.length} correspondance${matches.length > 1 ? "s" : ""}`
-              : "Aucune correspondance"}
+              ? t("camera.matchesCount", { count: matches.length })
+              : t("camera.noMatchesTitle")}
           </Text>
           <Text
             style={[styles.resultsSubtitle, { color: colors.mutedForeground }]}
           >
-            dans un rayon de 5 km autour de vous
+            {t("camera.withinRadius")}
           </Text>
         </View>
         <TouchableOpacity onPress={reset} style={styles.iconBtn} hitSlop={8}>
@@ -386,12 +391,12 @@ export default function CameraTab() {
         <View style={styles.emptyResults}>
           <Feather name="image" size={40} color={colors.mutedForeground} />
           <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-            Pas de produits similaires
+            {t("camera.noMatches")}
           </Text>
           <Text
             style={[styles.emptyText, { color: colors.mutedForeground }]}
           >
-            Essayez avec une autre photo ou un indice plus précis.
+            {t("camera.noMatchesHint")}
           </Text>
         </View>
       ) : (
@@ -453,7 +458,7 @@ export default function CameraTab() {
                         { color: colors.primary },
                       ]}
                     >
-                      {Math.round(item.confidence * 100)}% match
+                      {t("camera.matchPercent", { percent: Math.round(item.confidence * 100) })}
                     </Text>
                   </View>
                 </View>
@@ -486,7 +491,9 @@ export default function CameraTab() {
                   ]}
                 >
                   {formatDistance(item.distanceMeters)}
-                  {item.shopIsOpen ? "  ·  Ouvert" : "  ·  Fermé"}
+                  {item.shopIsOpen
+                    ? `  ·  ${t("shop.openNow")}`
+                    : `  ·  ${t("shop.closed")}`}
                 </Text>
               </View>
               <Feather

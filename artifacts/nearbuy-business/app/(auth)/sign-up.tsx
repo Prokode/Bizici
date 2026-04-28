@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, View, Platform } from "react-native";
+import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -29,6 +30,7 @@ export default function SignUpScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { t } = useTranslation();
   const { signUp, errors, fetchStatus } = useSignUp();
   const { startSSOFlow } = useSSO();
 
@@ -42,12 +44,12 @@ export default function SignUpScreen() {
     try {
       const { error } = await signUp.password({ emailAddress, password });
       if (error) {
-        setSubmitError(error.errors?.[0]?.longMessage ?? error.message ?? "Sign up failed");
+        setSubmitError(error.errors?.[0]?.longMessage ?? error.message ?? t("auth.errorSignUp"));
         return;
       }
       await signUp.verifications.sendEmailCode();
     } catch (err: any) {
-      setSubmitError(err?.message ?? "Something went wrong");
+      setSubmitError(err?.message ?? t("auth.errorGeneric"));
     }
   };
 
@@ -64,7 +66,7 @@ export default function SignUpScreen() {
         });
       }
     } catch (err: any) {
-      setSubmitError(err?.message ?? "Verification failed");
+      setSubmitError(err?.message ?? t("auth.errorVerify"));
     }
   };
 
@@ -85,9 +87,9 @@ export default function SignUpScreen() {
         });
       }
     } catch (err: any) {
-      setSubmitError(err?.message ?? "Google sign-up failed");
+      setSubmitError(err?.message ?? t("auth.errorGoogle"));
     }
-  }, [router, startSSOFlow]);
+  }, [router, startSSOFlow, t]);
 
   const isVerifying =
     signUp.status === "missing_requirements" &&
@@ -102,17 +104,17 @@ export default function SignUpScreen() {
             <Feather name="shopping-bag" size={28} color={colors.primaryForeground} />
           </View>
           <Text style={[styles.title, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-            {isVerifying ? "Verify your email" : "Create your account"}
+            {isVerifying ? t("auth.verifyTitle") : t("auth.signUpTitle")}
           </Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
-            {isVerifying ? `Enter the code we sent to ${emailAddress}` : "Start managing shops in minutes"}
+            {isVerifying ? t("auth.verifySubtitle", { email: emailAddress }) : t("auth.signUpSubtitle")}
           </Text>
         </View>
 
         {isVerifying ? (
           <Card style={styles.card}>
             <Input
-              label="Verification code"
+              label={t("auth.verificationCode")}
               placeholder="123456"
               value={code}
               onChangeText={setCode}
@@ -124,7 +126,7 @@ export default function SignUpScreen() {
             {submitError && <Text style={[styles.error, { color: colors.destructive }]}>{submitError}</Text>}
 
             <Button
-              title="Verify"
+              title={t("auth.verifyButton")}
               size="lg"
               disabled={!code || fetchStatus === "fetching"}
               loading={fetchStatus === "fetching"}
@@ -132,7 +134,7 @@ export default function SignUpScreen() {
               style={{ marginTop: 12 }}
             />
             <Button
-              title="Send a new code"
+              title={t("auth.resendCode")}
               variant="ghost"
               onPress={() => signUp.verifications.sendEmailCode()}
               style={{ marginTop: 8 }}
@@ -141,7 +143,7 @@ export default function SignUpScreen() {
         ) : (
           <Card style={styles.card}>
             <Button
-              title="Continue with Google"
+              title={t("auth.continueGoogle")}
               variant="secondary"
               icon={<Feather name="chrome" size={18} color={colors.secondaryForeground} />}
               onPress={onGoogle}
@@ -150,13 +152,13 @@ export default function SignUpScreen() {
 
             <View style={styles.dividerRow}>
               <View style={[styles.divider, { backgroundColor: colors.border }]} />
-              <Text style={[styles.dividerText, { color: colors.mutedForeground }]}>or</Text>
+              <Text style={[styles.dividerText, { color: colors.mutedForeground }]}>{t("common.or")}</Text>
               <View style={[styles.divider, { backgroundColor: colors.border }]} />
             </View>
 
             <Input
-              label="Email"
-              placeholder="you@example.com"
+              label={t("auth.email")}
+              placeholder={t("auth.emailPlaceholder")}
               value={emailAddress}
               onChangeText={setEmailAddress}
               autoCapitalize="none"
@@ -167,8 +169,8 @@ export default function SignUpScreen() {
             )}
 
             <Input
-              label="Password"
-              placeholder="At least 8 characters"
+              label={t("auth.password")}
+              placeholder={t("auth.passwordPlaceholderSignUp")}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -179,7 +181,7 @@ export default function SignUpScreen() {
             {submitError && <Text style={[styles.error, { color: colors.destructive }]}>{submitError}</Text>}
 
             <Button
-              title="Sign up"
+              title={t("auth.signUpButton")}
               size="lg"
               disabled={!emailAddress || !password || fetchStatus === "fetching"}
               loading={fetchStatus === "fetching"}
@@ -192,9 +194,11 @@ export default function SignUpScreen() {
         )}
 
         <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: colors.mutedForeground }]}>Already have an account? </Text>
+          <Text style={[styles.footerText, { color: colors.mutedForeground }]}>{t("auth.hasAccount")} </Text>
           <Link href={"/(auth)/sign-in" as Href}>
-            <Text style={[styles.link, { color: colors.primary, fontFamily: "PlusJakartaSans_600SemiBold" }]}>Sign in</Text>
+            <Text style={[styles.link, { color: colors.primary, fontFamily: "PlusJakartaSans_600SemiBold" }]}>
+              {t("auth.signIn")}
+            </Text>
           </Link>
         </View>
       </KeyboardAwareScrollViewCompat>

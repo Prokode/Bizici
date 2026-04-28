@@ -1,5 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View, FlatList, RefreshControl, TouchableOpacity, Platform } from "react-native";
+import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -19,6 +20,7 @@ import * as Haptics from "expo-haptics";
 export default function ShopListScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
 
   const {
     data: shops,
@@ -51,17 +53,17 @@ export default function ShopListScreen() {
                 {shop.name}
               </Text>
               <Text style={[styles.shopMeta, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_500Medium" }]}>
-                {shop.marketName || "No market name"}
+                {shop.marketName || t("shopList.noMarketName")}
               </Text>
             </View>
             <View style={styles.badges}>
               <Badge variant={item.role === "seller" ? "default" : "secondary"}>
-                {item.role === "seller" ? "Seller" : "Helper"}
+                {item.role === "seller" ? t("shopList.seller") : t("shopList.helper")}
               </Badge>
               {shop.isOpen ? (
-                <Badge variant="success" style={{ marginTop: 4 }}>Open</Badge>
+                <Badge variant="success" style={{ marginTop: 4 }}>{t("shopList.open")}</Badge>
               ) : (
-                <Badge variant="destructive" style={{ marginTop: 4 }}>Closed</Badge>
+                <Badge variant="destructive" style={{ marginTop: 4 }}>{t("shopList.closed")}</Badge>
               )}
             </View>
           </View>
@@ -102,7 +104,7 @@ export default function ShopListScreen() {
             >
               <Feather name="mail" size={20} color={colors.accentForeground} />
               <Text style={[styles.inviteText, { color: colors.accentForeground, fontFamily: "PlusJakartaSans_600SemiBold" }]}>
-                {inviteCount === 1 ? "1 pending invitation" : `${inviteCount} pending invitations`}
+                {t("shopList.invitations", { count: inviteCount })}
               </Text>
               <Feather name="chevron-right" size={20} color={colors.accentForeground} />
             </TouchableOpacity>
@@ -112,13 +114,13 @@ export default function ShopListScreen() {
           <View style={styles.emptyContainer}>
             <Feather name="shopping-bag" size={48} color={colors.mutedForeground} style={{ marginBottom: 16 }} />
             <Text style={[styles.emptyTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-              No shops yet
+              {t("shopList.noShopsTitle")}
             </Text>
             <Text style={[styles.emptyDesc, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
-              Create your first shop or wait for an invitation from a seller.
+              {t("shopList.noShopsHint")}
             </Text>
             <Button
-              title="Create your first shop"
+              title={t("shopList.createFirst")}
               onPress={() => router.push("/(home)/new-shop")}
               style={{ marginTop: 24 }}
             />
@@ -138,7 +140,7 @@ export default function ShopListScreen() {
         >
           <Feather name="plus" size={20} color={colors.primaryForeground} />
           <Text style={[styles.fabText, { color: colors.primaryForeground, fontFamily: "PlusJakartaSans_600SemiBold" }]}>
-            New shop
+            {t("shopList.newShop")}
           </Text>
         </TouchableOpacity>
       )}

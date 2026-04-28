@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Trash2, Search } from "lucide-react";
 import { api, type Paginated, type ShopDetail, type ShopListItem } from "@/lib/api";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,8 @@ import { Column, DataTable, Pagination } from "@/components/DataTable";
 import { PageContainer, PageHeader } from "@/components/PageHeader";
 
 export default function ShopsPage() {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "en" ? "en-US" : "fr-FR";
   const { toast } = useToast();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
@@ -56,16 +59,16 @@ export default function ShopsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["shops"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
-      toast({ title: "Boutique supprimée" });
+      toast({ title: t("shops.deleted") });
       setConfirmDelete(null);
     },
-    onError: (e: Error) => toast({ title: "Erreur", description: e.message, variant: "destructive" }),
+    onError: (e: Error) => toast({ title: t("common.errorTitle"), description: e.message, variant: "destructive" }),
   });
 
   const columns: Column<ShopListItem>[] = [
     {
       key: "name",
-      header: "Nom",
+      header: t("shops.name"),
       cell: (s) => (
         <div>
           <div className="font-medium">{s.name}</div>
@@ -77,20 +80,20 @@ export default function ShopsPage() {
     },
     {
       key: "seller",
-      header: "Vendeur",
+      header: t("shops.seller"),
       cell: (s) =>
         s.seller ? (
           <div>
-            <div>{s.seller.name ?? "—"}</div>
+            <div>{s.seller.name ?? t("common.dash")}</div>
             <div className="text-xs text-muted-foreground">{s.seller.email}</div>
           </div>
         ) : (
-          <span className="text-muted-foreground">—</span>
+          <span className="text-muted-foreground">{t("common.dash")}</span>
         ),
     },
     {
       key: "open",
-      header: "Statut",
+      header: t("shops.status"),
       cell: (s) => (
         <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
           <Switch
@@ -99,15 +102,15 @@ export default function ShopsPage() {
             data-testid={`switch-open-${s.id}`}
           />
           <Badge variant={s.isOpen ? "default" : "secondary"}>
-            {s.isOpen ? "Ouverte" : "Fermée"}
+            {s.isOpen ? t("shops.open") : t("shops.closed")}
           </Badge>
         </div>
       ),
     },
     {
       key: "createdAt",
-      header: "Création",
-      cell: (s) => new Date(s.createdAt).toLocaleDateString("fr-FR"),
+      header: t("shops.createdOn"),
+      cell: (s) => new Date(s.createdAt).toLocaleDateString(locale),
     },
     {
       key: "actions",
@@ -132,8 +135,8 @@ export default function ShopsPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Boutiques"
-        description="Toutes les boutiques NearBuy"
+        title={t("shops.title")}
+        description={t("shops.description")}
         actions={
           <form
             onSubmit={(e) => {
@@ -146,14 +149,14 @@ export default function ShopsPage() {
             <div className="relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
-                placeholder="Rechercher (nom, marché)…"
+                placeholder={t("shops.searchPlaceholder")}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 className="pl-8 w-72"
                 data-testid="input-search-shops"
               />
             </div>
-            <Button type="submit" variant="outline">Filtrer</Button>
+            <Button type="submit" variant="outline">{t("common.filter")}</Button>
           </form>
         }
       />
@@ -177,29 +180,29 @@ export default function ShopsPage() {
       <Dialog open={!!openId} onOpenChange={(o) => !o && setOpenId(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Détails boutique</DialogTitle>
+            <DialogTitle>{t("shops.shopDetails")}</DialogTitle>
           </DialogHeader>
           {detail.isLoading ? (
-            <div className="text-muted-foreground py-8 text-center">Chargement…</div>
+            <div className="text-muted-foreground py-8 text-center">{t("common.loading")}</div>
           ) : detail.data ? (
             <div className="space-y-4 text-sm">
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Nom" value={detail.data.shop.name} />
-                <Field label="Marché" value={detail.data.shop.marketName} />
-                <Field label="Stand" value={detail.data.shop.stallInfo} />
+                <Field label={t("shops.name")} value={detail.data.shop.name} />
+                <Field label={t("shops.market")} value={detail.data.shop.marketName} />
+                <Field label={t("shops.stall")} value={detail.data.shop.stallInfo} />
                 <Field
-                  label="Coordonnées"
+                  label={t("shops.coordinates")}
                   value={`${detail.data.shop.location.coordinates[1].toFixed(5)}, ${detail.data.shop.location.coordinates[0].toFixed(5)}`}
                   mono
                 />
-                <Field label="Produits" value={String(detail.data.productsCount)} />
-                <Field label="Conversations" value={String(detail.data.conversationsCount)} />
+                <Field label={t("shops.products")} value={String(detail.data.productsCount)} />
+                <Field label={t("shops.conversations")} value={String(detail.data.conversationsCount)} />
               </div>
 
               <div>
-                <div className="font-medium mb-2">Membres ({detail.data.members.length})</div>
+                <div className="font-medium mb-2">{t("shops.members", { count: detail.data.members.length })}</div>
                 {detail.data.members.length === 0 ? (
-                  <div className="text-muted-foreground">Aucun membre</div>
+                  <div className="text-muted-foreground">{t("shops.noMembers")}</div>
                 ) : (
                   <div className="space-y-1">
                     {detail.data.members.map((m) => (
@@ -208,11 +211,11 @@ export default function ShopsPage() {
                         className="flex items-center justify-between border border-card-border rounded-md px-3 py-2"
                       >
                         <div>
-                          <div className="font-medium">{m.name ?? m.email ?? "—"}</div>
+                          <div className="font-medium">{m.name ?? m.email ?? t("common.dash")}</div>
                           <div className="text-xs text-muted-foreground">{m.email}</div>
                         </div>
                         <Badge variant={m.role === "seller" ? "default" : "secondary"}>
-                          {m.role}
+                          {t(`admins.memberRoles.${m.role}`, { defaultValue: m.role })}
                         </Badge>
                       </div>
                     ))}
@@ -227,20 +230,20 @@ export default function ShopsPage() {
       <Dialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Supprimer la boutique ?</DialogTitle>
+            <DialogTitle>{t("shops.confirmDeleteTitle")}</DialogTitle>
             <DialogDescription>
-              "{confirmDelete?.name}" et tous ses produits seront supprimés.
+              {t("shops.confirmDeleteDesc", { name: confirmDelete?.name ?? "" })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDelete(null)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setConfirmDelete(null)}>{t("common.cancel")}</Button>
             <Button
               variant="destructive"
               disabled={del.isPending}
               onClick={() => confirmDelete && del.mutate(confirmDelete.id)}
               data-testid="button-confirm-delete-shop"
             >
-              {del.isPending ? "Suppression…" : "Supprimer"}
+              {del.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -250,11 +253,12 @@ export default function ShopsPage() {
 }
 
 function Field({ label, value, mono }: { label: string; value: string | null; mono?: boolean }) {
+  const { t } = useTranslation();
   return (
     <div>
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className={mono ? "font-mono text-xs break-all" : ""}>
-        {value ?? <span className="text-muted-foreground">—</span>}
+        {value ?? <span className="text-muted-foreground">{t("common.dash")}</span>}
       </div>
     </div>
   );

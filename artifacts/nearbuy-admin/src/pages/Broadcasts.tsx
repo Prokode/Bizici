@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Trash2 } from "lucide-react";
 import { api, type Broadcast, type Paginated } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -15,13 +16,15 @@ import { useToast } from "@/hooks/use-toast";
 import { Column, DataTable, Pagination } from "@/components/DataTable";
 import { PageContainer, PageHeader } from "@/components/PageHeader";
 
-const STATUS_LABEL: Record<Broadcast["status"], { label: string; variant: "default" | "secondary" }> = {
-  active: { label: "Active", variant: "default" },
-  found: { label: "Trouvée", variant: "secondary" },
-  expired: { label: "Expirée", variant: "secondary" },
+const STATUS_VARIANT: Record<Broadcast["status"], "default" | "secondary"> = {
+  active: "default",
+  found: "secondary",
+  expired: "secondary",
 };
 
 export default function BroadcastsPage() {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "en" ? "en-US" : "fr-FR";
   const { toast } = useToast();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
@@ -38,22 +41,22 @@ export default function BroadcastsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["broadcasts"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
-      toast({ title: "Recherche supprimée" });
+      toast({ title: t("broadcasts.deleted") });
       setConfirmDelete(null);
     },
-    onError: (e: Error) => toast({ title: "Erreur", description: e.message, variant: "destructive" }),
+    onError: (e: Error) => toast({ title: t("common.errorTitle"), description: e.message, variant: "destructive" }),
   });
 
   const columns: Column<Broadcast>[] = [
-    { key: "query", header: "Recherche", cell: (b) => b.query },
+    { key: "query", header: t("broadcasts.query"), cell: (b) => b.query },
     {
       key: "status",
-      header: "Statut",
-      cell: (b) => <Badge variant={STATUS_LABEL[b.status].variant}>{STATUS_LABEL[b.status].label}</Badge>,
+      header: t("broadcasts.status"),
+      cell: (b) => <Badge variant={STATUS_VARIANT[b.status]}>{t(`broadcasts.${b.status}`)}</Badge>,
     },
     {
       key: "location",
-      header: "Localisation",
+      header: t("broadcasts.location"),
       cell: (b) => (
         <span className="font-mono text-xs">
           {b.location.coordinates[1].toFixed(4)}, {b.location.coordinates[0].toFixed(4)}
@@ -62,8 +65,8 @@ export default function BroadcastsPage() {
     },
     {
       key: "createdAt",
-      header: "Créée le",
-      cell: (b) => new Date(b.createdAt).toLocaleDateString("fr-FR"),
+      header: t("broadcasts.createdOn"),
+      cell: (b) => new Date(b.createdAt).toLocaleDateString(locale),
     },
     {
       key: "actions",
@@ -84,7 +87,7 @@ export default function BroadcastsPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Recherches diffusées" description="Demandes lancées par les clients" />
+      <PageHeader title={t("broadcasts.title")} description={t("broadcasts.description")} />
 
       <DataTable rows={list.data?.items ?? []} columns={columns} loading={list.isLoading} testId="table-broadcasts" />
       {list.data ? (
@@ -99,16 +102,16 @@ export default function BroadcastsPage() {
       <Dialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Supprimer la recherche ?</DialogTitle>
+            <DialogTitle>{t("broadcasts.confirmDeleteTitle")}</DialogTitle>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDelete(null)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setConfirmDelete(null)}>{t("common.cancel")}</Button>
             <Button
               variant="destructive"
               disabled={del.isPending}
               onClick={() => confirmDelete && del.mutate(confirmDelete.id)}
             >
-              {del.isPending ? "Suppression…" : "Supprimer"}
+              {del.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

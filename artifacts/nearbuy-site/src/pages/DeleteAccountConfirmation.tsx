@@ -1,8 +1,10 @@
 import { Link } from "wouter";
+import { Trans, useTranslation } from "react-i18next";
 import { NearBuyLogo } from "@/components/NearBuyLogo";
 import { SiteFooter } from "@/components/SiteFooter";
 
 export default function DeleteAccountConfirmationPage() {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen flex flex-col bg-white text-neutral-900">
       <header className="px-6 py-5 flex items-center justify-between border-b border-neutral-100">
@@ -32,16 +34,16 @@ export default function DeleteAccountConfirmationPage() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Demande envoyée
+            {t("deletion.successTitle")}
           </h1>
           <p className="mt-4 text-neutral-700 leading-relaxed">
-            Merci, votre demande de suppression a bien été enregistrée.
-            Notre équipe la traitera dans un délai de{" "}
-            <strong>30 jours maximum</strong> et vous recevrez un e-mail de
-            confirmation à l'adresse indiquée.
+            <Trans
+              i18nKey="deletion.successBody"
+              components={{ strong: <strong /> }}
+            />
           </p>
           <p className="mt-3 text-sm text-neutral-500">
-            Si vous changez d'avis avant la suppression, écrivez-nous à{" "}
+            {t("deletion.successContact")}{" "}
             <a
               href="mailto:support@nearbuy.app"
               className="text-orange-600 hover:underline"
@@ -55,7 +57,7 @@ export default function DeleteAccountConfirmationPage() {
             className="mt-8 inline-flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 text-base transition-colors"
             data-testid="link-home"
           >
-            Retour à l'accueil
+            {t("deletion.backHome")}
           </Link>
         </div>
       </main>

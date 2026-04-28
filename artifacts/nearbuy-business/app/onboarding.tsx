@@ -15,6 +15,7 @@ import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
@@ -25,8 +26,8 @@ const { width: SCREEN_W } = Dimensions.get("window");
 
 type Slide = {
   key: string;
-  title: string;
-  description: string;
+  titleKey: string;
+  descriptionKey: string;
   visual: "logo" | "icon";
   iconName?: keyof typeof Feather.glyphMap;
 };
@@ -34,24 +35,21 @@ type Slide = {
 const slides: Slide[] = [
   {
     key: "welcome",
-    title: "Bienvenue sur NearBuy",
-    description:
-      "L'application qui rapproche votre boutique des clients à deux pas de chez vous.",
+    titleKey: "onboarding.slide1Title",
+    descriptionKey: "onboarding.slide1Body",
     visual: "logo",
   },
   {
     key: "inventory",
-    title: "Gérez votre inventaire",
-    description:
-      "Ajoutez vos produits avec photos, marque, prix et catégories en quelques secondes.",
+    titleKey: "onboarding.slide2Title",
+    descriptionKey: "onboarding.slide2Body",
     visual: "icon",
     iconName: "package",
   },
   {
     key: "nearby",
-    title: "Soyez visible en local",
-    description:
-      "Les clients à proximité trouvent vos produits instantanément, sans détour.",
+    titleKey: "onboarding.slide3Title",
+    descriptionKey: "onboarding.slide3Body",
     visual: "icon",
     iconName: "map-pin",
   },
@@ -61,6 +59,7 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const listRef = useRef<FlatList<Slide>>(null);
   const [index, setIndex] = useState(0);
 
@@ -93,7 +92,7 @@ export default function OnboardingScreen() {
       <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
         <Pressable onPress={finish} hitSlop={12}>
           <Text style={[styles.skip, { color: colors.mutedForeground }]}>
-            Passer
+            {t("onboarding.skip")}
           </Text>
         </Pressable>
       </View>
@@ -132,12 +131,12 @@ export default function OnboardingScreen() {
               )}
             </View>
             <Text style={[styles.title, { color: colors.foreground }]}>
-              {item.title}
+              {t(item.titleKey)}
             </Text>
             <Text
               style={[styles.description, { color: colors.mutedForeground }]}
             >
-              {item.description}
+              {t(item.descriptionKey)}
             </Text>
           </View>
         )}
@@ -160,7 +159,7 @@ export default function OnboardingScreen() {
           ))}
         </View>
         <Button
-          title={isLast ? "Commencer" : "Suivant"}
+          title={isLast ? t("onboarding.start") : t("onboarding.next")}
           onPress={next}
           fullWidth
           size="lg"

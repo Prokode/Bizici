@@ -2,43 +2,66 @@
   "nav": {
     "language": "Langue",
     "languageFr": "FR",
-    "languageEn": "EN"
+    "languageEn": "EN",
+    "how": "Comment ça marche",
+    "download": "Télécharger",
+    "back": "Retour à l'accueil"
   },
   "hero": {
-    "tagline": "Le commerce local, à portée de carte",
-    "title": "Découvrez les boutiques près de chez vous.",
-    "subtitle": "NearBuy met en relation les boutiques de quartier et leurs clients. Recherchez un produit, discutez avec le vendeur, passez le récupérer.",
-    "ctaCustomer": "Télécharger l'app client",
-    "ctaSeller": "Je suis commerçant"
+    "titleA": "Trouvez ce que vous cherchez,",
+    "titleB": "à deux pas de chez vous.",
+    "subtitle": "NearBuy connecte les clients aux commerces de proximité — produits, stocks, prix et discussion en direct avec le vendeur.",
+    "ctaDownload": "Télécharger l'application",
+    "ctaLearn": "En savoir plus"
   },
   "how": {
-    "title": "Comment ça marche",
-    "step1Title": "Cherchez près de vous",
-    "step1Body": "Trouvez en quelques secondes un produit disponible dans votre quartier.",
-    "step2Title": "Discutez avec le vendeur",
-    "step2Body": "Confirmez la disponibilité et réservez par message en direct.",
-    "step3Title": "Passez le récupérer",
-    "step3Body": "Pas de livraison, pas de frais cachés : vous prenez votre produit en boutique."
+    "customerTitle": "Côté client",
+    "customerBody": "Téléchargez l'application NearBuy pour découvrir les commerces près de vous, demander un produit et discuter avec le vendeur.",
+    "sellerTitle": "Côté vendeur",
+    "sellerBody": "L'application NearBuy Business vous permet de gérer votre stock, vos prix, et de répondre aux clients en temps réel.",
+    "trustTitle": "Confiance & proximité",
+    "trustBody": "Pas d'intermédiaire. Vous parlez directement au commerçant à côté de chez vous, vous payez sur place."
+  },
+  "download": {
+    "title": "Disponible bientôt",
+    "subtitle": "NearBuy arrive prochainement sur l'App Store et Google Play."
   },
   "footer": {
-    "tagline": "NearBuy — Le commerce local, près de chez vous.",
-    "deletion": "Demander la suppression de mon compte",
-    "rights": "© {{year}} NearBuy. Tous droits réservés."
+    "tagline": "Le commerce de proximité, à portée de main.",
+    "deletion": "Demander la suppression de mon compte"
   },
   "deletion": {
-    "pageTitle": "Suppression de mon compte",
-    "intro": "Pour supprimer votre compte NearBuy (client ou commerçant), remplissez ce formulaire. Vous n'avez pas besoin d'être connecté.",
+    "title": "Demande de suppression de compte",
+    "intro": "Vous pouvez demander la suppression de votre compte NearBuy (client) ou NearBuy Business (vendeur) en remplissant ce formulaire. Notre équipe traitera votre demande dans un délai de <strong>30 jours maximum</strong> et vous contactera à l'adresse e-mail indiquée pour confirmer la suppression.",
+    "afterTitle": "Que se passe-t-il après la suppression ?",
+    "after1": "Votre profil, vos messages et vos préférences sont définitivement supprimés.",
+    "after2": "Si vous êtes vendeur, votre commerce et vos produits sont également retirés de l'application.",
+    "after3": "Certaines informations peuvent être conservées pour des raisons légales (factures, journaux de sécurité) jusqu'à 5 ans.",
+    "after4": "L'opération est irréversible.",
     "fullName": "Nom complet",
-    "email": "Email du compte",
-    "accountType": "Type de compte",
-    "accountTypeCustomer": "Client",
-    "accountTypeSeller": "Commerçant",
-    "accountTypeBoth": "Les deux",
-    "reason": "Raison (facultatif)",
-    "confirm": "Je confirme demander la suppression définitive de mon compte.",
-    "submit": "Envoyer la demande",
-    "submitting": "Envoi…",
-    "successTitle": "Demande reçue",
-    "successBody": "Votre demande a bien été enregistrée. Notre équipe la traitera sous 30 jours."
+    "email": "Adresse e-mail liée à votre compte",
+    "emailHint": "Utilisez la même adresse que celle de votre compte NearBuy.",
+    "accountType": "Type de compte à supprimer",
+    "accountTypeCustomer": "Compte client (NearBuy)",
+    "accountTypeSeller": "Compte vendeur (NearBuy Business)",
+    "accountTypeBoth": "Les deux (j'utilise NearBuy comme client ET vendeur)",
+    "reason": "Motif de la suppression",
+    "reasonOptional": "(facultatif)",
+    "confirm": "Je confirme avoir compris que la suppression est <strong>définitive</strong> et que je ne pourrai plus accéder à mon compte ni récupérer mes données.",
+    "submit": "Envoyer ma demande",
+    "submitting": "Envoi en cours…",
+    "errorName": "Veuillez entrer votre nom complet (au moins 2 caractères).",
+    "errorEmail": "Veuillez entrer l'adresse e-mail liée à votre compte.",
+    "errorConfirm": "Vous devez confirmer que vous comprenez les conséquences de la suppression.",
+    "errorRateLimit": "Trop de demandes envoyées depuis cette adresse. Réessayez dans environ {{minutes}} minute(s).",
+    "errorGeneric": "Une erreur est survenue. Réessayez dans un instant.",
+    "successTitle": "Demande envoyée",
+    "successBody": "Merci, votre demande de suppression a bien été enregistrée. Notre équipe la traitera dans un délai de <strong>30 jours maximum</strong> et vous recevrez un e-mail de confirmation à l'adresse indiquée.",
+    "successContact": "Si vous changez d'avis avant la suppression, écrivez-nous à",
+    "backHome": "Retour à l'accueil"
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "body": "La page demandée n'existe pas ou a été déplacée."
   }
 }

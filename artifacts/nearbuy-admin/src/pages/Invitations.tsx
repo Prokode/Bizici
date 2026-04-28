@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Trash2 } from "lucide-react";
 import { api, type Invitation, type Paginated } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,8 @@ import { Column, DataTable, Pagination } from "@/components/DataTable";
 import { PageContainer, PageHeader } from "@/components/PageHeader";
 
 export default function InvitationsPage() {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "en" ? "en-US" : "fr-FR";
   const { toast } = useToast();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
@@ -32,30 +35,36 @@ export default function InvitationsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["invitations"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
-      toast({ title: "Invitation supprimée" });
+      toast({ title: t("invitations.deleted") });
       setConfirmDelete(null);
     },
-    onError: (e: Error) => toast({ title: "Erreur", description: e.message, variant: "destructive" }),
+    onError: (e: Error) => toast({ title: t("common.errorTitle"), description: e.message, variant: "destructive" }),
   });
 
   const columns: Column<Invitation>[] = [
-    { key: "email", header: "Email", cell: (i) => i.email },
-    { key: "role", header: "Rôle", cell: (i) => <Badge variant="secondary">{i.role}</Badge> },
-    { key: "shop", header: "Boutique", cell: (i) => i.shop.name },
+    { key: "email", header: t("invitations.email"), cell: (i) => i.email },
+    {
+      key: "role",
+      header: t("invitations.role"),
+      cell: (i) => (
+        <Badge variant="secondary">{t(`admins.memberRoles.${i.role}`, { defaultValue: i.role })}</Badge>
+      ),
+    },
+    { key: "shop", header: t("invitations.shop"), cell: (i) => i.shop.name },
     {
       key: "status",
-      header: "Statut",
+      header: t("invitations.status"),
       cell: (i) =>
         i.acceptedAt ? (
-          <Badge>Acceptée le {new Date(i.acceptedAt).toLocaleDateString("fr-FR")}</Badge>
+          <Badge>{t("invitations.acceptedOn", { date: new Date(i.acceptedAt).toLocaleDateString(locale) })}</Badge>
         ) : (
-          <Badge variant="secondary">En attente</Badge>
+          <Badge variant="secondary">{t("invitations.pending")}</Badge>
         ),
     },
     {
       key: "createdAt",
-      header: "Créée le",
-      cell: (i) => new Date(i.createdAt).toLocaleDateString("fr-FR"),
+      header: t("invitations.createdOn"),
+      cell: (i) => new Date(i.createdAt).toLocaleDateString(locale),
     },
     {
       key: "actions",
@@ -76,7 +85,7 @@ export default function InvitationsPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Invitations" description="Invitations envoyées aux vendeurs et sous-vendeurs" />
+      <PageHeader title={t("invitations.title")} description={t("invitations.description")} />
 
       <DataTable rows={list.data?.items ?? []} columns={columns} loading={list.isLoading} testId="table-invitations" />
       {list.data ? (
@@ -91,16 +100,16 @@ export default function InvitationsPage() {
       <Dialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Supprimer l'invitation ?</DialogTitle>
+            <DialogTitle>{t("invitations.confirmDeleteTitle")}</DialogTitle>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDelete(null)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setConfirmDelete(null)}>{t("common.cancel")}</Button>
             <Button
               variant="destructive"
               disabled={del.isPending}
               onClick={() => confirmDelete && del.mutate(confirmDelete.id)}
             >
-              {del.isPending ? "Suppression…" : "Supprimer"}
+              {del.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

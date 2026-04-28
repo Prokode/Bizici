@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Trash2 } from "lucide-react";
 import { api, type ConversationListItem, type ConversationMessage, type Paginated } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,8 @@ import { PageContainer, PageHeader } from "@/components/PageHeader";
 import { cn } from "@/lib/utils";
 
 export default function ConversationsPage() {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "en" ? "en-US" : "fr-FR";
   const { toast } = useToast();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
@@ -49,11 +52,11 @@ export default function ConversationsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["conversations"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
-      toast({ title: "Conversation supprimée" });
+      toast({ title: t("conversations.deleted") });
       setConfirmDelete(null);
       setOpenId(null);
     },
-    onError: (e: Error) => toast({ title: "Erreur", description: e.message, variant: "destructive" }),
+    onError: (e: Error) => toast({ title: t("common.errorTitle"), description: e.message, variant: "destructive" }),
   });
 
   const delMsg = useMutation({
@@ -61,40 +64,40 @@ export default function ConversationsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["conversation-messages"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
-      toast({ title: "Message supprimé" });
+      toast({ title: t("conversations.messageDeleted") });
       setConfirmDeleteMessage(null);
     },
-    onError: (e: Error) => toast({ title: "Erreur", description: e.message, variant: "destructive" }),
+    onError: (e: Error) => toast({ title: t("common.errorTitle"), description: e.message, variant: "destructive" }),
   });
 
   const columns: Column<ConversationListItem>[] = [
     {
       key: "shop",
-      header: "Boutique",
-      cell: (c) => c.shop?.name ?? <span className="text-muted-foreground">[supprimée]</span>,
+      header: t("conversations.shop"),
+      cell: (c) => c.shop?.name ?? <span className="text-muted-foreground">{t("common.deletedFem")}</span>,
     },
     {
       key: "customer",
-      header: "Client",
+      header: t("conversations.customer"),
       cell: (c) =>
         c.customer ? (
           <div>
-            <div>{c.customer.name ?? "—"}</div>
+            <div>{c.customer.name ?? t("common.dash")}</div>
             <div className="text-xs text-muted-foreground">{c.customer.email}</div>
           </div>
         ) : (
-          <span className="text-muted-foreground">[supprimé]</span>
+          <span className="text-muted-foreground">{t("common.deleted")}</span>
         ),
     },
     {
       key: "lastMessage",
-      header: "Dernier message",
+      header: t("conversations.lastMessage"),
       cell: (c) => (
         <div className="max-w-md">
-          <div className="truncate text-sm">{c.lastMessageText || <span className="text-muted-foreground">—</span>}</div>
+          <div className="truncate text-sm">{c.lastMessageText || <span className="text-muted-foreground">{t("common.dash")}</span>}</div>
           {c.lastMessageAt ? (
             <div className="text-xs text-muted-foreground">
-              {new Date(c.lastMessageAt).toLocaleString("fr-FR")}
+              {new Date(c.lastMessageAt).toLocaleString(locale)}
             </div>
           ) : null}
         </div>
@@ -102,17 +105,17 @@ export default function ConversationsPage() {
     },
     {
       key: "unread",
-      header: "Non lus",
+      header: t("conversations.unread"),
       cell: (c) => (
         <div className="flex gap-1">
           {c.customerUnreadCount > 0 ? (
-            <Badge variant="secondary">Client {c.customerUnreadCount}</Badge>
+            <Badge variant="secondary">{t("conversations.unreadCustomer", { count: c.customerUnreadCount })}</Badge>
           ) : null}
           {c.sellerUnreadCount > 0 ? (
-            <Badge variant="secondary">Vendeur {c.sellerUnreadCount}</Badge>
+            <Badge variant="secondary">{t("conversations.unreadSeller", { count: c.sellerUnreadCount })}</Badge>
           ) : null}
           {c.customerUnreadCount === 0 && c.sellerUnreadCount === 0 ? (
-            <span className="text-xs text-muted-foreground">—</span>
+            <span className="text-xs text-muted-foreground">{t("common.dash")}</span>
           ) : null}
         </div>
       ),
@@ -141,7 +144,7 @@ export default function ConversationsPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Messages" description="Modération des conversations entre clients et vendeurs" />
+      <PageHeader title={t("conversations.title")} description={t("conversations.description")} />
 
       <DataTable
         rows={list.data?.items ?? []}
@@ -163,14 +166,14 @@ export default function ConversationsPage() {
         <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>
-              {conversation?.shop?.name ?? "Conversation"} ↔ {conversation?.customer?.name ?? conversation?.customer?.email ?? "—"}
+              {conversation?.shop?.name ?? t("conversations.fallbackTitle")} ↔ {conversation?.customer?.name ?? conversation?.customer?.email ?? t("common.dash")}
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto space-y-2 py-2">
             {messages.isLoading ? (
-              <div className="text-muted-foreground text-center py-8">Chargement…</div>
+              <div className="text-muted-foreground text-center py-8">{t("common.loading")}</div>
             ) : (messages.data?.messages ?? []).length === 0 ? (
-              <div className="text-muted-foreground text-center py-8">Aucun message</div>
+              <div className="text-muted-foreground text-center py-8">{t("conversations.noMessages")}</div>
             ) : (
               (messages.data?.messages ?? []).map((m) => (
                 <div
@@ -200,7 +203,7 @@ export default function ConversationsPage() {
                     )}
                   >
                     <div className="text-[10px] opacity-70 mb-0.5">
-                      {m.senderRole === "seller" ? "Vendeur" : "Client"} · {new Date(m.createdAt).toLocaleString("fr-FR")}
+                      {m.senderRole === "seller" ? t("conversations.seller") : t("conversations.customerLabel")} · {new Date(m.createdAt).toLocaleString(locale)}
                     </div>
                     <div className="whitespace-pre-wrap">{m.text}</div>
                   </div>
@@ -225,19 +228,19 @@ export default function ConversationsPage() {
       <Dialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Supprimer la conversation ?</DialogTitle>
+            <DialogTitle>{t("conversations.confirmDeleteTitle")}</DialogTitle>
             <DialogDescription>
-              Tous les messages associés seront définitivement supprimés.
+              {t("conversations.confirmDeleteDesc")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDelete(null)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setConfirmDelete(null)}>{t("common.cancel")}</Button>
             <Button
               variant="destructive"
               disabled={delConv.isPending}
               onClick={() => confirmDelete && delConv.mutate(confirmDelete.id)}
             >
-              {delConv.isPending ? "Suppression…" : "Supprimer"}
+              {delConv.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -246,16 +249,16 @@ export default function ConversationsPage() {
       <Dialog open={!!confirmDeleteMessage} onOpenChange={(o) => !o && setConfirmDeleteMessage(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Supprimer ce message ?</DialogTitle>
+            <DialogTitle>{t("conversations.confirmDeleteMsgTitle")}</DialogTitle>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDeleteMessage(null)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setConfirmDeleteMessage(null)}>{t("common.cancel")}</Button>
             <Button
               variant="destructive"
               disabled={delMsg.isPending}
               onClick={() => confirmDeleteMessage && delMsg.mutate(confirmDeleteMessage.id)}
             >
-              {delMsg.isPending ? "Suppression…" : "Supprimer"}
+              {delMsg.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter, type Href } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
@@ -23,13 +24,6 @@ const API_BASE = process.env.EXPO_PUBLIC_DOMAIN
   ? `https://${process.env.EXPO_PUBLIC_DOMAIN}`
   : "";
 
-const KARMA_LABELS: Record<KarmaEvent["kind"], string> = {
-  welcome: "Bienvenue",
-  stock_confirmation: "Stock confirmé",
-  stock_report: "Stock signalé",
-  broadcast: "Demande diffusée",
-};
-
 const KARMA_ICONS: Record<KarmaEvent["kind"], React.ComponentProps<typeof Feather>["name"]> = {
   welcome: "gift",
   stock_confirmation: "check-circle",
@@ -37,33 +31,39 @@ const KARMA_ICONS: Record<KarmaEvent["kind"], React.ComponentProps<typeof Feathe
   broadcast: "radio",
 };
 
-function formatRelative(iso: string): string {
-  const then = new Date(iso).getTime();
-  const now = Date.now();
-  const seconds = Math.max(1, Math.round((now - then) / 1000));
-  if (seconds < 60) return "à l'instant";
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `il y a ${minutes} min`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `il y a ${hours} h`;
-  const days = Math.round(hours / 24);
-  if (days < 30) return `il y a ${days} j`;
-  return new Date(iso).toLocaleDateString("fr-FR");
-}
-
 export default function ProfileTab() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, isSignedIn } = useUser();
   const { signOut, getToken } = useAuth();
+  const { t, i18n } = useTranslation();
+
+  const formatRelative = React.useCallback(
+    (iso: string): string => {
+      const then = new Date(iso).getTime();
+      const now = Date.now();
+      const seconds = Math.max(1, Math.round((now - then) / 1000));
+      if (seconds < 60) return t("common.justNow");
+      const minutes = Math.round(seconds / 60);
+      if (minutes < 60) return t("common.minAgo", { count: minutes });
+      const hours = Math.round(minutes / 60);
+      if (hours < 24) return t("common.hAgo", { count: hours });
+      const days = Math.round(hours / 24);
+      if (days < 30) return t("common.dAgo", { count: days });
+      return new Date(iso).toLocaleDateString(
+        i18n.language === "en" ? "en-US" : "fr-FR",
+      );
+    },
+    [t, i18n.language],
+  );
 
   const karmaQuery = useQuery({
     queryKey: ["karma", user?.id],
     enabled: !!isSignedIn,
     queryFn: async () => {
       const token = await getToken();
-      if (!token) throw new Error("Aucun token de session");
+      if (!token) throw new Error("No session token");
       return fetchMyKarma(API_BASE, token);
     },
   });
@@ -86,16 +86,15 @@ export default function ProfileTab() {
             <Feather name="user" size={56} color="#ffffff" />
           </LinearGradient>
           <Text style={[styles.signInTitle, { color: colors.foreground }]}>
-            Connectez-vous pour gagner du Karma
+            {t("profile.signInTitle")}
           </Text>
           <Text style={[styles.signInBody, { color: colors.mutedForeground }]}>
-            Confirmez les stocks, diffusez vos demandes et suivez vos boutiques
-            préférées.
+            {t("profile.signInBody")}
           </Text>
         </View>
         <View style={{ height: 24 }} />
         <Button
-          title="Se connecter"
+          title={t("common.signIn")}
           fullWidth
           size="lg"
           onPress={() => router.push("/(auth)/sign-in" as Href)}
@@ -106,7 +105,7 @@ export default function ProfileTab() {
           style={styles.createLink}
         >
           <Text style={[styles.createLinkText, { color: colors.primary }]}>
-            Créer un compte (10 Karma offerts)
+            {t("profile.createWithBonus")}
           </Text>
         </Pressable>
       </View>
@@ -117,7 +116,7 @@ export default function ProfileTab() {
     user?.fullName ||
     user?.firstName ||
     user?.primaryEmailAddress?.emailAddress ||
-    "Utilisateur";
+    t("profile.user");
 
   const points = karmaQuery.data?.points ?? null;
   const events = karmaQuery.data?.recentEvents ?? [];
@@ -162,7 +161,7 @@ export default function ProfileTab() {
       >
         <View style={styles.karmaRow}>
           <Feather name="award" size={28} color="#ffffff" />
-          <Text style={styles.karmaLabel}>Karma NearBuy</Text>
+          <Text style={styles.karmaLabel}>{t("profile.karmaTitle")}</Text>
         </View>
         {karmaQuery.isLoading ? (
           <ActivityIndicator
@@ -172,13 +171,13 @@ export default function ProfileTab() {
           />
         ) : karmaQuery.isError ? (
           <Text style={styles.karmaError}>
-            Impossible de charger votre Karma
+            {t("profile.karmaError")}
           </Text>
         ) : (
           <Text style={styles.karmaValue}>{points ?? 0}</Text>
         )}
         <Text style={styles.karmaHint}>
-          Confirmez les stocks pour gagner des points.
+          {t("profile.karmaHint")}
         </Text>
       </LinearGradient>
 
@@ -190,7 +189,7 @@ export default function ProfileTab() {
           ]}
         >
           <Text style={[styles.historyTitle, { color: colors.foreground }]}>
-            Activité récente
+            {t("profile.recentActivity")}
           </Text>
           {events.map((evt) => (
             <View key={evt.id} style={styles.historyRow}>
@@ -213,7 +212,7 @@ export default function ProfileTab() {
                     { color: colors.foreground },
                   ]}
                 >
-                  {evt.note ?? KARMA_LABELS[evt.kind]}
+                  {evt.note ?? t(`profile.karma.${evt.kind}` as const)}
                 </Text>
                 <Text
                   style={[
@@ -253,7 +252,7 @@ export default function ProfileTab() {
       >
         <Feather name="log-out" size={18} color={colors.foreground} />
         <Text style={[styles.signOutText, { color: colors.foreground }]}>
-          Se déconnecter
+          {t("common.signOut")}
         </Text>
       </Pressable>
     </ScrollView>

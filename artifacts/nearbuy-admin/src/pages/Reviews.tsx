@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Star, Trash2 } from "lucide-react";
 import {
   api,
@@ -13,10 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 
-/**
- * Stars row — read-only display in the moderation table.
- */
-function Stars({ value }: { value: number }) {
+function Stars({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((n) => (
@@ -30,21 +28,21 @@ function Stars({ value }: { value: number }) {
         />
       ))}
       <span className="ml-1 text-xs font-medium text-muted-foreground">
-        {value}/5
+        {label}
       </span>
     </div>
   );
 }
 
 export default function ReviewsPage() {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "en" ? "en-US" : "fr-FR";
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const { admin } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Only super_admin and admin (writers) may delete reviews; moderators see
-  // the list read-only. The button is hidden when `canWrite` is false.
   const canWrite = admin?.role === "super_admin" || admin?.role === "admin";
 
   const list = useQuery({
@@ -61,13 +59,13 @@ export default function ReviewsPage() {
     mutationFn: (id: string) =>
       api.del<{ ok: true }>(`/api/admin/reviews/${id}`),
     onSuccess: () => {
-      toast({ title: "Avis supprimé." });
+      toast({ title: t("reviews.deleted") });
       queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
     },
     onError: (err: any) => {
       toast({
-        title: "Suppression impossible",
-        description: err?.message ?? "Erreur inconnue",
+        title: t("reviews.deleteFailed"),
+        description: err?.message ?? t("reviews.unknownError"),
         variant: "destructive",
       });
     },
@@ -75,7 +73,9 @@ export default function ReviewsPage() {
 
   const handleDelete = (r: AdminShopReview) => {
     const ok = window.confirm(
-      `Supprimer l'avis de ${r.customerName ?? r.customerEmail ?? "ce client"} ?`,
+      t("reviews.confirmDelete", {
+        who: r.customerName ?? r.customerEmail ?? t("reviews.anonymousCustomer"),
+      }),
     );
     if (!ok) return;
     removeMutation.mutate(r.id);
@@ -84,10 +84,10 @@ export default function ReviewsPage() {
   const columns: Column<AdminShopReview>[] = [
     {
       key: "shop",
-      header: "Boutique",
+      header: t("reviews.shop"),
       cell: (r) => (
         <div>
-          <div className="font-medium">{r.shopName ?? "—"}</div>
+          <div className="font-medium">{r.shopName ?? t("common.dash")}</div>
           {r.shopMarketName ? (
             <div className="text-xs text-muted-foreground">
               {r.shopMarketName}
@@ -98,39 +98,39 @@ export default function ReviewsPage() {
     },
     {
       key: "customer",
-      header: "Client",
+      header: t("reviews.customer"),
       cell: (r) => (
         <div>
-          <div>{r.customerName ?? "—"}</div>
+          <div>{r.customerName ?? t("common.dash")}</div>
           <div className="text-xs text-muted-foreground">
-            {r.customerEmail ?? "—"}
+            {r.customerEmail ?? t("common.dash")}
           </div>
         </div>
       ),
     },
     {
       key: "rating",
-      header: "Note",
-      cell: (r) => <Stars value={r.rating} />,
+      header: t("reviews.rating"),
+      cell: (r) => <Stars value={r.rating} label={t("reviews.valueOfFive", { value: r.rating })} />,
     },
     {
       key: "comment",
-      header: "Commentaire",
+      header: t("reviews.comment"),
       cell: (r) =>
         r.comment ? (
           <div className="max-w-md whitespace-pre-wrap text-sm">
             {r.comment}
           </div>
         ) : (
-          <span className="text-muted-foreground">—</span>
+          <span className="text-muted-foreground">{t("common.dash")}</span>
         ),
     },
     {
       key: "createdAt",
-      header: "Date",
+      header: t("reviews.date"),
       cell: (r) => (
         <span className="text-xs text-muted-foreground">
-          {new Date(r.createdAt).toLocaleString("fr-FR")}
+          {new Date(r.createdAt).toLocaleString(locale)}
         </span>
       ),
     },
@@ -158,8 +158,8 @@ export default function ReviewsPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Avis"
-        description="Modération des avis clients sur les boutiques"
+        title={t("reviews.title")}
+        description={t("reviews.description")}
       />
       <div className="mb-4 max-w-sm">
         <Input
@@ -168,7 +168,7 @@ export default function ReviewsPage() {
             setPage(1);
             setSearch(e.target.value);
           }}
-          placeholder="Rechercher dans les commentaires…"
+          placeholder={t("reviews.searchPlaceholder")}
           data-testid="input-search-reviews"
         />
       </div>

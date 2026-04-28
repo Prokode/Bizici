@@ -1,5 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View, FlatList, RefreshControl, Platform } from "react-native";
+import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -18,6 +19,7 @@ import * as Haptics from "expo-haptics";
 export default function RequestsScreen() {
   const colors = useColors();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
 
   const {
@@ -52,8 +54,8 @@ export default function RequestsScreen() {
   const renderItem = ({ item }: { item: BroadcastRequest }) => {
     const distanceText =
       item.distanceMeters < 1000
-        ? `${Math.round(item.distanceMeters)}m away`
-        : `${(item.distanceMeters / 1000).toFixed(1)}km away`;
+        ? t("requests.metersAway", { meters: Math.round(item.distanceMeters) })
+        : t("requests.kmAway", { km: (item.distanceMeters / 1000).toFixed(1) });
 
     return (
       <Card style={styles.card}>
@@ -75,13 +77,13 @@ export default function RequestsScreen() {
 
         <View style={styles.actions}>
           <Button
-            title="Dismiss"
+            title={t("requests.dismiss")}
             variant="secondary"
             style={styles.actionBtn}
             onPress={() => handleAction(item.id, "dismiss")}
           />
           <Button
-            title="Confirm Availability"
+            title={t("requests.confirmAvailability")}
             variant="primary"
             style={[styles.actionBtn, { backgroundColor: colors.success || colors.primary }]}
             textStyle={{ color: colors.successForeground || colors.primaryForeground }}
@@ -112,10 +114,10 @@ export default function RequestsScreen() {
                 <Feather name="radio" size={48} color={colors.mutedForeground} />
               </View>
               <Text style={[styles.emptyTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-                No Live Requests
+                {t("requests.emptyTitle")}
               </Text>
               <Text style={[styles.emptyDesc, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
-                When customers nearby search for products, their requests will appear here.
+                {t("requests.emptyHint")}
               </Text>
             </View>
           )

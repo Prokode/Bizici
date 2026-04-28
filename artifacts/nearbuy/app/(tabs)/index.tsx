@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
 import { Feather } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import { useColors } from "@/hooks/useColors";
 import { fetchNearbyShops, type PublicShop } from "@/lib/publicApi";
@@ -29,7 +30,6 @@ type Region = {
 };
 
 const FALLBACK_REGION: Region = {
-  // Paris by default until we get the user's GPS
   latitude: 48.8566,
   longitude: 2.3522,
   latitudeDelta: 0.05,
@@ -49,10 +49,7 @@ export default function MapTab() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  // On web, seed the region with the fallback immediately so the shops list
-  // renders without waiting for `navigator.geolocation` (which can hang
-  // indefinitely in headless previews and when the user denies permission
-  // silently). Real geolocation will upgrade the region in the effect below.
+  const { t } = useTranslation();
   const [region, setRegion] = useState<Region | null>(
     Platform.OS === "web" ? FALLBACK_REGION : null,
   );
@@ -64,7 +61,6 @@ export default function MapTab() {
     Marker: any;
   } | null>(null);
 
-  // Lazy-load react-native-maps so web doesn't crash on bundle
   useEffect(() => {
     if (Platform.OS !== "web") {
       import("react-native-maps").then((mod) => {
@@ -82,10 +78,6 @@ export default function MapTab() {
             setRegion(FALLBACK_REGION);
             return;
           }
-          // Belt-and-braces: even if the browser never resolves geolocation
-          // (very common in headless previews and when permissions aren't
-          // granted), fall back to Paris quickly so the list shows real
-          // shops instead of an empty spinner.
           const fallbackTimer = setTimeout(() => {
             if (mounted) setRegion((r) => r ?? FALLBACK_REGION);
           }, 800);
@@ -111,9 +103,7 @@ export default function MapTab() {
 
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
-          setError(
-            "Activez la localisation pour voir les boutiques autour de vous.",
-          );
+          setError(t("map.permissionDenied"));
           setRegion(FALLBACK_REGION);
           return;
         }
@@ -134,10 +124,8 @@ export default function MapTab() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [t]);
 
-  // Round center to ~3 decimal places (~111m grid) so we don't refetch on
-  // every micro-pan.
   const center = useMemo(() => {
     if (!region) return null;
     const lat = Math.round(region.latitude * 1000) / 1000;
@@ -165,7 +153,6 @@ export default function MapTab() {
 
   const showMap = Platform.OS !== "web" && maps && region;
 
-  // Sort shops by distance for the list view (web fallback).
   const sortedShops = useMemo(
     () => [...shops].sort((a, b) => a.distanceMeters - b.distanceMeters),
     [shops],
@@ -196,9 +183,6 @@ export default function MapTab() {
           ))}
         </maps.MapView>
       ) : (
-        // Web fallback: scrollable list of nearby shops with the same data
-        // the native map would show. The user can still tap a shop to open
-        // the bottom sheet.
         <FlatList
           data={sortedShops}
           keyExtractor={(s) => s.id}
@@ -222,8 +206,7 @@ export default function MapTab() {
                   <Text
                     style={[styles.webHintText, { color: colors.mutedForeground }]}
                   >
-                    Carte interactive disponible sur mobile (Expo Go). Voici
-                    les boutiques proches.
+                    {t("map.webHint")}
                   </Text>
                 </View>
               )}
@@ -234,20 +217,17 @@ export default function MapTab() {
               <View style={styles.emptyCenter}>
                 <ActivityIndicator color={colors.primary} />
                 <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-                  {!center
-                    ? "Recherche de votre position…"
-                    : "Recherche des boutiques…"}
+                  {!center ? t("map.locating") : t("map.loadingShops")}
                 </Text>
               </View>
             ) : (
               <View style={styles.emptyCenter}>
                 <Feather name="map-pin" size={40} color={colors.mutedForeground} />
                 <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-                  Aucune boutique dans un rayon de 5 km
+                  {t("map.noShops")}
                 </Text>
                 <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-                  Élargissez votre zone ou diffusez votre demande depuis la
-                  recherche.
+                  {t("map.noShopsHint")}
                 </Text>
               </View>
             )
@@ -312,7 +292,7 @@ export default function MapTab() {
                       },
                     ]}
                   >
-                    {item.isOpen ? "Ouvert" : "Fermé"}
+                    {item.isOpen ? t("shop.openNow") : t("shop.closed")}
                   </Text>
                 </View>
               </View>
@@ -341,7 +321,7 @@ export default function MapTab() {
                 <Text
                   style={[styles.metaText, { color: colors.mutedForeground }]}
                 >
-                  {item.productCount} produit{item.productCount > 1 ? "s" : ""}
+                  {t("map.productsCount", { count: item.productCount })}
                 </Text>
               </View>
 
@@ -413,7 +393,7 @@ export default function MapTab() {
         <TextInput
           value={query}
           onChangeText={setQuery}
-          placeholder="Cherchez un produit (ex: jeans bleus)"
+          placeholder={t("map.searchPlaceholder")}
           placeholderTextColor={colors.mutedForeground}
           style={[styles.searchInput, { color: colors.foreground }]}
           returnKeyType="search"
@@ -430,7 +410,6 @@ export default function MapTab() {
         )}
       </View>
 
-      {/* Status pill */}
       <View
         style={[
           styles.statusPill,
@@ -448,12 +427,12 @@ export default function MapTab() {
         )}
         <Text style={[styles.statusText, { color: colors.foreground }]}>
           {!center
-            ? "Recherche de votre position…"
+            ? t("map.locating")
             : loadingShops
-              ? "Recherche des boutiques…"
+              ? t("map.loadingShops")
               : shops.length === 0
-                ? "Aucune boutique dans un rayon de 5 km"
-                : `${shops.length} boutique${shops.length > 1 ? "s" : ""} · 5 km`}
+                ? t("map.noShops")
+                : t("map.shopsCount", { count: shops.length })}
         </Text>
       </View>
 

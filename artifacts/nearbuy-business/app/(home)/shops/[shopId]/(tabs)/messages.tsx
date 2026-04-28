@@ -11,31 +11,43 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter, type Href } from "expo-router";
 import { Feather } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 import { useColors } from "@/hooks/useColors";
 import { listConversations, type ConversationSummary } from "@/lib/chatApi";
 
-function formatRelative(iso: string): string {
-  try {
-    const d = new Date(iso);
-    const now = new Date();
-    const diff = now.getTime() - d.getTime();
-    const min = Math.floor(diff / 60000);
-    if (min < 1) return "just now";
-    if (min < 60) return `${min}m ago`;
-    const hours = Math.floor(min / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    if (days < 7) return `${days}d ago`;
-    return d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
-  } catch {
-    return "";
-  }
+function useFormatRelative() {
+  const { t, i18n } = useTranslation();
+  return React.useCallback(
+    (iso: string): string => {
+      try {
+        const d = new Date(iso);
+        const now = new Date();
+        const diff = now.getTime() - d.getTime();
+        const min = Math.floor(diff / 60000);
+        if (min < 1) return t("common.justNow");
+        if (min < 60) return t("common.minAgo", { count: min });
+        const hours = Math.floor(min / 60);
+        if (hours < 24) return t("common.hAgo", { count: hours });
+        const days = Math.floor(hours / 24);
+        if (days < 7) return t("common.dAgo", { count: days });
+        return d.toLocaleDateString(i18n.language, {
+          day: "numeric",
+          month: "short",
+        });
+      } catch {
+        return "";
+      }
+    },
+    [t, i18n.language],
+  );
 }
 
 export default function ShopMessagesScreen() {
   const colors = useColors();
   const router = useRouter();
+  const { t } = useTranslation();
+  const formatRelative = useFormatRelative();
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
 
   const query = useQuery({
@@ -53,7 +65,7 @@ export default function ShopMessagesScreen() {
 
   const renderItem = ({ item }: { item: ConversationSummary }) => {
     const customerName =
-      item.customer.name ?? item.customer.email ?? "Customer";
+      item.customer.name ?? item.customer.email ?? t("messages.customer");
     return (
       <Pressable
         onPress={() =>
@@ -101,7 +113,7 @@ export default function ShopMessagesScreen() {
                 },
               ]}
             >
-              {item.lastMessageText || "No messages yet"}
+              {item.lastMessageText || t("messages.noMessagesYet")}
             </Text>
             {item.unreadCount > 0 && (
               <View
@@ -151,8 +163,7 @@ export default function ShopMessagesScreen() {
               <Text
                 style={[styles.emptyText, { color: colors.mutedForeground }]}
               >
-                No customer messages yet. When shoppers tap "Chat with seller"
-                on your shop, their messages will appear here.
+                {t("messages.emptyHint")}
               </Text>
             </View>
           )

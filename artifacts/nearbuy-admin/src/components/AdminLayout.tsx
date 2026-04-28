@@ -103,12 +103,12 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             </div>
             <div className="text-sidebar-foreground/60">
               {admin?.isRoot
-                ? "Root"
+                ? t("admins.rootBadge")
                 : admin?.role === "super_admin"
-                  ? "Super admin"
+                  ? t("admins.roles.super_admin")
                   : admin?.role === "admin"
-                    ? "Admin"
-                    : "Moderator"}
+                    ? t("admins.roles.admin")
+                    : t("admins.roles.moderator")}
             </div>
           </div>
           <Button

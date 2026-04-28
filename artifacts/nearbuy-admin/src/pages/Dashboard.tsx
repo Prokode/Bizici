@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   Bar,
   BarChart,
@@ -28,9 +29,10 @@ type StatCardProps = {
   hint?: string;
   icon: typeof Users;
   color: string;
+  locale: string;
 };
 
-function StatCard({ label, value, hint, icon: Icon, color }: StatCardProps) {
+function StatCard({ label, value, hint, icon: Icon, color, locale }: StatCardProps) {
   return (
     <Card data-testid={`stat-${label.toLowerCase()}`}>
       <CardContent className="pt-6">
@@ -38,7 +40,7 @@ function StatCard({ label, value, hint, icon: Icon, color }: StatCardProps) {
           <div>
             <div className="text-sm text-muted-foreground">{label}</div>
             <div className="text-3xl font-semibold mt-1">
-              {value.toLocaleString("fr-FR")}
+              {value.toLocaleString(locale)}
             </div>
             {hint ? (
               <div className="text-xs text-muted-foreground mt-1">{hint}</div>
@@ -57,6 +59,8 @@ function StatCard({ label, value, hint, icon: Icon, color }: StatCardProps) {
 }
 
 export default function DashboardPage() {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "en" ? "en-US" : "fr-FR";
   const { data, isLoading, error } = useQuery({
     queryKey: ["stats"],
     queryFn: () => api.get<Stats>("/api/admin/stats"),
@@ -66,73 +70,81 @@ export default function DashboardPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Tableau de bord"
-        description="Vue d'ensemble de l'activité NearBuy"
+        title={t("dashboard.title")}
+        description={t("dashboard.description")}
       />
 
       {error ? (
         <div className="text-sm text-destructive mb-4">
-          Impossible de charger les statistiques.
+          {t("dashboard.loadError")}
         </div>
       ) : null}
 
       {isLoading || !data ? (
-        <div className="text-muted-foreground">Chargement…</div>
+        <div className="text-muted-foreground">{t("common.loading")}</div>
       ) : (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
-              label="Utilisateurs"
+              label={t("dashboard.stats.users")}
               value={data.users.total}
-              hint={`+${data.users.newThisWeek} cette semaine`}
+              hint={t("dashboard.hints.newThisWeek", { count: data.users.newThisWeek })}
               icon={Users}
               color="hsl(199 89% 48%)"
+              locale={locale}
             />
             <StatCard
-              label="Boutiques"
+              label={t("dashboard.stats.shops")}
               value={data.shops.total}
-              hint={`${data.shops.open} ouvertes`}
+              hint={t("dashboard.hints.shopsOpen", { count: data.shops.open })}
               icon={Store}
               color="hsl(24 95% 53%)"
+              locale={locale}
             />
             <StatCard
-              label="Produits"
+              label={t("dashboard.stats.products")}
               value={data.products.total}
-              hint={`${data.products.outOfStock} en rupture`}
+              hint={t("dashboard.hints.productsOutOfStock", { count: data.products.outOfStock })}
               icon={Package}
               color="hsl(142 71% 45%)"
+              locale={locale}
             />
             <StatCard
-              label="Messages"
+              label={t("dashboard.stats.messages")}
               value={data.messages.total}
-              hint={`${data.messages.today} aujourd'hui`}
+              hint={t("dashboard.hints.messagesToday", { count: data.messages.today })}
               icon={MessageSquare}
               color="hsl(271 81% 56%)"
+              locale={locale}
             />
             <StatCard
-              label="Conversations"
+              label={t("dashboard.stats.conversations")}
               value={data.conversations.total}
               icon={MessageSquare}
               color="hsl(199 89% 48%)"
+              locale={locale}
             />
             <StatCard
-              label="Recherches actives"
+              label={t("dashboard.stats.activeBroadcasts")}
               value={data.broadcasts.active}
-              hint={`${data.broadcasts.total} au total`}
+              hint={t("dashboard.hints.broadcastsTotal", { count: data.broadcasts.total })}
               icon={Megaphone}
               color="hsl(24 95% 53%)"
+              locale={locale}
             />
             <StatCard
-              label="Invitations en attente"
+              label={t("dashboard.stats.pendingInvitations")}
               value={data.invitations.pending}
               icon={Mail}
               color="hsl(0 72% 51%)"
+              locale={locale}
             />
             <StatCard
-              label="Catégories"
+              label={t("dashboard.stats.categories")}
               value={data.categories.total}
               icon={Tag}
               color="hsl(142 71% 45%)"
+              locale={locale}
             />
           </div>
 
@@ -140,7 +152,7 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <MessageSquare className="size-4 text-primary" />
-                Messages des 7 derniers jours
+                {t("dashboard.messagesChart")}
               </CardTitle>
             </CardHeader>
             <CardContent className="h-72">
@@ -151,7 +163,7 @@ export default function DashboardPage() {
                     dataKey="date"
                     tickFormatter={(v) => {
                       const d = new Date(v);
-                      return d.toLocaleDateString("fr-FR", {
+                      return d.toLocaleDateString(locale, {
                         weekday: "short",
                         day: "2-digit",
                       });
@@ -172,7 +184,7 @@ export default function DashboardPage() {
                       fontSize: 12,
                     }}
                     labelFormatter={(v) =>
-                      new Date(v as string).toLocaleDateString("fr-FR", {
+                      new Date(v as string).toLocaleDateString(locale, {
                         weekday: "long",
                         day: "2-digit",
                         month: "long",
@@ -189,15 +201,15 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Sparkles className="size-4 text-primary" />
-                Karma
+                {t("dashboard.karma")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-semibold">
-                {data.karma.events.toLocaleString("fr-FR")}
+                {data.karma.events.toLocaleString(locale)}
               </div>
               <div className="text-sm text-muted-foreground">
-                évènements enregistrés au total
+                {t("dashboard.karmaTotal")}
               </div>
             </CardContent>
           </Card>

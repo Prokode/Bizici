@@ -11,6 +11,7 @@ import * as AuthSession from "expo-auth-session";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -30,6 +31,7 @@ export default function SignUpScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { t } = useTranslation();
   const { next } = useLocalSearchParams<{ next?: string }>();
   const { signUp, errors, fetchStatus } = useSignUp();
   const { startSSOFlow } = useSSO();
@@ -55,13 +57,13 @@ export default function SignUpScreen() {
         setSubmitError(
           error.errors?.[0]?.longMessage ??
             error.message ??
-            "Inscription impossible",
+            t("auth.errorSignUp"),
         );
         return;
       }
       await signUp.verifications.sendEmailCode();
     } catch (err: any) {
-      setSubmitError(err?.message ?? "Une erreur est survenue");
+      setSubmitError(err?.message ?? t("auth.errorGeneric"));
     }
   };
 
@@ -78,7 +80,7 @@ export default function SignUpScreen() {
         });
       }
     } catch (err: any) {
-      setSubmitError(err?.message ?? "Code invalide");
+      setSubmitError(err?.message ?? t("auth.errorVerify"));
     }
   };
 
@@ -99,9 +101,9 @@ export default function SignUpScreen() {
         });
       }
     } catch (err: any) {
-      setSubmitError(err?.message ?? "Inscription Google impossible");
+      setSubmitError(err?.message ?? t("auth.errorGoogle"));
     }
-  }, [goHome, startSSOFlow]);
+  }, [goHome, startSSOFlow, t]);
 
   const isVerifying =
     signUp.status === "missing_requirements" &&
@@ -119,7 +121,7 @@ export default function SignUpScreen() {
         <Pressable style={styles.back} onPress={() => router.back()}>
           <Feather name="arrow-left" size={20} color={colors.foreground} />
           <Text style={[styles.backText, { color: colors.foreground }]}>
-            Retour
+            {t("auth.back")}
           </Text>
         </Pressable>
 
@@ -141,7 +143,7 @@ export default function SignUpScreen() {
               },
             ]}
           >
-            {isVerifying ? "Vérifiez votre e-mail" : "Créez votre compte"}
+            {isVerifying ? t("auth.verifyTitle") : t("auth.signUpTitle")}
           </Text>
           <Text
             style={[
@@ -153,15 +155,15 @@ export default function SignUpScreen() {
             ]}
           >
             {isVerifying
-              ? `Saisissez le code envoyé à ${emailAddress}`
-              : "Recevez 10 points de Karma offerts à l'inscription."}
+              ? t("auth.verifySubtitle", { email: emailAddress })
+              : t("auth.signUpSubtitle")}
           </Text>
         </View>
 
         {isVerifying ? (
           <Card style={styles.card}>
             <Input
-              label="Code de vérification"
+              label={t("auth.verificationCode")}
               placeholder="123456"
               value={code}
               onChangeText={setCode}
@@ -179,7 +181,7 @@ export default function SignUpScreen() {
             )}
 
             <Button
-              title="Vérifier"
+              title={t("auth.verifyButton")}
               size="lg"
               disabled={!code || fetchStatus === "fetching"}
               loading={fetchStatus === "fetching"}
@@ -187,7 +189,7 @@ export default function SignUpScreen() {
               style={{ marginTop: 12 }}
             />
             <Button
-              title="Renvoyer un code"
+              title={t("auth.resendCode")}
               variant="ghost"
               onPress={() => signUp.verifications.sendEmailCode()}
               style={{ marginTop: 8 }}
@@ -196,7 +198,7 @@ export default function SignUpScreen() {
         ) : (
           <Card style={styles.card}>
             <Button
-              title="Continuer avec Google"
+              title={t("auth.continueGoogle")}
               variant="secondary"
               icon={
                 <Feather
@@ -216,7 +218,7 @@ export default function SignUpScreen() {
               <Text
                 style={[styles.dividerText, { color: colors.mutedForeground }]}
               >
-                ou
+                {t("common.or")}
               </Text>
               <View
                 style={[styles.divider, { backgroundColor: colors.border }]}
@@ -224,8 +226,8 @@ export default function SignUpScreen() {
             </View>
 
             <Input
-              label="E-mail"
-              placeholder="vous@exemple.com"
+              label={t("auth.email")}
+              placeholder={t("auth.emailPlaceholder")}
               value={emailAddress}
               onChangeText={setEmailAddress}
               autoCapitalize="none"
@@ -238,8 +240,8 @@ export default function SignUpScreen() {
             )}
 
             <Input
-              label="Mot de passe"
-              placeholder="8 caractères minimum"
+              label={t("auth.password")}
+              placeholder={t("auth.passwordPlaceholderSignUp")}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -256,7 +258,7 @@ export default function SignUpScreen() {
             )}
 
             <Button
-              title="Créer mon compte"
+              title={t("auth.signUpButton")}
               size="lg"
               disabled={
                 !emailAddress || !password || fetchStatus === "fetching"
@@ -272,7 +274,7 @@ export default function SignUpScreen() {
 
         <View style={styles.footer}>
           <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
-            Déjà un compte ?{" "}
+            {t("auth.hasAccount")}{" "}
           </Text>
           <Link
             href={
@@ -290,7 +292,7 @@ export default function SignUpScreen() {
                 },
               ]}
             >
-              Se connecter
+              {t("auth.signIn")}
             </Text>
           </Link>
         </View>

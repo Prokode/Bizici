@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Platform } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -17,6 +18,7 @@ export default function NewShopScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
@@ -65,7 +67,7 @@ export default function NewShopScreen() {
           router.replace(`/(home)/shops/${newShop.id}`);
         },
         onError: (err: any) => {
-          setError(err?.message ?? "Failed to create shop");
+          setError(err?.message ?? t("newShop.createError"));
         },
       }
     );
@@ -84,20 +86,20 @@ export default function NewShopScreen() {
       {step === 1 ? (
         <KeyboardAwareScrollViewCompat contentContainerStyle={styles.content}>
           <Text style={[styles.title, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-            Set up your shop
+            {t("newShop.step1Title")}
           </Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
-            Let customers nearby know what you're selling.
+            {t("newShop.step1Subtitle")}
           </Text>
 
-          <Input label="Shop Name *" placeholder="e.g. Maria's Fresh Produce" value={name} onChangeText={setName} />
-          <Input label="Market Name (Optional)" placeholder="e.g. Central Market" value={marketName} onChangeText={setMarketName} />
-          <Input label="Stall Info (Optional)" placeholder="e.g. Aisle B, #4" value={stallInfo} onChangeText={setStallInfo} />
+          <Input label={t("newShop.shopName")} placeholder={t("newShop.shopNamePlaceholder")} value={name} onChangeText={setName} />
+          <Input label={t("newShop.marketName")} placeholder={t("newShop.marketNamePlaceholder")} value={marketName} onChangeText={setMarketName} />
+          <Input label={t("newShop.stallInfo")} placeholder={t("newShop.stallInfoPlaceholder")} value={stallInfo} onChangeText={setStallInfo} />
 
           <View style={{ flex: 1 }} />
 
           <Button
-            title="Next"
+            title={t("newShop.next")}
             size="lg"
             disabled={!name.trim()}
             onPress={() => setStep(2)}
@@ -111,22 +113,22 @@ export default function NewShopScreen() {
           <View style={[styles.mapOverlay, { paddingBottom: Math.max(insets.bottom, 24) }]}>
             <Card style={[styles.mapCard, { backgroundColor: colors.card }]}>
               <Text style={[styles.mapTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-                Pin your location
+                {t("newShop.step2Title")}
               </Text>
               <Text style={[styles.mapDesc, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
-                Drag the pin to your exact spot so customers can find you.
+                {t("newShop.step2Subtitle")}
               </Text>
               {error && (
                 <Text style={{ color: colors.destructive, marginBottom: 12, fontSize: 13 }}>{error}</Text>
               )}
               <Button
-                title="Create shop"
+                title={t("newShop.create")}
                 size="lg"
                 loading={createShop.isPending || locationLoading}
                 disabled={!location || createShop.isPending}
                 onPress={handleSave}
               />
-              <Button title="Back" variant="ghost" onPress={() => setStep(1)} style={{ marginTop: 8 }} />
+              <Button title={t("newShop.back")} variant="ghost" onPress={() => setStep(1)} style={{ marginTop: 8 }} />
             </Card>
           </View>
         </View>

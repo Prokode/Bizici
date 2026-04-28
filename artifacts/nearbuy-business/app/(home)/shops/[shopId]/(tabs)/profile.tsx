@@ -21,12 +21,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth, useClerk } from "@clerk/expo";
 import { HelpersSection } from "@/components/HelpersSection";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const clerk = useClerk();
+  const { t } = useTranslation();
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
 
   const { data: shop } = useQuery({
@@ -73,10 +75,10 @@ export default function ProfileScreen() {
             {shop.name}
           </Text>
           <Text style={[styles.shopCategory, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_500Medium" }]}>
-            {shop.marketName || "No Market Name"}
+            {shop.marketName || t("profile.noMarketName")}
           </Text>
           <Badge variant={isSeller ? "default" : "secondary"} style={{ marginTop: 6, alignSelf: "flex-start" }}>
-            {isSeller ? "Seller" : "Helper"}
+            {isSeller ? t("profile.seller") : t("profile.helper")}
           </Badge>
         </View>
       </View>
@@ -84,7 +86,7 @@ export default function ProfileScreen() {
       <View style={styles.actions}>
         {isSeller && (
           <Button
-            title="Edit Details"
+            title={t("profile.editDetails")}
             variant="secondary"
             icon={<Feather name="edit-2" size={18} color={colors.secondaryForeground} />}
             style={styles.actionBtn}
@@ -92,7 +94,7 @@ export default function ProfileScreen() {
           />
         )}
         <Button
-          title="Show QR Code"
+          title={t("profile.showQr")}
           variant="primary"
           icon={<Feather name="maximize" size={18} color={colors.primaryForeground} />}
           style={styles.actionBtn}
@@ -103,7 +105,7 @@ export default function ProfileScreen() {
       <Card style={styles.detailsCard}>
         <View style={styles.detailRow}>
           <Text style={[styles.detailLabel, { color: colors.foreground, fontFamily: "PlusJakartaSans_600SemiBold" }]}>
-            Shop Open
+            {t("profile.shopOpen")}
           </Text>
           <Switch
             value={shop.isOpen}
@@ -126,16 +128,16 @@ export default function ProfileScreen() {
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
         <View style={styles.detailRow}>
           <Text style={[styles.detailLabel, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_500Medium" }]}>
-            Stall Info
+            {t("profile.stallInfo")}
           </Text>
           <Text style={[styles.detailValue, { color: colors.foreground, fontFamily: "PlusJakartaSans_600SemiBold" }]}>
-            {shop.stallInfo || "Not specified"}
+            {shop.stallInfo || t("profile.notSpecified")}
           </Text>
         </View>
       </Card>
 
       <Text style={[styles.sectionTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-        Location
+        {t("profile.location")}
       </Text>
 
       <View style={[styles.mapContainer, { borderColor: colors.border, borderRadius: colors.radius }]}>
@@ -150,13 +152,13 @@ export default function ProfileScreen() {
 
       <View style={{ marginTop: 8 }}>
         <Button
-          title="Switch shop"
+          title={t("profile.switchShop")}
           variant="ghost"
           icon={<Feather name="repeat" size={18} color={colors.foreground} />}
           onPress={() => router.replace("/(home)")}
         />
         <Button
-          title="Sign out"
+          title={t("common.signOut")}
           variant="ghost"
           icon={<Feather name="log-out" size={18} color={colors.destructive} />}
           textStyle={{ color: colors.destructive }}
@@ -174,7 +176,7 @@ export default function ProfileScreen() {
         >
           <View style={styles.modalHeader}>
             <Text style={[styles.modalTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-              Scan to view shop
+              {t("profile.qrTitle")}
             </Text>
             <Button
               variant="ghost"
@@ -189,11 +191,11 @@ export default function ProfileScreen() {
                 <QRCode value={qrData.url} size={250} color="#000" backgroundColor="#fff" />
               </View>
             ) : (
-              <Text style={{ color: colors.foreground }}>Loading QR code...</Text>
+              <Text style={{ color: colors.foreground }}>{t("profile.qrLoading")}</Text>
             )}
 
             <Text style={[styles.qrDesc, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
-              Customers can scan this code to see your digital catalog.
+              {t("profile.qrDesc")}
             </Text>
           </View>
         </View>

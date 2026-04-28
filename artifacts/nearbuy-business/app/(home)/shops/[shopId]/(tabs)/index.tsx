@@ -10,6 +10,7 @@ import {
   Switch,
   Platform,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -32,6 +33,7 @@ export default function InventoryScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
 
   const {
@@ -71,7 +73,7 @@ export default function InventoryScreen() {
     const categoryLabel =
       (item.categories && item.categories.length > 0 && item.categories.map((c) => c.name).join(", ")) ||
       item.category ||
-      "No category";
+      t("inventory.noCategory");
     return (
     <Card style={styles.card}>
       <View style={styles.cardHeader}>
@@ -104,7 +106,7 @@ export default function InventoryScreen() {
           </Text>
         </View>
         <Text style={[styles.productPrice, { color: colors.foreground, fontFamily: "PlusJakartaSans_600SemiBold" }]}>
-          {item.price != null ? `$${(item.price / 100).toFixed(2)}` : "Price not set"}
+          {item.price != null ? `$${(item.price / 100).toFixed(2)}` : t("inventory.priceNotSet")}
         </Text>
       </View>
 
@@ -127,7 +129,7 @@ export default function InventoryScreen() {
             thumbColor={colors.background}
           />
           <Badge variant={item.stockStatus === "in_stock" ? "success" : "destructive"} style={{ marginLeft: 8 }}>
-            {item.stockStatus === "in_stock" ? "In Stock" : "Out of Stock"}
+            {item.stockStatus === "in_stock" ? t("inventory.inStock") : t("inventory.outOfStock")}
           </Badge>
         </View>
       </View>
@@ -165,10 +167,10 @@ export default function InventoryScreen() {
           <View style={styles.emptyContainer}>
             <Feather name="package" size={48} color={colors.mutedForeground} style={{ marginBottom: 16 }} />
             <Text style={[styles.emptyTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-              Your inventory is empty
+              {t("inventory.emptyTitle")}
             </Text>
             <Text style={[styles.emptyDesc, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
-              Add your first product so customers nearby can discover your shop.
+              {t("inventory.emptyHint")}
             </Text>
           </View>
         }
@@ -188,7 +190,7 @@ export default function InventoryScreen() {
       >
         <Feather name="plus" size={24} color={colors.primaryForeground} />
         <Text style={[styles.fabText, { color: colors.primaryForeground, fontFamily: "PlusJakartaSans_600SemiBold" }]}>
-          Add Product
+          {t("inventory.addProduct")}
         </Text>
       </TouchableOpacity>
     </View>

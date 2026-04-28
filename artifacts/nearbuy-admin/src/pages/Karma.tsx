@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { api, type KarmaEvent, type Paginated } from "@/lib/api";
 import { Column, DataTable, Pagination } from "@/components/DataTable";
 import { PageContainer, PageHeader } from "@/components/PageHeader";
 import { cn } from "@/lib/utils";
 
 export default function KarmaPage() {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "en" ? "en-US" : "fr-FR";
   const [page, setPage] = useState(1);
 
   const list = useQuery({
@@ -17,21 +20,21 @@ export default function KarmaPage() {
   const columns: Column<KarmaEvent>[] = [
     {
       key: "user",
-      header: "Utilisateur",
+      header: t("karma.user"),
       cell: (k) =>
         k.user ? (
           <div>
-            <div>{k.user.name ?? "—"}</div>
+            <div>{k.user.name ?? t("common.dash")}</div>
             <div className="text-xs text-muted-foreground">{k.user.email}</div>
           </div>
         ) : (
-          <span className="text-muted-foreground">[supprimé]</span>
+          <span className="text-muted-foreground">{t("common.deleted")}</span>
         ),
     },
-    { key: "kind", header: "Évènement", cell: (k) => <code className="text-xs">{k.kind}</code> },
+    { key: "kind", header: t("karma.event"), cell: (k) => <code className="text-xs">{k.kind}</code> },
     {
       key: "points",
-      header: "Points",
+      header: t("karma.points"),
       cell: (k) => (
         <span className={cn("font-medium", k.points >= 0 ? "text-green-600" : "text-destructive")}>
           {k.points >= 0 ? "+" : ""}
@@ -41,19 +44,19 @@ export default function KarmaPage() {
     },
     {
       key: "note",
-      header: "Note",
-      cell: (k) => k.note ?? <span className="text-muted-foreground">—</span>,
+      header: t("karma.note"),
+      cell: (k) => k.note ?? <span className="text-muted-foreground">{t("common.dash")}</span>,
     },
     {
       key: "createdAt",
-      header: "Date",
-      cell: (k) => new Date(k.createdAt).toLocaleString("fr-FR"),
+      header: t("karma.date"),
+      cell: (k) => new Date(k.createdAt).toLocaleString(locale),
     },
   ];
 
   return (
     <PageContainer>
-      <PageHeader title="Karma" description="Évènements de réputation des utilisateurs" />
+      <PageHeader title={t("karma.title")} description={t("karma.description")} />
       <DataTable rows={list.data?.items ?? []} columns={columns} loading={list.isLoading} testId="table-karma" />
       {list.data ? (
         <Pagination

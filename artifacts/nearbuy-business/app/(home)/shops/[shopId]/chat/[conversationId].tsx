@@ -23,6 +23,7 @@ import {
   sendMessage,
   type ChatMessage,
 } from "@/lib/chatApi";
+import { useTranslation } from "react-i18next";
 
 function formatTime(iso: string): string {
   try {
@@ -44,6 +45,7 @@ export default function SellerChatThreadScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const qc = useQueryClient();
+  const { t } = useTranslation();
   const [draft, setDraft] = useState("");
 
   const conversationQuery = useQuery({
@@ -101,7 +103,7 @@ export default function SellerChatThreadScreen() {
   const customerName =
     conversation?.customer.name ??
     conversation?.customer.email ??
-    "Customer";
+    t("chat.customer");
   const customerEmail =
     conversation?.customer.email && conversation?.customer.name
       ? conversation.customer.email
@@ -168,7 +170,7 @@ export default function SellerChatThreadScreen() {
                 <Text
                   style={[styles.emptyText, { color: colors.mutedForeground }]}
                 >
-                  No messages yet.
+                  {t("chat.noMessages")}
                 </Text>
               </View>
             }
@@ -241,7 +243,7 @@ export default function SellerChatThreadScreen() {
           <TextInput
             value={draft}
             onChangeText={setDraft}
-            placeholder="Reply to customer…"
+            placeholder={t("chat.replyPlaceholder")}
             placeholderTextColor={colors.mutedForeground}
             multiline
             maxLength={2000}

@@ -6,6 +6,7 @@ import { SymbolView } from "expo-symbols";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import React from "react";
 import { Platform, StyleSheet, View, useColorScheme } from "react-native";
 
@@ -27,28 +28,29 @@ function useShopUnread(shopId: string | undefined) {
 }
 
 function NativeTabLayout({ unread }: { unread: number }) {
+  const { t } = useTranslation();
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
         <Icon sf={{ default: "cube.box", selected: "cube.box.fill" }} />
-        <Label>Inventory</Label>
+        <Label>{t("nav.inventory")}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="dashboard">
         <Icon sf={{ default: "chart.bar", selected: "chart.bar.fill" }} />
-        <Label>Tableau</Label>
+        <Label>{t("nav.dashboard")}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="requests">
         <Icon sf={{ default: "dot.radiowaves.left.and.right", selected: "dot.radiowaves.left.and.right" }} />
-        <Label>Requests</Label>
+        <Label>{t("nav.requests")}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="messages">
         <Icon sf={{ default: "message", selected: "message.fill" }} />
-        <Label>Messages</Label>
+        <Label>{t("nav.messages")}</Label>
         {unread > 0 ? <Badge>{String(unread)}</Badge> : null}
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Icon sf={{ default: "person", selected: "person.fill" }} />
-        <Label>Profile</Label>
+        <Label>{t("nav.profile")}</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -60,6 +62,7 @@ function ClassicTabLayout({ unread }: { unread: number }) {
   const isDark = colorScheme === "dark";
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
+  const { t } = useTranslation();
 
   return (
     <Tabs
@@ -102,7 +105,7 @@ function ClassicTabLayout({ unread }: { unread: number }) {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Inventory",
+          title: t("nav.inventory"),
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="cube.box" tintColor={color} size={24} />
@@ -114,7 +117,7 @@ function ClassicTabLayout({ unread }: { unread: number }) {
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: "Tableau",
+          title: t("nav.dashboard"),
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="chart.bar" tintColor={color} size={24} />
@@ -126,7 +129,7 @@ function ClassicTabLayout({ unread }: { unread: number }) {
       <Tabs.Screen
         name="requests"
         options={{
-          title: "Requests",
+          title: t("nav.requests"),
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="dot.radiowaves.left.and.right" tintColor={color} size={24} />
@@ -138,7 +141,7 @@ function ClassicTabLayout({ unread }: { unread: number }) {
       <Tabs.Screen
         name="messages"
         options={{
-          title: "Messages",
+          title: t("nav.messages"),
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="message" tintColor={color} size={24} />
@@ -151,7 +154,7 @@ function ClassicTabLayout({ unread }: { unread: number }) {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
+          title: t("nav.profile"),
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="person" tintColor={color} size={24} />

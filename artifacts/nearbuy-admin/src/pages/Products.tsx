@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Trash2, Search, RotateCcw } from "lucide-react";
 import { api, type Paginated, type ProductListItem } from "@/lib/api";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ import { Column, DataTable, Pagination } from "@/components/DataTable";
 import { PageContainer, PageHeader } from "@/components/PageHeader";
 
 export default function ProductsPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
@@ -40,8 +42,6 @@ export default function ProductsPage() {
         page: String(page),
         pageSize: "20",
       });
-      // Backend supports `includeDeleted=true` (returns active + deleted).
-      // To show only deleted, fetch all then filter client-side below.
       if (includeDeleted !== "active") params.set("includeDeleted", "true");
       if (search) params.set("search", search);
       return api
@@ -62,10 +62,10 @@ export default function ProductsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["products"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
-      toast({ title: "Produit supprimé" });
+      toast({ title: t("products.deleted") });
       setConfirmAction(null);
     },
-    onError: (e: Error) => toast({ title: "Erreur", description: e.message, variant: "destructive" }),
+    onError: (e: Error) => toast({ title: t("common.errorTitle"), description: e.message, variant: "destructive" }),
   });
 
   const restore = useMutation({
@@ -73,9 +73,9 @@ export default function ProductsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["products"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
-      toast({ title: "Produit restauré" });
+      toast({ title: t("products.restored") });
     },
-    onError: (e: Error) => toast({ title: "Erreur", description: e.message, variant: "destructive" }),
+    onError: (e: Error) => toast({ title: t("common.errorTitle"), description: e.message, variant: "destructive" }),
   });
 
   const columns: Column<ProductListItem>[] = [
@@ -92,7 +92,7 @@ export default function ProductsPage() {
     },
     {
       key: "name",
-      header: "Produit",
+      header: t("products.product"),
       cell: (p) => (
         <div>
           <div className={p.deletedAt ? "line-through text-muted-foreground" : "font-medium"}>
@@ -102,20 +102,20 @@ export default function ProductsPage() {
         </div>
       ),
     },
-    { key: "shop", header: "Boutique", cell: (p) => p.shop.name },
+    { key: "shop", header: t("products.shop"), cell: (p) => p.shop.name },
     {
       key: "price",
-      header: "Prix",
+      header: t("products.price"),
       cell: (p) => `${p.price.toFixed(2)} €`,
     },
     {
       key: "stock",
-      header: "Stock",
+      header: t("products.stock"),
       cell: (p) => (
         <div className="flex items-center gap-2">
           <span>{p.quantity}</span>
           <Badge variant={p.stockStatus === "in_stock" ? "default" : "secondary"}>
-            {p.stockStatus === "in_stock" ? "En stock" : "Rupture"}
+            {p.stockStatus === "in_stock" ? t("products.inStock") : t("products.outOfStock")}
           </Badge>
         </div>
       ),
@@ -132,7 +132,7 @@ export default function ProductsPage() {
                 variant="ghost"
                 size="icon"
                 onClick={() => restore.mutate(p.id)}
-                title="Restaurer"
+                title={t("products.restore")}
                 data-testid={`button-restore-${p.id}`}
               >
                 <RotateCcw className="size-4" />
@@ -141,7 +141,7 @@ export default function ProductsPage() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setConfirmAction({ product: p, mode: "hard" })}
-                title="Supprimer définitivement"
+                title={t("products.deletePermanently")}
                 data-testid={`button-hard-delete-${p.id}`}
               >
                 <Trash2 className="size-4 text-destructive" />
@@ -152,7 +152,7 @@ export default function ProductsPage() {
               variant="ghost"
               size="icon"
               onClick={() => setConfirmAction({ product: p, mode: "soft" })}
-              title="Supprimer"
+              title={t("common.delete")}
               data-testid={`button-delete-${p.id}`}
             >
               <Trash2 className="size-4 text-destructive" />
@@ -166,8 +166,8 @@ export default function ProductsPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Produits"
-        description="Tous les produits référencés"
+        title={t("products.title")}
+        description={t("products.description")}
         actions={
           <div className="flex items-center gap-2">
             <Select value={includeDeleted} onValueChange={(v) => { setPage(1); setIncludeDeleted(v as typeof includeDeleted); }}>
@@ -175,9 +175,9 @@ export default function ProductsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Actifs</SelectItem>
-                <SelectItem value="all">Tous</SelectItem>
-                <SelectItem value="deleted">Supprimés</SelectItem>
+                <SelectItem value="active">{t("products.filterActive")}</SelectItem>
+                <SelectItem value="all">{t("products.filterAll")}</SelectItem>
+                <SelectItem value="deleted">{t("products.filterDeleted")}</SelectItem>
               </SelectContent>
             </Select>
             <form
@@ -187,14 +187,14 @@ export default function ProductsPage() {
               <div className="relative">
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher…"
+                  placeholder={t("products.searchPlaceholder")}
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   className="pl-8 w-64"
                   data-testid="input-search-products"
                 />
               </div>
-              <Button type="submit" variant="outline">Filtrer</Button>
+              <Button type="submit" variant="outline">{t("common.filter")}</Button>
             </form>
           </div>
         }
@@ -219,23 +219,23 @@ export default function ProductsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {confirmAction?.mode === "hard" ? "Supprimer définitivement ?" : "Supprimer ?"}
+              {confirmAction?.mode === "hard" ? t("products.confirmHardTitle") : t("products.confirmSoftTitle")}
             </DialogTitle>
             <DialogDescription>
               {confirmAction?.mode === "hard"
-                ? `"${confirmAction.product.name}" sera définitivement effacé. Cette action est irréversible.`
-                : `"${confirmAction?.product.name}" sera masqué (restaurable).`}
+                ? t("products.confirmHardDesc", { name: confirmAction.product.name })
+                : t("products.confirmSoftDesc", { name: confirmAction?.product.name ?? "" })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmAction(null)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setConfirmAction(null)}>{t("common.cancel")}</Button>
             <Button
               variant="destructive"
               disabled={del.isPending}
               onClick={() => confirmAction && del.mutate({ id: confirmAction.product.id, mode: confirmAction.mode })}
               data-testid="button-confirm-delete-product"
             >
-              {del.isPending ? "Suppression…" : "Supprimer"}
+              {del.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

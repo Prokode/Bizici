@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Trash2, Search, Sparkles } from "lucide-react";
 import { api, type Paginated, type UserDetail, type UserListItem } from "@/lib/api";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,8 @@ import { Column, DataTable, Pagination } from "@/components/DataTable";
 import { PageContainer, PageHeader } from "@/components/PageHeader";
 
 export default function UsersPage() {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "en" ? "en-US" : "fr-FR";
   const { toast } = useToast();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
@@ -45,19 +48,19 @@ export default function UsersPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["users"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
-      toast({ title: "Utilisateur supprimé" });
+      toast({ title: t("users.deleted") });
       setConfirmDelete(null);
     },
-    onError: (e: Error) => toast({ title: "Erreur", description: e.message, variant: "destructive" }),
+    onError: (e: Error) => toast({ title: t("common.errorTitle"), description: e.message, variant: "destructive" }),
   });
 
   const columns: Column<UserListItem>[] = [
-    { key: "name", header: "Nom", cell: (u) => u.name ?? <span className="text-muted-foreground">—</span> },
-    { key: "email", header: "Email", cell: (u) => u.email ?? <span className="text-muted-foreground">—</span> },
+    { key: "name", header: t("users.name"), cell: (u) => u.name ?? <span className="text-muted-foreground">{t("common.dash")}</span> },
+    { key: "email", header: t("users.email"), cell: (u) => u.email ?? <span className="text-muted-foreground">{t("common.dash")}</span> },
     {
       key: "createdAt",
-      header: "Inscription",
-      cell: (u) => new Date(u.createdAt).toLocaleDateString("fr-FR"),
+      header: t("users.registeredOn"),
+      cell: (u) => new Date(u.createdAt).toLocaleDateString(locale),
     },
     {
       key: "actions",
@@ -82,8 +85,8 @@ export default function UsersPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Utilisateurs"
-        description="Tous les comptes clients NearBuy"
+        title={t("users.title")}
+        description={t("users.description")}
         actions={
           <form
             onSubmit={(e) => {
@@ -96,14 +99,14 @@ export default function UsersPage() {
             <div className="relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
-                placeholder="Rechercher (nom, email)…"
+                placeholder={t("users.searchPlaceholder")}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 className="pl-8 w-72"
                 data-testid="input-search"
               />
             </div>
-            <Button type="submit" variant="outline">Filtrer</Button>
+            <Button type="submit" variant="outline">{t("common.filter")}</Button>
           </form>
         }
       />
@@ -127,26 +130,26 @@ export default function UsersPage() {
       <Dialog open={!!openId} onOpenChange={(o) => !o && setOpenId(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Détails utilisateur</DialogTitle>
+            <DialogTitle>{t("users.userDetails")}</DialogTitle>
           </DialogHeader>
           {detail.isLoading ? (
-            <div className="text-muted-foreground py-8 text-center">Chargement…</div>
+            <div className="text-muted-foreground py-8 text-center">{t("common.loading")}</div>
           ) : detail.data ? (
             <div className="space-y-4 text-sm">
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Nom" value={detail.data.user.name} />
-                <Field label="Email" value={detail.data.user.email} />
-                <Field label="Clerk ID" value={detail.data.user.clerkUserId} mono />
+                <Field label={t("users.name")} value={detail.data.user.name} />
+                <Field label={t("users.email")} value={detail.data.user.email} />
+                <Field label={t("users.clerkId")} value={detail.data.user.clerkUserId} mono />
                 <Field
-                  label="Inscription"
-                  value={new Date(detail.data.user.createdAt).toLocaleString("fr-FR")}
+                  label={t("users.registeredOn")}
+                  value={new Date(detail.data.user.createdAt).toLocaleString(locale)}
                 />
               </div>
 
               <div>
-                <div className="font-medium mb-2">Boutiques possédées ({detail.data.shopsOwned.length})</div>
+                <div className="font-medium mb-2">{t("users.shopsOwned", { count: detail.data.shopsOwned.length })}</div>
                 {detail.data.shopsOwned.length === 0 ? (
-                  <div className="text-muted-foreground">Aucune</div>
+                  <div className="text-muted-foreground">{t("users.noShops")}</div>
                 ) : (
                   <div className="space-y-1">
                     {detail.data.shopsOwned.map((s) => (
@@ -161,7 +164,7 @@ export default function UsersPage() {
                           ) : null}
                         </div>
                         <Badge variant={s.isOpen ? "default" : "secondary"}>
-                          {s.isOpen ? "Ouverte" : "Fermée"}
+                          {s.isOpen ? t("users.open") : t("users.closed")}
                         </Badge>
                       </div>
                     ))}
@@ -172,10 +175,10 @@ export default function UsersPage() {
               <div>
                 <div className="flex items-center gap-2 font-medium mb-2">
                   <Sparkles className="size-4 text-primary" />
-                  Karma — total : {detail.data.karma.total}
+                  {t("users.karmaTotal", { points: detail.data.karma.total })}
                 </div>
                 {detail.data.karma.recent.length === 0 ? (
-                  <div className="text-muted-foreground">Aucun évènement récent</div>
+                  <div className="text-muted-foreground">{t("users.noKarmaEvents")}</div>
                 ) : (
                   <div className="space-y-1">
                     {detail.data.karma.recent.map((k) => (
@@ -189,7 +192,7 @@ export default function UsersPage() {
                             {k.points >= 0 ? "+" : ""}{k.points}
                           </span>
                           <span className="text-muted-foreground">
-                            {new Date(k.createdAt).toLocaleDateString("fr-FR")}
+                            {new Date(k.createdAt).toLocaleDateString(locale)}
                           </span>
                         </div>
                       </div>
@@ -199,7 +202,7 @@ export default function UsersPage() {
               </div>
 
               <div className="text-xs text-muted-foreground">
-                {detail.data.conversationsCount} conversation(s)
+                {t("users.conversationsCount", { count: detail.data.conversationsCount })}
               </div>
             </div>
           ) : null}
@@ -209,20 +212,20 @@ export default function UsersPage() {
       <Dialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Supprimer l'utilisateur ?</DialogTitle>
+            <DialogTitle>{t("users.confirmDeleteTitle")}</DialogTitle>
             <DialogDescription>
-              {confirmDelete?.email ?? confirmDelete?.name} sera définitivement supprimé. Cette action est irréversible.
+              {t("users.confirmDeleteDesc", { who: confirmDelete?.email ?? confirmDelete?.name ?? "" })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDelete(null)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setConfirmDelete(null)}>{t("common.cancel")}</Button>
             <Button
               variant="destructive"
               disabled={del.isPending}
               onClick={() => confirmDelete && del.mutate(confirmDelete.id)}
               data-testid="button-confirm-delete"
             >
-              {del.isPending ? "Suppression…" : "Supprimer"}
+              {del.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -232,12 +235,14 @@ export default function UsersPage() {
 }
 
 function Field({ label, value, mono }: { label: string; value: string | null; mono?: boolean }) {
+  const { t } = useTranslation();
   return (
     <div>
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className={mono ? "font-mono text-xs break-all" : ""}>
-        {value ?? <span className="text-muted-foreground">—</span>}
+        {value ?? <span className="text-muted-foreground">{t("common.dash")}</span>}
       </div>
     </div>
   );
 }
+

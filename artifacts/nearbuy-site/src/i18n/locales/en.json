@@ -2,43 +2,66 @@
   "nav": {
     "language": "Language",
     "languageFr": "FR",
-    "languageEn": "EN"
+    "languageEn": "EN",
+    "how": "How it works",
+    "download": "Download",
+    "back": "Back to home"
   },
   "hero": {
-    "tagline": "Local shopping, on the map",
-    "title": "Discover the shops next door.",
-    "subtitle": "NearBuy connects neighborhood shops with their customers. Search a product, chat with the shopkeeper, pick it up in store.",
-    "ctaCustomer": "Get the customer app",
-    "ctaSeller": "I'm a shopkeeper"
+    "titleA": "Find what you're looking for,",
+    "titleB": "right next door.",
+    "subtitle": "NearBuy connects customers with neighborhood shops — products, stock, prices, and live chat with the shopkeeper.",
+    "ctaDownload": "Download the app",
+    "ctaLearn": "Learn more"
   },
   "how": {
-    "title": "How it works",
-    "step1Title": "Search nearby",
-    "step1Body": "Find in seconds a product available in your neighborhood.",
-    "step2Title": "Chat with the seller",
-    "step2Body": "Confirm availability and reserve by direct message.",
-    "step3Title": "Pick it up",
-    "step3Body": "No delivery, no hidden fees — you collect your product in store."
+    "customerTitle": "For customers",
+    "customerBody": "Download the NearBuy app to discover shops near you, request a product and chat with the seller.",
+    "sellerTitle": "For shopkeepers",
+    "sellerBody": "The NearBuy Business app lets you manage your stock, your prices, and reply to customers in real time.",
+    "trustTitle": "Trust & proximity",
+    "trustBody": "No middleman. You talk directly to the shopkeeper next to you, and pay in store."
+  },
+  "download": {
+    "title": "Coming soon",
+    "subtitle": "NearBuy is launching soon on the App Store and Google Play."
   },
   "footer": {
-    "tagline": "NearBuy — Local shopping, right next door.",
-    "deletion": "Request to delete my account",
-    "rights": "© {{year}} NearBuy. All rights reserved."
+    "tagline": "Local shopping, right at hand.",
+    "deletion": "Request to delete my account"
   },
   "deletion": {
-    "pageTitle": "Delete my account",
-    "intro": "To delete your NearBuy account (customer or shopkeeper), fill out this form. You don't need to be signed in.",
+    "title": "Account deletion request",
+    "intro": "You can request the deletion of your NearBuy account (customer) or NearBuy Business account (seller) by filling out this form. Our team will process your request within <strong>30 days at most</strong> and will contact you at the email address provided to confirm.",
+    "afterTitle": "What happens after deletion?",
+    "after1": "Your profile, messages and preferences are permanently deleted.",
+    "after2": "If you are a seller, your shop and products are also removed from the app.",
+    "after3": "Some information may be retained for legal reasons (invoices, security logs) for up to 5 years.",
+    "after4": "This action is irreversible.",
     "fullName": "Full name",
-    "email": "Account email",
-    "accountType": "Account type",
-    "accountTypeCustomer": "Customer",
-    "accountTypeSeller": "Shopkeeper",
-    "accountTypeBoth": "Both",
-    "reason": "Reason (optional)",
-    "confirm": "I confirm I want to permanently delete my account.",
-    "submit": "Submit request",
+    "email": "Email address tied to your account",
+    "emailHint": "Use the same email as your NearBuy account.",
+    "accountType": "Account type to delete",
+    "accountTypeCustomer": "Customer account (NearBuy)",
+    "accountTypeSeller": "Seller account (NearBuy Business)",
+    "accountTypeBoth": "Both (I use NearBuy as customer AND seller)",
+    "reason": "Reason for deletion",
+    "reasonOptional": "(optional)",
+    "confirm": "I confirm I understand that deletion is <strong>permanent</strong> and that I will no longer be able to access my account or recover my data.",
+    "submit": "Send my request",
     "submitting": "Sending…",
-    "successTitle": "Request received",
-    "successBody": "Your request has been recorded. Our team will process it within 30 days."
+    "errorName": "Please enter your full name (at least 2 characters).",
+    "errorEmail": "Please enter the email address tied to your account.",
+    "errorConfirm": "You must confirm that you understand the consequences of deletion.",
+    "errorRateLimit": "Too many requests sent from this address. Try again in about {{minutes}} minute(s).",
+    "errorGeneric": "Something went wrong. Try again in a moment.",
+    "successTitle": "Request sent",
+    "successBody": "Thank you, your deletion request has been recorded. Our team will process it within <strong>30 days at most</strong> and you will receive a confirmation email at the address provided.",
+    "successContact": "If you change your mind before deletion, write to us at",
+    "backHome": "Back to home"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you requested doesn't exist or has been moved."
   }
 }

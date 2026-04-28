@@ -16,10 +16,12 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { CategoryPicker } from "@/components/CategoryPicker";
+import { useTranslation } from "react-i18next";
 
 export default function AddProductScreen() {
   const colors = useColors();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const params = useLocalSearchParams<{ shopId: string; photoUri?: string; base64?: string }>();
   const shopId = params.shopId;
 
@@ -190,7 +192,7 @@ export default function AddProductScreen() {
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.chooseContent}>
           <Text style={[styles.title, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-            How would you like to add a product?
+            {t("addProduct.howAdd")}
           </Text>
 
           <TouchableOpacity
@@ -210,10 +212,10 @@ export default function AddProductScreen() {
                 </View>
                 <View style={styles.optionTextWrapper}>
                   <Text style={[styles.optionTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-                    Photo to Inventory
+                    {t("addProduct.photoToInventory")}
                   </Text>
                   <Text style={[styles.optionDesc, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
-                    Take a picture. AI will fill in the details.
+                    {t("addProduct.photoToInventoryDesc")}
                   </Text>
                 </View>
               </View>
@@ -228,10 +230,10 @@ export default function AddProductScreen() {
                 </View>
                 <View style={styles.optionTextWrapper}>
                   <Text style={[styles.optionTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-                    Manual Entry
+                    {t("addProduct.manualEntry")}
                   </Text>
                   <Text style={[styles.optionDesc, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
-                    Type in the product details yourself.
+                    {t("addProduct.manualEntryDesc")}
                   </Text>
                 </View>
               </View>
@@ -264,45 +266,45 @@ export default function AddProductScreen() {
           </ScrollView>
           {analyzePhoto.isPending && (
             <Text style={{ color: colors.mutedForeground, marginTop: 8, fontStyle: "italic" }}>
-              AI is analyzing the first photo...
+              {t("addProduct.analyzing")}
             </Text>
           )}
         </View>
       )}
 
       <Button
-        title="Add a photo"
+        title={t("addProduct.addPhoto")}
         variant="secondary"
         onPress={handleAddPhoto}
         style={{ marginBottom: 16 }}
       />
 
-      <Input label="Product Name *" placeholder="e.g. Ripe Bananas" value={name} onChangeText={setName} />
-      <Input label="Brand (Optional)" placeholder="e.g. Chiquita" value={brand} onChangeText={setBrand} />
+      <Input label={t("addProduct.productName")} placeholder={t("addProduct.productNamePlaceholder")} value={name} onChangeText={setName} />
+      <Input label={t("addProduct.brand")} placeholder={t("addProduct.brandPlaceholder")} value={brand} onChangeText={setBrand} />
       <Input
-        label="Description (Optional)"
-        placeholder="Describe the product..."
+        label={t("addProduct.description")}
+        placeholder={t("addProduct.descriptionPlaceholder")}
         value={description}
         onChangeText={setDescription}
         multiline
         numberOfLines={3}
         style={{ minHeight: 80, textAlignVertical: "top" }}
       />
-      <Input label="Legacy Category (Optional)" placeholder="e.g. Fruits" value={category} onChangeText={setCategory} />
+      <Input label={t("addProduct.legacyCategory")} placeholder={t("addProduct.legacyCategoryPlaceholder")} value={category} onChangeText={setCategory} />
 
-      <CategoryPicker selectedIds={categoryIds} onChange={setCategoryIds} label="Categories" />
+      <CategoryPicker selectedIds={categoryIds} onChange={setCategoryIds} label={t("addProduct.categories")} />
 
-      <Input label="Price ($) (Optional)" placeholder="0.00" value={priceStr} onChangeText={setPriceStr} keyboardType="decimal-pad" />
-      <Input label="Quantity (Optional)" placeholder="1" value={quantityStr} onChangeText={setQuantityStr} keyboardType="number-pad" />
+      <Input label={t("addProduct.price")} placeholder={t("addProduct.pricePlaceholder")} value={priceStr} onChangeText={setPriceStr} keyboardType="decimal-pad" />
+      <Input label={t("addProduct.quantity")} placeholder={t("addProduct.quantityPlaceholder")} value={quantityStr} onChangeText={setQuantityStr} keyboardType="number-pad" />
 
-      {renderChipInput("Tags", "e.g. organic, local (comma separated)", tagInput, setTagInput, tags, setTags)}
-      {renderChipInput("Colors", "e.g. red, blue (comma separated)", colorInput, setColorInput, colorsList, setColorsList)}
-      {renderChipInput("Sizes", "e.g. S, M, L (comma separated)", sizeInput, setSizeInput, sizesList, setSizesList)}
+      {renderChipInput(t("addProduct.tags"), t("addProduct.tagsPlaceholder"), tagInput, setTagInput, tags, setTags)}
+      {renderChipInput(t("addProduct.colors"), t("addProduct.colorsPlaceholder"), colorInput, setColorInput, colorsList, setColorsList)}
+      {renderChipInput(t("addProduct.sizes"), t("addProduct.sizesPlaceholder"), sizeInput, setSizeInput, sizesList, setSizesList)}
 
       <View style={{ flex: 1 }} />
 
       <Button
-        title="Save Product"
+        title={t("addProduct.save")}
         size="lg"
         disabled={!name.trim() || analyzePhoto.isPending}
         loading={createProduct.isPending}

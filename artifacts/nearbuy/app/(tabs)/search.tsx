@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
 import { useQuery } from "@tanstack/react-query";
 import Fuse from "fuse.js";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
@@ -41,6 +42,7 @@ function formatDistance(m: number): string {
 export default function SearchTab() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const params = useLocalSearchParams<{ q?: string }>();
   const initialQ = typeof params.q === "string" ? params.q : "";
 
@@ -195,7 +197,7 @@ export default function SearchTab() {
         <TextInput
           value={query}
           onChangeText={setQuery}
-          placeholder="Que cherchez-vous ?"
+          placeholder={t("search.placeholder")}
           placeholderTextColor={colors.mutedForeground}
           style={[styles.input, { color: colors.foreground }]}
           returnKeyType="search"
@@ -215,11 +217,10 @@ export default function SearchTab() {
         <View style={styles.center}>
           <Feather name="search" size={40} color={colors.mutedForeground} />
           <Text style={[styles.hintTitle, { color: colors.foreground }]}>
-            Trouvez un produit près de vous
+            {t("search.hintTitle")}
           </Text>
           <Text style={[styles.hintBody, { color: colors.mutedForeground }]}>
-            Tapez le nom d'un produit (au moins 2 lettres). La recherche tolère
-            les fautes d'orthographe et trie par distance.
+            {t("search.hintBody")}
           </Text>
         </View>
       ) : showNoResults ? (
@@ -230,15 +231,14 @@ export default function SearchTab() {
             color={colors.mutedForeground}
           />
           <Text style={[styles.hintTitle, { color: colors.foreground }]}>
-            Aucun résultat pour « {debouncedQ} »
+            {t("search.noResultsTitle", { query: debouncedQ })}
           </Text>
           <Text style={[styles.hintBody, { color: colors.mutedForeground }]}>
-            Diffusez votre demande aux boutiques dans un rayon de 5 km — vous
-            serez notifié dès qu'un vendeur l'aura en stock.
+            {t("search.noResultsHint")}
           </Text>
           <View style={{ height: 16 }} />
           <Button
-            title="Diffuser ma demande"
+            title={t("search.broadcast")}
             onPress={() => {
               // TODO: wire BroadcastRequest endpoint in a follow-up
             }}
@@ -255,8 +255,7 @@ export default function SearchTab() {
               <Text
                 style={[styles.countLine, { color: colors.mutedForeground }]}
               >
-                {results.length} résultat{results.length > 1 ? "s" : ""} dans
-                un rayon de 5 km
+                {t("search.resultsCount", { count: results.length })}
               </Text>
             ) : null
           }
@@ -327,7 +326,9 @@ export default function SearchTab() {
                   style={[styles.distance, { color: colors.mutedForeground }]}
                 >
                   {formatDistance(item.distanceMeters)}
-                  {item.shopIsOpen ? "  ·  Ouvert" : "  ·  Fermé"}
+                  {item.shopIsOpen
+                    ? `  ·  ${t("shop.openNow")}`
+                    : `  ·  ${t("shop.closed")}`}
                 </Text>
               </View>
               <Feather

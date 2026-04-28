@@ -15,11 +15,13 @@ import {
 } from "@workspace/api-client-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
+import { useTranslation } from "react-i18next";
 
 export default function EditShopScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
 
   const { data: shop } = useQuery({
@@ -66,7 +68,7 @@ export default function EditShopScreen() {
           router.back();
         },
         onError: (err: any) => {
-          setError(err?.message ?? "Failed to update shop");
+          setError(err?.message ?? t("editShop.updateError"));
         },
       }
     );
@@ -78,16 +80,16 @@ export default function EditShopScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {step === 1 ? (
         <KeyboardAwareScrollViewCompat contentContainerStyle={styles.content}>
-          <Input label="Shop Name *" value={name} onChangeText={setName} />
-          <Input label="Market Name (Optional)" value={marketName} onChangeText={setMarketName} />
-          <Input label="Stall Info (Optional)" value={stallInfo} onChangeText={setStallInfo} />
+          <Input label={t("editShop.name")} value={name} onChangeText={setName} />
+          <Input label={t("editShop.marketName")} value={marketName} onChangeText={setMarketName} />
+          <Input label={t("editShop.stallInfo")} value={stallInfo} onChangeText={setStallInfo} />
 
           {error && <Text style={{ color: colors.destructive, marginTop: 8 }}>{error}</Text>}
 
           <View style={{ flex: 1 }} />
 
-          <Button title="Update location" variant="secondary" onPress={() => setStep(2)} style={{ marginTop: 24 }} />
-          <Button title="Save changes" size="lg" disabled={!name.trim() || updateShop.isPending} loading={updateShop.isPending} onPress={handleSave} style={{ marginTop: 8 }} />
+          <Button title={t("editShop.updateLocation")} variant="secondary" onPress={() => setStep(2)} style={{ marginTop: 24 }} />
+          <Button title={t("editShop.save")} size="lg" disabled={!name.trim() || updateShop.isPending} loading={updateShop.isPending} onPress={handleSave} style={{ marginTop: 8 }} />
         </KeyboardAwareScrollViewCompat>
       ) : (
         <View style={styles.mapContainer}>
@@ -95,9 +97,9 @@ export default function EditShopScreen() {
           <View style={[styles.mapOverlay, { paddingBottom: Math.max(insets.bottom, 24) }]}>
             <Card style={[styles.mapCard, { backgroundColor: colors.card }]}>
               <Text style={[styles.mapTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-                Pin your location
+                {t("editShop.pinTitle")}
               </Text>
-              <Button title="Done" size="lg" onPress={() => setStep(1)} />
+              <Button title={t("editShop.done")} size="lg" onPress={() => setStep(1)} />
             </Card>
           </View>
         </View>

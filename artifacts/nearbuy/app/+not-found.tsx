@@ -1,19 +1,21 @@
 import { Link, Stack } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { useColors } from "@/hooks/useColors";
 
 export default function NotFoundScreen() {
   const colors = useColors();
+  const { t } = useTranslation();
   return (
     <>
-      <Stack.Screen options={{ title: "Oops!" }} />
+      <Stack.Screen options={{ title: "404" }} />
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Text style={[styles.title, { color: colors.foreground }]}>
-          Cette page n'existe pas.
+          {t("notFound.title")}
         </Text>
         <Link href="/" style={[styles.link, { color: colors.primary }]}>
-          Retour à l'accueil
+          {t("notFound.goHome")}
         </Link>
       </View>
     </>

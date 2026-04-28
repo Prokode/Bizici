@@ -23,7 +23,7 @@ if (!i18n.isInitialized) {
       supportedLngs: ["fr", "en"],
       load: "languageOnly",
       detection: {
-        order: ["localStorage", "navigator"],
+        order: ["localStorage"],
         lookupLocalStorage: STORAGE_KEY,
         caches: ["localStorage"],
       },

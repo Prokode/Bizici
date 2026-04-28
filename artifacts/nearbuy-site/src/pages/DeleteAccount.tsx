@@ -1,12 +1,15 @@
 import { useState, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
+import { Trans, useTranslation } from "react-i18next";
 import { NearBuyLogo } from "@/components/NearBuyLogo";
 import { SiteFooter } from "@/components/SiteFooter";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 type AccountType = "customer" | "seller" | "both";
 
 export default function DeleteAccountPage() {
   const [, navigate] = useLocation();
+  const { t } = useTranslation();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [accountType, setAccountType] = useState<AccountType>("customer");
@@ -20,17 +23,15 @@ export default function DeleteAccountPage() {
     setError(null);
 
     if (!fullName.trim() || fullName.trim().length < 2) {
-      setError("Veuillez entrer votre nom complet (au moins 2 caractères).");
+      setError(t("deletion.errorName"));
       return;
     }
     if (!email.trim()) {
-      setError("Veuillez entrer l'adresse e-mail liée à votre compte.");
+      setError(t("deletion.errorEmail"));
       return;
     }
     if (!confirmed) {
-      setError(
-        "Vous devez confirmer que vous comprenez les conséquences de la suppression.",
-      );
+      setError(t("deletion.errorConfirm"));
       return;
     }
 
@@ -50,7 +51,7 @@ export default function DeleteAccountPage() {
 
       if (!res.ok) {
         const txt = await res.text();
-        let msg = `Erreur ${res.status}`;
+        let msg = `Error ${res.status}`;
         try {
           const j = JSON.parse(txt);
           if (j?.error) msg = String(j.error);
@@ -62,7 +63,7 @@ export default function DeleteAccountPage() {
           const retryAfter = retryAfterRaw ? Number(retryAfterRaw) : NaN;
           if (Number.isFinite(retryAfter) && retryAfter > 0) {
             const minutes = Math.max(1, Math.ceil(retryAfter / 60));
-            msg = `Trop de demandes envoyées depuis cette adresse. Réessayez dans environ ${minutes} minute${minutes > 1 ? "s" : ""}.`;
+            msg = t("deletion.errorRateLimit", { minutes });
           }
         }
         throw new Error(msg);
@@ -71,14 +72,18 @@ export default function DeleteAccountPage() {
       navigate("/supprimer-compte/confirmation", { replace: true });
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Une erreur est survenue. Réessayez dans un instant.",
+        err instanceof Error ? err.message : t("deletion.errorGeneric"),
       );
     } finally {
       setSubmitting(false);
     }
   }
+
+  const accountOptions: Array<{ value: AccountType; labelKey: string }> = [
+    { value: "customer", labelKey: "deletion.accountTypeCustomer" },
+    { value: "seller", labelKey: "deletion.accountTypeSeller" },
+    { value: "both", labelKey: "deletion.accountTypeBoth" },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-neutral-900">
@@ -87,42 +92,38 @@ export default function DeleteAccountPage() {
           <NearBuyLogo size={36} />
           <span className="text-xl font-bold tracking-tight">NearBuy</span>
         </Link>
-        <Link href="/" className="text-sm text-neutral-600 hover:text-orange-600">
-          ← Retour à l'accueil
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/"
+            className="text-sm text-neutral-600 hover:text-orange-600"
+          >
+            ← {t("nav.back")}
+          </Link>
+          <LanguageSwitcher />
+        </div>
       </header>
 
       <main className="flex-1 px-6 py-10 md:py-16">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-            Demande de suppression de compte
+            {t("deletion.title")}
           </h1>
           <p className="mt-4 text-neutral-700 leading-relaxed">
-            Vous pouvez demander la suppression de votre compte NearBuy
-            (client) ou NearBuy Business (vendeur) en remplissant ce formulaire.
-            Notre équipe traitera votre demande dans un délai de{" "}
-            <strong>30 jours maximum</strong> et vous contactera à l'adresse
-            e-mail indiquée pour confirmer la suppression.
+            <Trans
+              i18nKey="deletion.intro"
+              components={{ strong: <strong /> }}
+            />
           </p>
 
           <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm text-neutral-800">
             <p className="font-semibold text-orange-700">
-              Que se passe-t-il après la suppression&nbsp;?
+              {t("deletion.afterTitle")}
             </p>
             <ul className="mt-2 list-disc pl-5 space-y-1 text-neutral-700">
-              <li>
-                Votre profil, vos messages et vos préférences sont
-                définitivement supprimés.
-              </li>
-              <li>
-                Si vous êtes vendeur, votre commerce et vos produits sont
-                également retirés de l'application.
-              </li>
-              <li>
-                Certaines informations peuvent être conservées pour des raisons
-                légales (factures, journaux de sécurité) jusqu'à 5 ans.
-              </li>
-              <li>L'opération est irréversible.</li>
+              <li>{t("deletion.after1")}</li>
+              <li>{t("deletion.after2")}</li>
+              <li>{t("deletion.after3")}</li>
+              <li>{t("deletion.after4")}</li>
             </ul>
           </div>
 
@@ -136,7 +137,7 @@ export default function DeleteAccountPage() {
                 htmlFor="fullName"
                 className="block text-sm font-medium text-neutral-800"
               >
-                Nom complet
+                {t("deletion.fullName")}
               </label>
               <input
                 id="fullName"
@@ -156,7 +157,7 @@ export default function DeleteAccountPage() {
                 htmlFor="email"
                 className="block text-sm font-medium text-neutral-800"
               >
-                Adresse e-mail liée à votre compte
+                {t("deletion.email")}
               </label>
               <input
                 id="email"
@@ -170,29 +171,16 @@ export default function DeleteAccountPage() {
                 data-testid="input-email"
               />
               <p className="mt-1 text-xs text-neutral-500">
-                Utilisez la même adresse que celle de votre compte NearBuy.
+                {t("deletion.emailHint")}
               </p>
             </div>
 
             <fieldset>
               <legend className="block text-sm font-medium text-neutral-800">
-                Type de compte à supprimer
+                {t("deletion.accountType")}
               </legend>
               <div className="mt-2 space-y-2">
-                {(
-                  [
-                    { value: "customer", label: "Compte client (NearBuy)" },
-                    {
-                      value: "seller",
-                      label: "Compte vendeur (NearBuy Business)",
-                    },
-                    {
-                      value: "both",
-                      label:
-                        "Les deux (j'utilise NearBuy comme client ET vendeur)",
-                    },
-                  ] as Array<{ value: AccountType; label: string }>
-                ).map((opt) => (
+                {accountOptions.map((opt) => (
                   <label
                     key={opt.value}
                     className="flex items-start gap-3 rounded-lg border border-neutral-200 p-3 hover:border-orange-300 cursor-pointer"
@@ -207,7 +195,9 @@ export default function DeleteAccountPage() {
                       className="mt-1 accent-orange-500"
                       data-testid={`radio-account-type-${opt.value}`}
                     />
-                    <span className="text-sm text-neutral-800">{opt.label}</span>
+                    <span className="text-sm text-neutral-800">
+                      {t(opt.labelKey)}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -218,9 +208,9 @@ export default function DeleteAccountPage() {
                 htmlFor="reason"
                 className="block text-sm font-medium text-neutral-800"
               >
-                Motif de la suppression{" "}
+                {t("deletion.reason")}{" "}
                 <span className="text-neutral-500 font-normal">
-                  (facultatif)
+                  {t("deletion.reasonOptional")}
                 </span>
               </label>
               <textarea
@@ -248,9 +238,10 @@ export default function DeleteAccountPage() {
                 data-testid="checkbox-confirm"
               />
               <span className="text-sm text-neutral-800">
-                Je confirme avoir compris que la suppression est{" "}
-                <strong>définitive</strong> et que je ne pourrai plus accéder à
-                mon compte ni récupérer mes données.
+                <Trans
+                  i18nKey="deletion.confirm"
+                  components={{ strong: <strong /> }}
+                />
               </span>
             </label>
 
@@ -274,7 +265,7 @@ export default function DeleteAccountPage() {
               className="w-full inline-flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 disabled:bg-neutral-300 disabled:cursor-not-allowed text-white font-semibold px-6 py-3 text-base transition-colors"
               data-testid="button-submit"
             >
-              {submitting ? "Envoi en cours…" : "Envoyer ma demande"}
+              {submitting ? t("deletion.submitting") : t("deletion.submit")}
             </button>
           </form>
         </div>

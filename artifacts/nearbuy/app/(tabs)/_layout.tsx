@@ -3,6 +3,7 @@ import { Feather } from "@expo/vector-icons";
 import { Platform } from "react-native";
 import { useAuth } from "@clerk/expo";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import { useColors } from "@/hooks/useColors";
 import { listConversations } from "@/lib/chatApi";
@@ -10,6 +11,7 @@ import { listConversations } from "@/lib/chatApi";
 export default function TabsLayout() {
   const colors = useColors();
   const { isSignedIn } = useAuth();
+  const { t } = useTranslation();
 
   const unreadQuery = useQuery({
     queryKey: ["chat-conv-list"],
@@ -42,7 +44,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Carte",
+          title: t("nav.map"),
           tabBarIcon: ({ color, size }) => (
             <Feather name="map" size={size} color={color} />
           ),
@@ -51,7 +53,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="search"
         options={{
-          title: "Recherche",
+          title: t("nav.search"),
           tabBarIcon: ({ color, size }) => (
             <Feather name="search" size={size} color={color} />
           ),
@@ -60,7 +62,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="camera"
         options={{
-          title: "Photo",
+          title: t("nav.camera"),
           tabBarIcon: ({ color, size }) => (
             <Feather name="camera" size={size} color={color} />
           ),
@@ -69,7 +71,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="messages"
         options={{
-          title: "Messages",
+          title: t("nav.messages"),
           tabBarIcon: ({ color, size }) => (
             <Feather name="message-circle" size={size} color={color} />
           ),
@@ -79,7 +81,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profil",
+          title: t("nav.profile"),
           tabBarIcon: ({ color, size }) => (
             <Feather name="user" size={size} color={color} />
           ),

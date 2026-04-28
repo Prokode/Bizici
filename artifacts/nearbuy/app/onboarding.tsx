@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -15,6 +15,7 @@ import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
@@ -23,57 +24,51 @@ export const ONBOARDING_SEEN_KEY = "nearbuy.consumer.onboarding.seen";
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
-type Slide = {
+type SlideDef = {
   key: string;
-  title: string;
-  description: string;
+  titleKey: string;
+  bodyKey: string;
+  chipKey: string;
   visual: "logo" | "icon";
   iconName?: keyof typeof Feather.glyphMap;
-  /** [start, end] gradient hex pair for the hero panel */
   gradient: [string, string];
-  /** small chip label above the title */
-  chip: string;
 };
 
-const slides: Slide[] = [
+const SLIDE_DEFS: SlideDef[] = [
   {
     key: "discover",
-    title: "Trouvez tout, juste à côté",
-    description:
-      "Découvrez en temps réel les produits disponibles dans les boutiques près de chez vous.",
+    titleKey: "onboarding.slide1Title",
+    bodyKey: "onboarding.slide1Body",
+    chipKey: "onboarding.slide1Chip",
     visual: "logo",
     gradient: ["#FF6B35", "#FF3D7F"],
-    chip: "BIENVENUE",
   },
   {
     key: "search",
-    title: "Cherchez, la carte vous guide",
-    description:
-      "Tapez « jeans bleus » ou « piles AA » : la carte filtre seulement les boutiques qui en ont vraiment.",
+    titleKey: "onboarding.slide2Title",
+    bodyKey: "onboarding.slide2Body",
+    chipKey: "onboarding.slide2Chip",
     visual: "icon",
     iconName: "search",
     gradient: ["#FF8A3D", "#FF5E62"],
-    chip: "RECHERCHE INTELLIGENTE",
   },
   {
     key: "visual",
-    title: "Photographiez, trouvez l'identique",
-    description:
-      "Une photo d'un objet suffit pour identifier des produits similaires en stock autour de vous.",
+    titleKey: "onboarding.slide3Title",
+    bodyKey: "onboarding.slide3Body",
+    chipKey: "onboarding.slide3Chip",
     visual: "icon",
     iconName: "camera",
     gradient: ["#A855F7", "#EC4899"],
-    chip: "RECHERCHE VISUELLE",
   },
   {
     key: "karma",
-    title: "Confirmez les stocks, gagnez du Karma",
-    description:
-      "Une boutique vide ou bien achalandée ? Aidez la communauté en un tap et collectez des points.",
+    titleKey: "onboarding.slide4Title",
+    bodyKey: "onboarding.slide4Body",
+    chipKey: "onboarding.slide4Chip",
     visual: "icon",
     iconName: "award",
     gradient: ["#0EA5E9", "#22D3EE"],
-    chip: "COMMUNAUTÉ",
   },
 ];
 
@@ -81,8 +76,11 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const listRef = useRef<FlatList<Slide>>(null);
+  const { t } = useTranslation();
+  const listRef = useRef<FlatList<SlideDef>>(null);
   const [index, setIndex] = useState(0);
+
+  const slides = useMemo(() => SLIDE_DEFS, []);
 
   const finish = useCallback(async () => {
     try {
@@ -113,7 +111,7 @@ export default function OnboardingScreen() {
       <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
         <Pressable onPress={finish} hitSlop={12}>
           <Text style={[styles.skip, { color: colors.mutedForeground }]}>
-            Passer
+            {t("onboarding.skip")}
           </Text>
         </Pressable>
       </View>
@@ -164,11 +162,11 @@ export default function OnboardingScreen() {
                 <Text
                   style={[styles.chipText, { color: colors.accentForeground }]}
                 >
-                  {item.chip}
+                  {t(item.chipKey)}
                 </Text>
               </View>
               <Text style={[styles.title, { color: colors.foreground }]}>
-                {item.title}
+                {t(item.titleKey)}
               </Text>
               <Text
                 style={[
@@ -176,7 +174,7 @@ export default function OnboardingScreen() {
                   { color: colors.mutedForeground },
                 ]}
               >
-                {item.description}
+                {t(item.bodyKey)}
               </Text>
             </View>
           </View>
@@ -200,7 +198,7 @@ export default function OnboardingScreen() {
           ))}
         </View>
         <Button
-          title={isLast ? "Commencer" : "Suivant"}
+          title={isLast ? t("onboarding.start") : t("onboarding.next")}
           onPress={next}
           fullWidth
           size="lg"

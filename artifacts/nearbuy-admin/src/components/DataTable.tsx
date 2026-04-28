@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 export type Column<T> = {
@@ -23,6 +24,7 @@ export function DataTable<T extends { id: string }>({
   onRowClick?: (row: T) => void;
   testId?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="border border-card-border rounded-lg overflow-hidden bg-card" data-testid={testId}>
       <div className="overflow-x-auto">
@@ -49,7 +51,7 @@ export function DataTable<T extends { id: string }>({
                   colSpan={columns.length}
                   className="px-4 py-10 text-center text-muted-foreground"
                 >
-                  Chargement…
+                  {t("common.loading")}
                 </td>
               </tr>
             ) : rows.length === 0 ? (
@@ -58,7 +60,7 @@ export function DataTable<T extends { id: string }>({
                   colSpan={columns.length}
                   className="px-4 py-10 text-center text-muted-foreground"
                 >
-                  {empty ?? "Aucun résultat"}
+                  {empty ?? t("common.noResults")}
                 </td>
               </tr>
             ) : (
@@ -101,14 +103,13 @@ export function Pagination({
   total: number;
   onPageChange: (p: number) => void;
 }) {
+  const { t } = useTranslation();
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(total, page * pageSize);
   return (
     <div className="flex items-center justify-between mt-4 text-sm text-muted-foreground">
-      <div>
-        {from}–{to} sur {total}
-      </div>
+      <div>{t("common.rangeOf", { from, to, total })}</div>
       <div className="flex items-center gap-2">
         <button
           className="border border-input rounded-md px-3 py-1 hover-elevate disabled:opacity-50"
@@ -116,18 +117,16 @@ export function Pagination({
           onClick={() => onPageChange(page - 1)}
           data-testid="button-prev-page"
         >
-          Précédent
+          {t("common.previous")}
         </button>
-        <div>
-          Page {page} / {totalPages}
-        </div>
+        <div>{t("common.page", { page, total: totalPages })}</div>
         <button
           className="border border-input rounded-md px-3 py-1 hover-elevate disabled:opacity-50"
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
           data-testid="button-next-page"
         >
-          Suivant
+          {t("common.next")}
         </button>
       </div>
     </div>

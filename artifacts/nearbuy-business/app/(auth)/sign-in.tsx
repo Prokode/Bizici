@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, View, Platform } from "react-native";
+import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -29,6 +30,7 @@ export default function SignInScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { t } = useTranslation();
   const { signIn, errors, fetchStatus } = useSignIn();
   const { startSSOFlow } = useSSO();
 
@@ -41,7 +43,7 @@ export default function SignInScreen() {
     try {
       const { error } = await signIn.password({ emailAddress, password });
       if (error) {
-        setSubmitError(error.errors?.[0]?.longMessage ?? error.message ?? "Sign in failed");
+        setSubmitError(error.errors?.[0]?.longMessage ?? error.message ?? t("auth.errorSignIn"));
         return;
       }
       if (signIn.status === "complete") {
@@ -53,7 +55,7 @@ export default function SignInScreen() {
         });
       }
     } catch (err: any) {
-      setSubmitError(err?.message ?? "Something went wrong");
+      setSubmitError(err?.message ?? t("auth.errorGeneric"));
     }
   };
 
@@ -74,9 +76,9 @@ export default function SignInScreen() {
         });
       }
     } catch (err: any) {
-      setSubmitError(err?.message ?? "Google sign-in failed");
+      setSubmitError(err?.message ?? t("auth.errorGoogle"));
     }
-  }, [router, startSSOFlow]);
+  }, [router, startSSOFlow, t]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
@@ -85,15 +87,17 @@ export default function SignInScreen() {
           <View style={[styles.logo, { backgroundColor: colors.primary }]}>
             <Feather name="shopping-bag" size={28} color={colors.primaryForeground} />
           </View>
-          <Text style={[styles.title, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>Welcome back</Text>
+          <Text style={[styles.title, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
+            {t("auth.signInTitle")}
+          </Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
-            Sign in to manage your shops
+            {t("auth.signInSubtitle")}
           </Text>
         </View>
 
         <Card style={styles.card}>
           <Button
-            title="Continue with Google"
+            title={t("auth.continueGoogle")}
             variant="secondary"
             icon={<Feather name="chrome" size={18} color={colors.secondaryForeground} />}
             onPress={onGoogle}
@@ -102,13 +106,13 @@ export default function SignInScreen() {
 
           <View style={styles.dividerRow}>
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
-            <Text style={[styles.dividerText, { color: colors.mutedForeground }]}>or</Text>
+            <Text style={[styles.dividerText, { color: colors.mutedForeground }]}>{t("common.or")}</Text>
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
           </View>
 
           <Input
-            label="Email"
-            placeholder="you@example.com"
+            label={t("auth.email")}
+            placeholder={t("auth.emailPlaceholder")}
             value={emailAddress}
             onChangeText={setEmailAddress}
             autoCapitalize="none"
@@ -119,7 +123,7 @@ export default function SignInScreen() {
           )}
 
           <Input
-            label="Password"
+            label={t("auth.password")}
             placeholder="••••••••"
             value={password}
             onChangeText={setPassword}
@@ -131,7 +135,7 @@ export default function SignInScreen() {
           {submitError && <Text style={[styles.error, { color: colors.destructive }]}>{submitError}</Text>}
 
           <Button
-            title="Sign in"
+            title={t("auth.signInButton")}
             size="lg"
             disabled={!emailAddress || !password || fetchStatus === "fetching"}
             loading={fetchStatus === "fetching"}
@@ -141,9 +145,11 @@ export default function SignInScreen() {
         </Card>
 
         <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: colors.mutedForeground }]}>Don't have an account? </Text>
+          <Text style={[styles.footerText, { color: colors.mutedForeground }]}>{t("auth.noAccount")} </Text>
           <Link href={"/(auth)/sign-up" as Href}>
-            <Text style={[styles.link, { color: colors.primary, fontFamily: "PlusJakartaSans_600SemiBold" }]}>Sign up</Text>
+            <Text style={[styles.link, { color: colors.primary, fontFamily: "PlusJakartaSans_600SemiBold" }]}>
+              {t("auth.signUp")}
+            </Text>
           </Link>
         </View>
       </KeyboardAwareScrollViewCompat>
