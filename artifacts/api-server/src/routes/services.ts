@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { Types } from "mongoose";
 import { Service, Shop } from "@workspace/db";
-import { requireAuth, requireShopAccess } from "../lib/auth";
+import { requireAuth, requireSeller, requireShopAccess } from "../lib/auth";
 import {
   serializeService,
   serializeProviderProfile,
@@ -200,6 +200,10 @@ router.get(
 router.patch(
   "/shops/:shopId/provider-profile",
   requireShopAccess,
+  // The provider profile is the shop owner's PERSONAL identity (name, age,
+  // bio, certifications, portfolio). Sub-sellers can manage inventory but
+  // must never be able to overwrite the owner's personal data.
+  requireSeller,
   async (req, res) => {
     const body = req.body ?? {};
     const profileUpdate: Record<string, unknown> = {};
