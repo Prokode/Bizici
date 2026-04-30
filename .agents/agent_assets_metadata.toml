@@ -42,6 +42,30 @@ uri = "file://attached_assets/logo_concepts/pin-frame.png"
 type = "image"
 title = "generated_image"
 
+[[generated]]
+id = "hVORqbEuN-cbtjQh-Bgaa"
+uri = "file://attached_assets/bizici_logo_v1_pin.png"
+type = "image"
+title = "bizici logo pin"
+
+[[generated]]
+id = "0-eGEvREdV3cU7iRnsxyE"
+uri = "file://attached_assets/bizici_logo_v2_wordmark.png"
+type = "image"
+title = "bizici wordmark logo"
+
+[[generated]]
+id = "U_JcyJ5lHsBcPbjHwZA1l"
+uri = "file://attached_assets/bizici_logo_v3_monogram.png"
+type = "image"
+title = "bizici monogram badge"
+
+[[generated]]
+id = "OjJzam-BnWiFxp_keE0iK"
+uri = "file://attached_assets/bizici_logo_v4_storefront.png"
+type = "image"
+title = "bizici storefront illustration"
+
 [[outputs]]
 id = "nEsLMAOsSAP1n3KemC4uS"
 uri = "file://attached_assets/logo_concepts/concept-1-pin-bag.png"
@@ -65,3 +89,27 @@ id = "v8Wq24Q13DkaPIO5wkAhl"
 uri = "file://attached_assets/logo_concepts/concept-1-pin-bag-NB.png"
 type = "image"
 title = "Concept 1 avec initiales NB"
+
+[[outputs]]
+id = "bibqh8XcWJz-XeZLC6nv1"
+uri = "file://attached_assets/bizici_logo_v1_pin.png"
+type = "image"
+title = "1 — Pin minimaliste (corail)"
+
+[[outputs]]
+id = "DSnRKLB7mMQxoMuvimY6x"
+uri = "file://attached_assets/bizici_logo_v2_wordmark.png"
+type = "image"
+title = "2 — Wordmark bicolore (navy + jaune)"
+
+[[outputs]]
+id = "m6v2NdRmdEAOAo7XCzHb9"
+uri = "file://attached_assets/bizici_logo_v3_monogram.png"
+type = "image"
+title = "3 — Monogramme émeraude"
+
+[[outputs]]
+id = "32eXdaw9YoUNITaTbnvkm"
+uri = "file://attached_assets/bizici_logo_v4_storefront.png"
+type = "image"
+title = "4 — Vitrine illustrée"
