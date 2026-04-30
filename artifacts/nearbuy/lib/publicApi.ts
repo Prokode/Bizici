@@ -25,6 +25,21 @@ export type PublicShop = {
   distanceMeters: number;
   productCount: number;
   previewProducts: PublicProductPreview[];
+  // Set when the shop is `services` or `hybrid`; null for pure product shops.
+  kind?: "products" | "services" | "hybrid";
+  serviceProvider?: {
+    firstName: string | null;
+    lastName: string | null;
+    age: number | null;
+    hideAge: boolean;
+    bio: string | null;
+    photoUrl: string | null;
+    yearsExperience: number | null;
+    certifications: string[];
+    serviceRadiusKm: number;
+    portfolioPhotos: string[];
+    isVerified: boolean;
+  } | null;
 };
 
 export type PublicShopReview = {

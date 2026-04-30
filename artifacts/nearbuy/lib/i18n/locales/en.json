@@ -63,7 +63,12 @@
     "shopsCount_other": "{{count}} shops · 5 km",
     "productsCount_one": "{{count}} product",
     "productsCount_other": "{{count}} products",
-    "permissionDenied": "Enable location to see shops around you."
+    "permissionDenied": "Enable location to see shops around you.",
+    "filter": {
+      "all": "All",
+      "products": "Products",
+      "services": "Services"
+    }
   },
   "search": {
     "placeholder": "What are you looking for?",
@@ -108,6 +113,8 @@
     "portfolioTitle": "Portfolio",
     "noPortfolio": "No photos yet.",
     "radiusLabel": "Travels within {{km}} km",
+    "radiusKm": "{{km}} km around",
+    "openProfile": "View profile",
     "chat": "Chat with provider",
     "errorTitle": "Couldn't load this profile",
     "errorRetry": "Retry"

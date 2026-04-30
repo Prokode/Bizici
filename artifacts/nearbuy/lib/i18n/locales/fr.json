@@ -63,7 +63,12 @@
     "shopsCount_other": "{{count}} boutiques · 5 km",
     "productsCount_one": "{{count}} produit",
     "productsCount_other": "{{count}} produits",
-    "permissionDenied": "Activez la localisation pour voir les boutiques autour de vous."
+    "permissionDenied": "Activez la localisation pour voir les boutiques autour de vous.",
+    "filter": {
+      "all": "Tous",
+      "products": "Produits",
+      "services": "Services"
+    }
   },
   "search": {
     "placeholder": "Que cherchez-vous ?",
@@ -108,6 +113,8 @@
     "portfolioTitle": "Portfolio",
     "noPortfolio": "Pas encore de photos.",
     "radiusLabel": "Intervient dans un rayon de {{km}} km",
+    "radiusKm": "{{km}} km autour",
+    "openProfile": "Voir le profil",
     "chat": "Discuter avec le prestataire",
     "errorTitle": "Impossible de charger le profil",
     "errorRetry": "Réessayer"

@@ -21,6 +21,14 @@ import { useColors } from "@/hooks/useColors";
 import { fetchNearbyShops, type PublicShop } from "@/lib/publicApi";
 import { ShopMarker } from "@/components/ShopMarker";
 import { ShopBottomSheet } from "@/components/ShopBottomSheet";
+import { ProviderMarker } from "@/components/ProviderMarker";
+import { ProviderBottomCard } from "@/components/ProviderBottomCard";
+
+type MapFilter = "all" | "products" | "services";
+
+function isServiceShop(s: PublicShop): boolean {
+  return s.kind === "services" || s.kind === "hybrid";
+}
 
 type Region = {
   latitude: number;
@@ -56,15 +64,24 @@ export default function MapTab() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [selectedShop, setSelectedShop] = useState<PublicShop | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<PublicShop | null>(
+    null,
+  );
+  const [filter, setFilter] = useState<MapFilter>("all");
   const [maps, setMaps] = useState<{
     MapView: any;
     Marker: any;
+    Circle: any;
   } | null>(null);
 
   useEffect(() => {
     if (Platform.OS !== "web") {
       import("react-native-maps").then((mod) => {
-        setMaps({ MapView: mod.default, Marker: mod.Marker });
+        setMaps({
+          MapView: mod.default,
+          Marker: mod.Marker,
+          Circle: mod.Circle,
+        });
       });
     }
   }, []);
@@ -153,10 +170,32 @@ export default function MapTab() {
 
   const showMap = Platform.OS !== "web" && maps && region;
 
+  const filteredShops = useMemo(() => {
+    if (filter === "all") return shops;
+    if (filter === "services") return shops.filter(isServiceShop);
+    // "products" → keep pure-product shops AND hybrid (hybrid sells both).
+    return shops.filter((s) => s.kind !== "services");
+  }, [shops, filter]);
+
   const sortedShops = useMemo(
-    () => [...shops].sort((a, b) => a.distanceMeters - b.distanceMeters),
-    [shops],
+    () =>
+      [...filteredShops].sort((a, b) => a.distanceMeters - b.distanceMeters),
+    [filteredShops],
   );
+
+  // When the active filter changes, drop any selection that no longer matches
+  // so we don't leave a stale bottom sheet hanging over a hidden marker.
+  useEffect(() => {
+    if (selectedShop && !filteredShops.some((s) => s.id === selectedShop.id)) {
+      setSelectedShop(null);
+    }
+    if (
+      selectedProvider &&
+      !filteredShops.some((s) => s.id === selectedProvider.id)
+    ) {
+      setSelectedProvider(null);
+    }
+  }, [filteredShops, selectedShop, selectedProvider]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -167,20 +206,54 @@ export default function MapTab() {
           showsUserLocation
           showsMyLocationButton={false}
         >
-          {shops.map((s) => (
-            <maps.Marker
-              key={s.id}
-              coordinate={{ latitude: s.latitude, longitude: s.longitude }}
-              onPress={() => setSelectedShop(s)}
-              anchor={{ x: 0.5, y: 1 }}
-              tracksViewChanges={false}
-            >
-              <ShopMarker
-                productCount={s.productCount}
-                isOpen={s.isOpen}
-              />
-            </maps.Marker>
-          ))}
+          {filteredShops.map((s) => {
+            const isService = isServiceShop(s);
+            return (
+              <maps.Marker
+                key={s.id}
+                coordinate={{
+                  latitude: s.latitude,
+                  longitude: s.longitude,
+                }}
+                onPress={() => {
+                  if (isService) {
+                    setSelectedShop(null);
+                    setSelectedProvider(s);
+                  } else {
+                    setSelectedProvider(null);
+                    setSelectedShop(s);
+                  }
+                }}
+                anchor={{ x: 0.5, y: 1 }}
+                tracksViewChanges={false}
+              >
+                {isService ? (
+                  <ProviderMarker
+                    servicesCount={s.productCount}
+                    isVerified={!!s.serviceProvider?.isVerified}
+                    isHybrid={s.kind === "hybrid"}
+                  />
+                ) : (
+                  <ShopMarker
+                    productCount={s.productCount}
+                    isOpen={s.isOpen}
+                  />
+                )}
+              </maps.Marker>
+            );
+          })}
+          {selectedProvider?.serviceProvider?.serviceRadiusKm != null && (
+            <maps.Circle
+              center={{
+                latitude: selectedProvider.latitude,
+                longitude: selectedProvider.longitude,
+              }}
+              radius={selectedProvider.serviceProvider.serviceRadiusKm * 1000}
+              strokeColor="rgba(99, 102, 241, 0.7)"
+              fillColor="rgba(139, 92, 246, 0.15)"
+              strokeWidth={2}
+            />
+          )}
         </maps.MapView>
       ) : (
         <FlatList
@@ -454,6 +527,65 @@ export default function MapTab() {
         shop={selectedShop}
         onClose={() => setSelectedShop(null)}
       />
+
+      {selectedProvider && (
+        <ProviderBottomCard
+          shop={selectedProvider}
+          onClose={() => setSelectedProvider(null)}
+          onOpenProfile={() => {
+            const id = selectedProvider.id;
+            setSelectedProvider(null);
+            router.push(`/provider/${id}`);
+          }}
+        />
+      )}
+
+      <View
+        style={[
+          styles.filterPill,
+          {
+            top: insets.top + 116,
+            backgroundColor: colors.background,
+            borderColor: colors.border,
+          },
+        ]}
+        pointerEvents="box-none"
+      >
+        {(["all", "products", "services"] as MapFilter[]).map((f) => {
+          const active = filter === f;
+          const icon: keyof typeof Feather.glyphMap =
+            f === "all" ? "globe" : f === "products" ? "package" : "scissors";
+          return (
+            <Pressable
+              key={f}
+              onPress={() => setFilter(f)}
+              style={[
+                styles.filterItem,
+                active && { backgroundColor: colors.foreground },
+              ]}
+            >
+              <Feather
+                name={icon}
+                size={13}
+                color={active ? colors.background : colors.mutedForeground}
+              />
+              <Text
+                style={[
+                  styles.filterLabel,
+                  {
+                    color: active
+                      ? colors.background
+                      : colors.mutedForeground,
+                    fontWeight: active ? "700" : "500",
+                  },
+                ]}
+              >
+                {t(`map.filter.${f}`)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
     </View>
   );
 }
@@ -576,4 +708,29 @@ const styles = StyleSheet.create({
   previewThumbFallback: { alignItems: "center", justifyContent: "center" },
   previewName: { fontSize: 11, fontWeight: "600" },
   previewPrice: { fontSize: 11, fontWeight: "700" },
+
+  filterPill: {
+    position: "absolute",
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    padding: 4,
+    borderRadius: 999,
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  filterItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+  },
+  filterLabel: { fontSize: 12 },
 });
