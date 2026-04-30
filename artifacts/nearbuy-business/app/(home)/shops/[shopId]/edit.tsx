@@ -12,10 +12,12 @@ import {
   getGetShopQueryOptions,
   getGetShopQueryKey,
   getListShopsQueryKey,
+  type ShopUpdateInputKind,
 } from "@workspace/api-client-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useTranslation } from "react-i18next";
+import { ShopKindSelector } from "@/components/ShopKindSelector";
 
 export default function EditShopScreen() {
   const colors = useColors();
@@ -33,6 +35,7 @@ export default function EditShopScreen() {
   const [name, setName] = useState("");
   const [marketName, setMarketName] = useState("");
   const [stallInfo, setStallInfo] = useState("");
+  const [kind, setKind] = useState<ShopUpdateInputKind>("products");
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,6 +46,7 @@ export default function EditShopScreen() {
       setName(shop.name);
       setMarketName(shop.marketName ?? "");
       setStallInfo(shop.stallInfo ?? "");
+      setKind(shop.kind ?? "products");
       setLocation({ latitude: shop.latitude, longitude: shop.longitude });
     }
   }, [shop]);
@@ -59,6 +63,7 @@ export default function EditShopScreen() {
           stallInfo: stallInfo || null,
           latitude: location.latitude,
           longitude: location.longitude,
+          kind,
         },
       },
       {
@@ -83,6 +88,7 @@ export default function EditShopScreen() {
           <Input label={t("editShop.name")} value={name} onChangeText={setName} />
           <Input label={t("editShop.marketName")} value={marketName} onChangeText={setMarketName} />
           <Input label={t("editShop.stallInfo")} value={stallInfo} onChangeText={setStallInfo} />
+          <ShopKindSelector value={kind} onChange={setKind} />
 
           {error && <Text style={{ color: colors.destructive, marginTop: 8 }}>{error}</Text>}
 

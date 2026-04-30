@@ -7,8 +7,15 @@ import type {
   BroadcastRequestDoc,
 } from "@workspace/db";
 
-export function serializeShop(s: any) {
+// `viewerIsOwner` controls age visibility on the embedded provider profile.
+// Owners always see the raw value. For everyone else, the age field is
+// nulled when the provider opted to hide it.
+export function serializeShop(
+  s: any,
+  opts: { viewerIsOwner?: boolean; distanceKm?: number | null } = {},
+) {
   const coords: number[] = s.location?.coordinates ?? [0, 0];
+  const kind = (s.kind ?? "products") as "products" | "services" | "hybrid";
   return {
     id: String(s._id),
     sellerId: String(s.sellerId?._id ?? s.sellerId),
@@ -18,8 +25,38 @@ export function serializeShop(s: any) {
     longitude: Number(coords[0] ?? 0),
     latitude: Number(coords[1] ?? 0),
     isOpen: !!s.isOpen,
+    kind,
+    serviceProvider: s.serviceProvider
+      ? serializeProviderProfile(s.serviceProvider, {
+          viewerIsOwner: opts.viewerIsOwner ?? false,
+        })
+      : null,
     ratingAvg: typeof s.ratingAvg === "number" ? s.ratingAvg : 0,
     ratingCount: typeof s.ratingCount === "number" ? s.ratingCount : 0,
+    distanceKm:
+      typeof opts.distanceKm === "number" ? opts.distanceKm : undefined,
+  };
+}
+
+export function serializeProviderProfile(
+  p: any,
+  opts: { viewerIsOwner?: boolean } = {},
+) {
+  const hideAge = !!p?.hideAge;
+  const showAge = opts.viewerIsOwner === true || !hideAge;
+  return {
+    firstName: p?.firstName ?? null,
+    lastName: p?.lastName ?? null,
+    age: showAge && typeof p?.age === "number" ? p.age : null,
+    hideAge,
+    bio: p?.bio ?? null,
+    photoUrl: p?.photoUrl ?? null,
+    yearsExperience:
+      typeof p?.yearsExperience === "number" ? p.yearsExperience : null,
+    certifications: Array.isArray(p?.certifications) ? p.certifications : [],
+    serviceRadiusKm: typeof p?.serviceRadiusKm === "number" ? p.serviceRadiusKm : 10,
+    portfolioPhotos: Array.isArray(p?.portfolioPhotos) ? p.portfolioPhotos : [],
+    isVerified: !!p?.isVerified,
   };
 }
 
@@ -53,6 +90,44 @@ export function serializeCategory(c: any) {
     slug: c.slug,
     parent: c.parent ? String(c.parent) : null,
     icon: c.icon ?? null,
+    kind: (c.kind ?? "product") as "product" | "service",
+  };
+}
+
+export function serializeService(s: any) {
+  const cats = Array.isArray(s.categories)
+    ? s.categories.map((c: any) =>
+        c && typeof c === "object" && c._id
+          ? serializeCategory(c)
+          : {
+              id: String(c),
+              name: "",
+              slug: "",
+              parent: null,
+              icon: null,
+              kind: "service" as const,
+            },
+      )
+    : [];
+  return {
+    id: String(s._id),
+    shopId: String(s.shop?._id ?? s.shop),
+    sellerId: String(s.seller?._id ?? s.seller),
+    title: s.title,
+    slug: s.slug ?? null,
+    description: s.description ?? null,
+    categories: cats,
+    pricingType: (s.pricingType ?? "quote") as "fixed" | "hourly" | "quote",
+    price: typeof s.price === "number" ? s.price : null,
+    durationMinutes:
+      typeof s.durationMinutes === "number" ? s.durationMinutes : null,
+    photos: Array.isArray(s.photos) ? s.photos : [],
+    tags: Array.isArray(s.tags) ? s.tags : [],
+    isActive: s.isActive !== false,
+    createdAt: (s.createdAt instanceof Date
+      ? s.createdAt
+      : new Date(s.createdAt ?? Date.now())
+    ).toISOString(),
   };
 }
 

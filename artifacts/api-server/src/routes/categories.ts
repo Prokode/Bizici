@@ -6,8 +6,13 @@ import { serializeCategory } from "../lib/serialize";
 const router: IRouter = Router();
 router.use(requireAuth);
 
-router.get("/categories", async (_req, res) => {
-  const cats = await Category.find({}).sort({ name: 1 }).lean();
+router.get("/categories", async (req, res) => {
+  const rawKind = typeof req.query.kind === "string" ? req.query.kind : null;
+  const filter: Record<string, unknown> = {};
+  if (rawKind === "product" || rawKind === "service") {
+    filter.kind = rawKind;
+  }
+  const cats = await Category.find(filter).sort({ name: 1 }).lean();
   res.json(cats.map(serializeCategory));
 });
 

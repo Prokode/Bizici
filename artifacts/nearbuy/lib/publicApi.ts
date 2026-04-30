@@ -171,6 +171,82 @@ export async function fetchShopReviews(
   };
 }
 
+/**
+ * Public bundle returned by `/api/services/providers/{shopId}` — used by the
+ * customer provider-detail screen. Mirrors the api-server serializers; we
+ * stay decoupled from the generated client because that route is intentionally
+ * not part of the OpenAPI surface (public, anonymous, single-shot screen).
+ */
+export type PublicServiceCategory = {
+  id: string;
+  name: string;
+  slug: string | null;
+  icon: string | null;
+};
+
+export type PublicService = {
+  id: string;
+  shopId: string;
+  sellerId: string;
+  title: string;
+  slug: string | null;
+  description: string | null;
+  categories: PublicServiceCategory[];
+  pricingType: "fixed" | "hourly" | "quote";
+  price: number | null;
+  durationMinutes: number | null;
+  photos: string[];
+  tags: string[];
+  isActive: boolean;
+  createdAt: string;
+};
+
+export type PublicProviderProfile = {
+  firstName: string | null;
+  lastName: string | null;
+  age: number | null;
+  hideAge: boolean;
+  bio: string | null;
+  photoUrl: string | null;
+  yearsExperience: number | null;
+  certifications: string[];
+  serviceRadiusKm: number;
+  portfolioPhotos: string[];
+  isVerified: boolean;
+};
+
+export type PublicProviderDetail = {
+  shop: {
+    id: string;
+    sellerId: string;
+    name: string;
+    marketName: string | null;
+    stallInfo: string | null;
+    latitude: number;
+    longitude: number;
+    isOpen: boolean;
+    kind: "products" | "services" | "hybrid";
+    ratingAvg: number;
+    ratingCount: number;
+  };
+  provider: PublicProviderProfile | null;
+  services: PublicService[];
+};
+
+export async function fetchProviderDetail(
+  shopId: string,
+  opts?: { signal?: AbortSignal },
+): Promise<PublicProviderDetail> {
+  const res = await fetch(
+    `${getApiBase()}/services/providers/${shopId}`,
+    { signal: opts?.signal },
+  );
+  if (!res.ok) {
+    throw new Error(`fetchProviderDetail failed: ${res.status}`);
+  }
+  return (await res.json()) as PublicProviderDetail;
+}
+
 export type VisualMatch = PublicSearchHit & { confidence: number };
 
 /**

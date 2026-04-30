@@ -5,6 +5,8 @@
  * NearBuy Business API (MongoDB-backed)
  * OpenAPI spec version: 0.2.0
  */
+import type { ServiceProviderProfile } from "./serviceProviderProfile";
+import type { ShopKind } from "./shopKind";
 
 export interface Shop {
   id: string;
@@ -15,6 +17,15 @@ export interface Shop {
   latitude: number;
   longitude: number;
   isOpen: boolean;
+  /** Whether this shop sells products, offers services, or both.
+Existing shops default to "products".
+ */
+  kind: ShopKind;
+  /** Embedded provider profile, only meaningful when kind is
+"services" or "hybrid". May be a near-empty object when the
+shop was just created and the profile not yet filled in.
+ */
+  serviceProvider?: ServiceProviderProfile | null;
   /**
    * Mean rating across all reviews (0 when none).
    * @minimum 0
@@ -26,4 +37,8 @@ export interface Shop {
    * @minimum 0
    */
   ratingCount: number;
+  /** Distance from the search origin in kilometers. Only present
+on results returned by geo search endpoints.
+ */
+  distanceKm?: number | null;
 }

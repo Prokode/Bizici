@@ -1207,6 +1207,13 @@ importers:
         version: 25.3.5
 
   scripts:
+    dependencies:
+      '@workspace/db':
+        specifier: workspace:*
+        version: link:../lib/db
+      mongoose:
+        specifier: ^9.5.0
+        version: 9.5.0
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

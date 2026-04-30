@@ -7,11 +7,17 @@ type Props = {
   selectedIds: string[];
   onChange: (ids: string[]) => void;
   label?: string;
+  /**
+   * Optional kind filter: when set the picker only fetches categories of that
+   * kind (e.g. "service" for the services CRUD form, "product" for products).
+   * When unset, falls back to the legacy behaviour of listing every category.
+   */
+  kind?: "product" | "service";
 };
 
-export function CategoryPicker({ selectedIds, onChange, label = "Categories" }: Props) {
+export function CategoryPicker({ selectedIds, onChange, label = "Categories", kind }: Props) {
   const colors = useColors();
-  const { data: categories, isLoading } = useListCategories();
+  const { data: categories, isLoading } = useListCategories(kind ? { kind } : undefined);
 
   const toggle = (id: string) => {
     if (selectedIds.includes(id)) {

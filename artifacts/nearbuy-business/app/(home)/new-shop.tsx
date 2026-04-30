@@ -9,10 +9,11 @@ import { router } from "expo-router";
 import { ShopMapPicker } from "@/components/ShopMapPicker";
 import * as Location from "expo-location";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useCreateShop, getListShopsQueryKey, getGetMeQueryKey } from "@workspace/api-client-react";
+import { useCreateShop, getListShopsQueryKey, getGetMeQueryKey, type ShopCreateInputKind } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { Feather } from "@expo/vector-icons";
+import { ShopKindSelector } from "@/components/ShopKindSelector";
 
 export default function NewShopScreen() {
   const colors = useColors();
@@ -24,6 +25,7 @@ export default function NewShopScreen() {
   const [name, setName] = useState("");
   const [marketName, setMarketName] = useState("");
   const [stallInfo, setStallInfo] = useState("");
+  const [kind, setKind] = useState<ShopCreateInputKind>("products");
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +60,7 @@ export default function NewShopScreen() {
           stallInfo: stallInfo || null,
           latitude: location.latitude,
           longitude: location.longitude,
+          kind,
         },
       },
       {
@@ -95,6 +98,7 @@ export default function NewShopScreen() {
           <Input label={t("newShop.shopName")} placeholder={t("newShop.shopNamePlaceholder")} value={name} onChangeText={setName} />
           <Input label={t("newShop.marketName")} placeholder={t("newShop.marketNamePlaceholder")} value={marketName} onChangeText={setMarketName} />
           <Input label={t("newShop.stallInfo")} placeholder={t("newShop.stallInfoPlaceholder")} value={stallInfo} onChangeText={setStallInfo} />
+          <ShopKindSelector value={kind} onChange={setKind} />
 
           <View style={{ flex: 1 }} />
 

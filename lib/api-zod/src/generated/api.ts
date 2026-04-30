@@ -11,6 +11,14 @@ export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
 
+export const getMeResponseShopsItemShopServiceProviderOneAgeMin = 16;
+export const getMeResponseShopsItemShopServiceProviderOneAgeMax = 120;
+
+export const getMeResponseShopsItemShopServiceProviderOneYearsExperienceMin = 0;
+export const getMeResponseShopsItemShopServiceProviderOneYearsExperienceMax = 80;
+
+export const getMeResponseShopsItemShopServiceProviderOneServiceRadiusKmMax = 100;
+
 export const getMeResponseShopsItemShopRatingAvgMin = 0;
 export const getMeResponseShopsItemShopRatingAvgMax = 5;
 
@@ -31,6 +39,53 @@ export const GetMeResponse = zod.object({
         latitude: zod.number(),
         longitude: zod.number(),
         isOpen: zod.boolean(),
+        kind: zod
+          .enum(["products", "services", "hybrid"])
+          .describe(
+            'Whether this shop sells products, offers services, or both.\nExisting shops default to \"products\".\n',
+          ),
+        serviceProvider: zod
+          .union([
+            zod.object({
+              firstName: zod.string().nullish(),
+              lastName: zod.string().nullish(),
+              age: zod
+                .number()
+                .min(getMeResponseShopsItemShopServiceProviderOneAgeMin)
+                .max(getMeResponseShopsItemShopServiceProviderOneAgeMax)
+                .nullish(),
+              hideAge: zod
+                .boolean()
+                .describe(
+                  "When true, age must NOT be returned on public-facing\nendpoints (search, provider detail). Always returned on\nauthenticated owner endpoints.\n",
+                ),
+              bio: zod.string().nullish(),
+              photoUrl: zod.string().nullish(),
+              yearsExperience: zod
+                .number()
+                .min(
+                  getMeResponseShopsItemShopServiceProviderOneYearsExperienceMin,
+                )
+                .max(
+                  getMeResponseShopsItemShopServiceProviderOneYearsExperienceMax,
+                )
+                .nullish(),
+              certifications: zod.array(zod.string()),
+              serviceRadiusKm: zod
+                .number()
+                .min(1)
+                .max(
+                  getMeResponseShopsItemShopServiceProviderOneServiceRadiusKmMax,
+                ),
+              portfolioPhotos: zod.array(zod.string()),
+              isVerified: zod.boolean(),
+            }),
+            zod.null(),
+          ])
+          .optional()
+          .describe(
+            'Embedded provider profile, only meaningful when kind is\n\"services\" or \"hybrid\". May be a near-empty object when the\nshop was just created and the profile not yet filled in.\n',
+          ),
         ratingAvg: zod
           .number()
           .min(getMeResponseShopsItemShopRatingAvgMin)
@@ -40,6 +95,12 @@ export const GetMeResponse = zod.object({
           .number()
           .min(getMeResponseShopsItemShopRatingCountMin)
           .describe("Number of reviews used for the average."),
+        distanceKm: zod
+          .number()
+          .nullish()
+          .describe(
+            "Distance from the search origin in kilometers. Only present\non results returned by geo search endpoints.\n",
+          ),
       }),
       role: zod.enum(["seller", "sub_seller"]),
     }),
@@ -205,6 +266,14 @@ export const DeleteMyReviewParams = zod.object({
   shopId: zod.coerce.string(),
 });
 
+export const listShopsResponseShopServiceProviderOneAgeMin = 16;
+export const listShopsResponseShopServiceProviderOneAgeMax = 120;
+
+export const listShopsResponseShopServiceProviderOneYearsExperienceMin = 0;
+export const listShopsResponseShopServiceProviderOneYearsExperienceMax = 80;
+
+export const listShopsResponseShopServiceProviderOneServiceRadiusKmMax = 100;
+
 export const listShopsResponseShopRatingAvgMin = 0;
 export const listShopsResponseShopRatingAvgMax = 5;
 
@@ -220,6 +289,47 @@ export const ListShopsResponseItem = zod.object({
     latitude: zod.number(),
     longitude: zod.number(),
     isOpen: zod.boolean(),
+    kind: zod
+      .enum(["products", "services", "hybrid"])
+      .describe(
+        'Whether this shop sells products, offers services, or both.\nExisting shops default to \"products\".\n',
+      ),
+    serviceProvider: zod
+      .union([
+        zod.object({
+          firstName: zod.string().nullish(),
+          lastName: zod.string().nullish(),
+          age: zod
+            .number()
+            .min(listShopsResponseShopServiceProviderOneAgeMin)
+            .max(listShopsResponseShopServiceProviderOneAgeMax)
+            .nullish(),
+          hideAge: zod
+            .boolean()
+            .describe(
+              "When true, age must NOT be returned on public-facing\nendpoints (search, provider detail). Always returned on\nauthenticated owner endpoints.\n",
+            ),
+          bio: zod.string().nullish(),
+          photoUrl: zod.string().nullish(),
+          yearsExperience: zod
+            .number()
+            .min(listShopsResponseShopServiceProviderOneYearsExperienceMin)
+            .max(listShopsResponseShopServiceProviderOneYearsExperienceMax)
+            .nullish(),
+          certifications: zod.array(zod.string()),
+          serviceRadiusKm: zod
+            .number()
+            .min(1)
+            .max(listShopsResponseShopServiceProviderOneServiceRadiusKmMax),
+          portfolioPhotos: zod.array(zod.string()),
+          isVerified: zod.boolean(),
+        }),
+        zod.null(),
+      ])
+      .optional()
+      .describe(
+        'Embedded provider profile, only meaningful when kind is\n\"services\" or \"hybrid\". May be a near-empty object when the\nshop was just created and the profile not yet filled in.\n',
+      ),
     ratingAvg: zod
       .number()
       .min(listShopsResponseShopRatingAvgMin)
@@ -229,6 +339,12 @@ export const ListShopsResponseItem = zod.object({
       .number()
       .min(listShopsResponseShopRatingCountMin)
       .describe("Number of reviews used for the average."),
+    distanceKm: zod
+      .number()
+      .nullish()
+      .describe(
+        "Distance from the search origin in kilometers. Only present\non results returned by geo search endpoints.\n",
+      ),
   }),
   role: zod.enum(["seller", "sub_seller"]),
 });
@@ -240,7 +356,19 @@ export const CreateShopBody = zod.object({
   stallInfo: zod.string().nullish(),
   latitude: zod.number(),
   longitude: zod.number(),
+  kind: zod
+    .enum(["products", "services", "hybrid"])
+    .optional()
+    .describe('Defaults to \"products\" when omitted.'),
 });
+
+export const createShopResponseServiceProviderOneAgeMin = 16;
+export const createShopResponseServiceProviderOneAgeMax = 120;
+
+export const createShopResponseServiceProviderOneYearsExperienceMin = 0;
+export const createShopResponseServiceProviderOneYearsExperienceMax = 80;
+
+export const createShopResponseServiceProviderOneServiceRadiusKmMax = 100;
 
 export const createShopResponseRatingAvgMin = 0;
 export const createShopResponseRatingAvgMax = 5;
@@ -256,6 +384,47 @@ export const CreateShopResponse = zod.object({
   latitude: zod.number(),
   longitude: zod.number(),
   isOpen: zod.boolean(),
+  kind: zod
+    .enum(["products", "services", "hybrid"])
+    .describe(
+      'Whether this shop sells products, offers services, or both.\nExisting shops default to \"products\".\n',
+    ),
+  serviceProvider: zod
+    .union([
+      zod.object({
+        firstName: zod.string().nullish(),
+        lastName: zod.string().nullish(),
+        age: zod
+          .number()
+          .min(createShopResponseServiceProviderOneAgeMin)
+          .max(createShopResponseServiceProviderOneAgeMax)
+          .nullish(),
+        hideAge: zod
+          .boolean()
+          .describe(
+            "When true, age must NOT be returned on public-facing\nendpoints (search, provider detail). Always returned on\nauthenticated owner endpoints.\n",
+          ),
+        bio: zod.string().nullish(),
+        photoUrl: zod.string().nullish(),
+        yearsExperience: zod
+          .number()
+          .min(createShopResponseServiceProviderOneYearsExperienceMin)
+          .max(createShopResponseServiceProviderOneYearsExperienceMax)
+          .nullish(),
+        certifications: zod.array(zod.string()),
+        serviceRadiusKm: zod
+          .number()
+          .min(1)
+          .max(createShopResponseServiceProviderOneServiceRadiusKmMax),
+        portfolioPhotos: zod.array(zod.string()),
+        isVerified: zod.boolean(),
+      }),
+      zod.null(),
+    ])
+    .optional()
+    .describe(
+      'Embedded provider profile, only meaningful when kind is\n\"services\" or \"hybrid\". May be a near-empty object when the\nshop was just created and the profile not yet filled in.\n',
+    ),
   ratingAvg: zod
     .number()
     .min(createShopResponseRatingAvgMin)
@@ -265,11 +434,25 @@ export const CreateShopResponse = zod.object({
     .number()
     .min(createShopResponseRatingCountMin)
     .describe("Number of reviews used for the average."),
+  distanceKm: zod
+    .number()
+    .nullish()
+    .describe(
+      "Distance from the search origin in kilometers. Only present\non results returned by geo search endpoints.\n",
+    ),
 });
 
 export const GetShopParams = zod.object({
   shopId: zod.coerce.string(),
 });
+
+export const getShopResponseServiceProviderOneAgeMin = 16;
+export const getShopResponseServiceProviderOneAgeMax = 120;
+
+export const getShopResponseServiceProviderOneYearsExperienceMin = 0;
+export const getShopResponseServiceProviderOneYearsExperienceMax = 80;
+
+export const getShopResponseServiceProviderOneServiceRadiusKmMax = 100;
 
 export const getShopResponseRatingAvgMin = 0;
 export const getShopResponseRatingAvgMax = 5;
@@ -285,6 +468,47 @@ export const GetShopResponse = zod.object({
   latitude: zod.number(),
   longitude: zod.number(),
   isOpen: zod.boolean(),
+  kind: zod
+    .enum(["products", "services", "hybrid"])
+    .describe(
+      'Whether this shop sells products, offers services, or both.\nExisting shops default to \"products\".\n',
+    ),
+  serviceProvider: zod
+    .union([
+      zod.object({
+        firstName: zod.string().nullish(),
+        lastName: zod.string().nullish(),
+        age: zod
+          .number()
+          .min(getShopResponseServiceProviderOneAgeMin)
+          .max(getShopResponseServiceProviderOneAgeMax)
+          .nullish(),
+        hideAge: zod
+          .boolean()
+          .describe(
+            "When true, age must NOT be returned on public-facing\nendpoints (search, provider detail). Always returned on\nauthenticated owner endpoints.\n",
+          ),
+        bio: zod.string().nullish(),
+        photoUrl: zod.string().nullish(),
+        yearsExperience: zod
+          .number()
+          .min(getShopResponseServiceProviderOneYearsExperienceMin)
+          .max(getShopResponseServiceProviderOneYearsExperienceMax)
+          .nullish(),
+        certifications: zod.array(zod.string()),
+        serviceRadiusKm: zod
+          .number()
+          .min(1)
+          .max(getShopResponseServiceProviderOneServiceRadiusKmMax),
+        portfolioPhotos: zod.array(zod.string()),
+        isVerified: zod.boolean(),
+      }),
+      zod.null(),
+    ])
+    .optional()
+    .describe(
+      'Embedded provider profile, only meaningful when kind is\n\"services\" or \"hybrid\". May be a near-empty object when the\nshop was just created and the profile not yet filled in.\n',
+    ),
   ratingAvg: zod
     .number()
     .min(getShopResponseRatingAvgMin)
@@ -294,6 +518,12 @@ export const GetShopResponse = zod.object({
     .number()
     .min(getShopResponseRatingCountMin)
     .describe("Number of reviews used for the average."),
+  distanceKm: zod
+    .number()
+    .nullish()
+    .describe(
+      "Distance from the search origin in kilometers. Only present\non results returned by geo search endpoints.\n",
+    ),
 });
 
 export const UpdateShopParams = zod.object({
@@ -306,7 +536,16 @@ export const UpdateShopBody = zod.object({
   stallInfo: zod.string().nullish(),
   latitude: zod.number().optional(),
   longitude: zod.number().optional(),
+  kind: zod.enum(["products", "services", "hybrid"]).optional(),
 });
+
+export const updateShopResponseServiceProviderOneAgeMin = 16;
+export const updateShopResponseServiceProviderOneAgeMax = 120;
+
+export const updateShopResponseServiceProviderOneYearsExperienceMin = 0;
+export const updateShopResponseServiceProviderOneYearsExperienceMax = 80;
+
+export const updateShopResponseServiceProviderOneServiceRadiusKmMax = 100;
 
 export const updateShopResponseRatingAvgMin = 0;
 export const updateShopResponseRatingAvgMax = 5;
@@ -322,6 +561,47 @@ export const UpdateShopResponse = zod.object({
   latitude: zod.number(),
   longitude: zod.number(),
   isOpen: zod.boolean(),
+  kind: zod
+    .enum(["products", "services", "hybrid"])
+    .describe(
+      'Whether this shop sells products, offers services, or both.\nExisting shops default to \"products\".\n',
+    ),
+  serviceProvider: zod
+    .union([
+      zod.object({
+        firstName: zod.string().nullish(),
+        lastName: zod.string().nullish(),
+        age: zod
+          .number()
+          .min(updateShopResponseServiceProviderOneAgeMin)
+          .max(updateShopResponseServiceProviderOneAgeMax)
+          .nullish(),
+        hideAge: zod
+          .boolean()
+          .describe(
+            "When true, age must NOT be returned on public-facing\nendpoints (search, provider detail). Always returned on\nauthenticated owner endpoints.\n",
+          ),
+        bio: zod.string().nullish(),
+        photoUrl: zod.string().nullish(),
+        yearsExperience: zod
+          .number()
+          .min(updateShopResponseServiceProviderOneYearsExperienceMin)
+          .max(updateShopResponseServiceProviderOneYearsExperienceMax)
+          .nullish(),
+        certifications: zod.array(zod.string()),
+        serviceRadiusKm: zod
+          .number()
+          .min(1)
+          .max(updateShopResponseServiceProviderOneServiceRadiusKmMax),
+        portfolioPhotos: zod.array(zod.string()),
+        isVerified: zod.boolean(),
+      }),
+      zod.null(),
+    ])
+    .optional()
+    .describe(
+      'Embedded provider profile, only meaningful when kind is\n\"services\" or \"hybrid\". May be a near-empty object when the\nshop was just created and the profile not yet filled in.\n',
+    ),
   ratingAvg: zod
     .number()
     .min(updateShopResponseRatingAvgMin)
@@ -331,6 +611,12 @@ export const UpdateShopResponse = zod.object({
     .number()
     .min(updateShopResponseRatingCountMin)
     .describe("Number of reviews used for the average."),
+  distanceKm: zod
+    .number()
+    .nullish()
+    .describe(
+      "Distance from the search origin in kilometers. Only present\non results returned by geo search endpoints.\n",
+    ),
 });
 
 export const SetShopOpenParams = zod.object({
@@ -340,6 +626,14 @@ export const SetShopOpenParams = zod.object({
 export const SetShopOpenBody = zod.object({
   isOpen: zod.boolean(),
 });
+
+export const setShopOpenResponseServiceProviderOneAgeMin = 16;
+export const setShopOpenResponseServiceProviderOneAgeMax = 120;
+
+export const setShopOpenResponseServiceProviderOneYearsExperienceMin = 0;
+export const setShopOpenResponseServiceProviderOneYearsExperienceMax = 80;
+
+export const setShopOpenResponseServiceProviderOneServiceRadiusKmMax = 100;
 
 export const setShopOpenResponseRatingAvgMin = 0;
 export const setShopOpenResponseRatingAvgMax = 5;
@@ -355,6 +649,47 @@ export const SetShopOpenResponse = zod.object({
   latitude: zod.number(),
   longitude: zod.number(),
   isOpen: zod.boolean(),
+  kind: zod
+    .enum(["products", "services", "hybrid"])
+    .describe(
+      'Whether this shop sells products, offers services, or both.\nExisting shops default to \"products\".\n',
+    ),
+  serviceProvider: zod
+    .union([
+      zod.object({
+        firstName: zod.string().nullish(),
+        lastName: zod.string().nullish(),
+        age: zod
+          .number()
+          .min(setShopOpenResponseServiceProviderOneAgeMin)
+          .max(setShopOpenResponseServiceProviderOneAgeMax)
+          .nullish(),
+        hideAge: zod
+          .boolean()
+          .describe(
+            "When true, age must NOT be returned on public-facing\nendpoints (search, provider detail). Always returned on\nauthenticated owner endpoints.\n",
+          ),
+        bio: zod.string().nullish(),
+        photoUrl: zod.string().nullish(),
+        yearsExperience: zod
+          .number()
+          .min(setShopOpenResponseServiceProviderOneYearsExperienceMin)
+          .max(setShopOpenResponseServiceProviderOneYearsExperienceMax)
+          .nullish(),
+        certifications: zod.array(zod.string()),
+        serviceRadiusKm: zod
+          .number()
+          .min(1)
+          .max(setShopOpenResponseServiceProviderOneServiceRadiusKmMax),
+        portfolioPhotos: zod.array(zod.string()),
+        isVerified: zod.boolean(),
+      }),
+      zod.null(),
+    ])
+    .optional()
+    .describe(
+      'Embedded provider profile, only meaningful when kind is\n\"services\" or \"hybrid\". May be a near-empty object when the\nshop was just created and the profile not yet filled in.\n',
+    ),
   ratingAvg: zod
     .number()
     .min(setShopOpenResponseRatingAvgMin)
@@ -364,6 +699,12 @@ export const SetShopOpenResponse = zod.object({
     .number()
     .min(setShopOpenResponseRatingCountMin)
     .describe("Number of reviews used for the average."),
+  distanceKm: zod
+    .number()
+    .nullish()
+    .describe(
+      "Distance from the search origin in kilometers. Only present\non results returned by geo search endpoints.\n",
+    ),
 });
 
 export const GetShopQrParams = zod.object({
@@ -443,6 +784,11 @@ export const ListProductsResponseItem = zod.object({
       slug: zod.string(),
       parent: zod.string().nullish(),
       icon: zod.string().nullish(),
+      kind: zod
+        .enum(["product", "service"])
+        .describe(
+          'Whether this category applies to products or services.\nExisting categories default to \"product\".\n',
+        ),
     }),
   ),
   weight: zod.number().nullish(),
@@ -610,6 +956,11 @@ export const CreateProductResponse = zod.object({
       slug: zod.string(),
       parent: zod.string().nullish(),
       icon: zod.string().nullish(),
+      kind: zod
+        .enum(["product", "service"])
+        .describe(
+          'Whether this category applies to products or services.\nExisting categories default to \"product\".\n',
+        ),
     }),
   ),
   weight: zod.number().nullish(),
@@ -778,6 +1129,11 @@ export const UpdateProductResponse = zod.object({
       slug: zod.string(),
       parent: zod.string().nullish(),
       icon: zod.string().nullish(),
+      kind: zod
+        .enum(["product", "service"])
+        .describe(
+          'Whether this category applies to products or services.\nExisting categories default to \"product\".\n',
+        ),
     }),
   ),
   weight: zod.number().nullish(),
@@ -915,6 +1271,500 @@ export const DeleteDiscountResponse = zod.object({
   success: zod.boolean(),
 });
 
+export const ListShopServicesParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const listShopServicesResponsePriceMin = 0;
+
+export const ListShopServicesResponseItem = zod.object({
+  id: zod.string(),
+  shopId: zod.string(),
+  sellerId: zod.string(),
+  title: zod.string(),
+  slug: zod.string().nullish(),
+  description: zod.string().nullish(),
+  categories: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      slug: zod.string(),
+      parent: zod.string().nullish(),
+      icon: zod.string().nullish(),
+      kind: zod
+        .enum(["product", "service"])
+        .describe(
+          'Whether this category applies to products or services.\nExisting categories default to \"product\".\n',
+        ),
+    }),
+  ),
+  pricingType: zod.enum(["fixed", "hourly", "quote"]),
+  price: zod.number().min(listShopServicesResponsePriceMin).nullish(),
+  durationMinutes: zod.number().min(1).nullish(),
+  photos: zod.array(zod.string()),
+  tags: zod.array(zod.string()),
+  isActive: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+export const ListShopServicesResponse = zod.array(ListShopServicesResponseItem);
+
+export const CreateServiceParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const createServiceBodyTitleMax = 120;
+
+export const createServiceBodyDescriptionMax = 4000;
+
+export const createServiceBodyPriceMin = 0;
+
+export const CreateServiceBody = zod.object({
+  title: zod.string().min(1).max(createServiceBodyTitleMax),
+  description: zod.string().max(createServiceBodyDescriptionMax).nullish(),
+  categoryIds: zod.array(zod.string()).optional(),
+  pricingType: zod.enum(["fixed", "hourly", "quote"]),
+  price: zod.number().min(createServiceBodyPriceMin).nullish(),
+  durationMinutes: zod.number().min(1).nullish(),
+  photos: zod.array(zod.string()).optional(),
+  tags: zod.array(zod.string()).optional(),
+  isActive: zod.boolean().optional(),
+});
+
+export const createServiceResponsePriceMin = 0;
+
+export const CreateServiceResponse = zod.object({
+  id: zod.string(),
+  shopId: zod.string(),
+  sellerId: zod.string(),
+  title: zod.string(),
+  slug: zod.string().nullish(),
+  description: zod.string().nullish(),
+  categories: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      slug: zod.string(),
+      parent: zod.string().nullish(),
+      icon: zod.string().nullish(),
+      kind: zod
+        .enum(["product", "service"])
+        .describe(
+          'Whether this category applies to products or services.\nExisting categories default to \"product\".\n',
+        ),
+    }),
+  ),
+  pricingType: zod.enum(["fixed", "hourly", "quote"]),
+  price: zod.number().min(createServiceResponsePriceMin).nullish(),
+  durationMinutes: zod.number().min(1).nullish(),
+  photos: zod.array(zod.string()),
+  tags: zod.array(zod.string()),
+  isActive: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+
+export const UpdateServiceParams = zod.object({
+  shopId: zod.coerce.string(),
+  id: zod.coerce.string(),
+});
+
+export const updateServiceBodyTitleMax = 120;
+
+export const updateServiceBodyDescriptionMax = 4000;
+
+export const updateServiceBodyPriceMin = 0;
+
+export const UpdateServiceBody = zod.object({
+  title: zod.string().min(1).max(updateServiceBodyTitleMax).optional(),
+  description: zod.string().max(updateServiceBodyDescriptionMax).nullish(),
+  categoryIds: zod.array(zod.string()).optional(),
+  pricingType: zod.enum(["fixed", "hourly", "quote"]).optional(),
+  price: zod.number().min(updateServiceBodyPriceMin).nullish(),
+  durationMinutes: zod.number().min(1).nullish(),
+  photos: zod.array(zod.string()).optional(),
+  tags: zod.array(zod.string()).optional(),
+  isActive: zod.boolean().optional(),
+});
+
+export const updateServiceResponsePriceMin = 0;
+
+export const UpdateServiceResponse = zod.object({
+  id: zod.string(),
+  shopId: zod.string(),
+  sellerId: zod.string(),
+  title: zod.string(),
+  slug: zod.string().nullish(),
+  description: zod.string().nullish(),
+  categories: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      slug: zod.string(),
+      parent: zod.string().nullish(),
+      icon: zod.string().nullish(),
+      kind: zod
+        .enum(["product", "service"])
+        .describe(
+          'Whether this category applies to products or services.\nExisting categories default to \"product\".\n',
+        ),
+    }),
+  ),
+  pricingType: zod.enum(["fixed", "hourly", "quote"]),
+  price: zod.number().min(updateServiceResponsePriceMin).nullish(),
+  durationMinutes: zod.number().min(1).nullish(),
+  photos: zod.array(zod.string()),
+  tags: zod.array(zod.string()),
+  isActive: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+
+export const DeleteServiceParams = zod.object({
+  shopId: zod.coerce.string(),
+  id: zod.coerce.string(),
+});
+
+export const DeleteServiceResponse = zod.object({
+  success: zod.boolean(),
+});
+
+export const GetProviderProfileParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const getProviderProfileResponseAgeMin = 16;
+export const getProviderProfileResponseAgeMax = 120;
+
+export const getProviderProfileResponseYearsExperienceMin = 0;
+export const getProviderProfileResponseYearsExperienceMax = 80;
+
+export const getProviderProfileResponseServiceRadiusKmMax = 100;
+
+export const GetProviderProfileResponse = zod.object({
+  firstName: zod.string().nullish(),
+  lastName: zod.string().nullish(),
+  age: zod
+    .number()
+    .min(getProviderProfileResponseAgeMin)
+    .max(getProviderProfileResponseAgeMax)
+    .nullish(),
+  hideAge: zod
+    .boolean()
+    .describe(
+      "When true, age must NOT be returned on public-facing\nendpoints (search, provider detail). Always returned on\nauthenticated owner endpoints.\n",
+    ),
+  bio: zod.string().nullish(),
+  photoUrl: zod.string().nullish(),
+  yearsExperience: zod
+    .number()
+    .min(getProviderProfileResponseYearsExperienceMin)
+    .max(getProviderProfileResponseYearsExperienceMax)
+    .nullish(),
+  certifications: zod.array(zod.string()),
+  serviceRadiusKm: zod
+    .number()
+    .min(1)
+    .max(getProviderProfileResponseServiceRadiusKmMax),
+  portfolioPhotos: zod.array(zod.string()),
+  isVerified: zod.boolean(),
+});
+
+export const UpdateProviderProfileParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const updateProviderProfileBodyAgeMin = 16;
+export const updateProviderProfileBodyAgeMax = 120;
+
+export const updateProviderProfileBodyYearsExperienceMin = 0;
+export const updateProviderProfileBodyYearsExperienceMax = 80;
+
+export const updateProviderProfileBodyServiceRadiusKmMax = 100;
+
+export const UpdateProviderProfileBody = zod.object({
+  firstName: zod.string().nullish(),
+  lastName: zod.string().nullish(),
+  age: zod
+    .number()
+    .min(updateProviderProfileBodyAgeMin)
+    .max(updateProviderProfileBodyAgeMax)
+    .nullish(),
+  hideAge: zod.boolean().optional(),
+  bio: zod.string().nullish(),
+  photoUrl: zod.string().nullish(),
+  yearsExperience: zod
+    .number()
+    .min(updateProviderProfileBodyYearsExperienceMin)
+    .max(updateProviderProfileBodyYearsExperienceMax)
+    .nullish(),
+  certifications: zod.array(zod.string()).optional(),
+  serviceRadiusKm: zod
+    .number()
+    .min(1)
+    .max(updateProviderProfileBodyServiceRadiusKmMax)
+    .optional(),
+  portfolioPhotos: zod.array(zod.string()).optional(),
+});
+
+export const updateProviderProfileResponseAgeMin = 16;
+export const updateProviderProfileResponseAgeMax = 120;
+
+export const updateProviderProfileResponseYearsExperienceMin = 0;
+export const updateProviderProfileResponseYearsExperienceMax = 80;
+
+export const updateProviderProfileResponseServiceRadiusKmMax = 100;
+
+export const UpdateProviderProfileResponse = zod.object({
+  firstName: zod.string().nullish(),
+  lastName: zod.string().nullish(),
+  age: zod
+    .number()
+    .min(updateProviderProfileResponseAgeMin)
+    .max(updateProviderProfileResponseAgeMax)
+    .nullish(),
+  hideAge: zod
+    .boolean()
+    .describe(
+      "When true, age must NOT be returned on public-facing\nendpoints (search, provider detail). Always returned on\nauthenticated owner endpoints.\n",
+    ),
+  bio: zod.string().nullish(),
+  photoUrl: zod.string().nullish(),
+  yearsExperience: zod
+    .number()
+    .min(updateProviderProfileResponseYearsExperienceMin)
+    .max(updateProviderProfileResponseYearsExperienceMax)
+    .nullish(),
+  certifications: zod.array(zod.string()),
+  serviceRadiusKm: zod
+    .number()
+    .min(1)
+    .max(updateProviderProfileResponseServiceRadiusKmMax),
+  portfolioPhotos: zod.array(zod.string()),
+  isVerified: zod.boolean(),
+});
+
+export const searchServicesQueryRadiusKmMin = 0.1;
+export const searchServicesQueryRadiusKmMax = 100;
+
+export const searchServicesQueryQMax = 120;
+
+export const searchServicesQueryLimitMax = 50;
+
+export const SearchServicesQueryParams = zod.object({
+  latitude: zod.coerce.number(),
+  longitude: zod.coerce.number(),
+  radiusKm: zod.coerce
+    .number()
+    .min(searchServicesQueryRadiusKmMin)
+    .max(searchServicesQueryRadiusKmMax)
+    .optional()
+    .describe("Search radius in kilometers (defaults to 10)."),
+  categoryId: zod.coerce.string().optional(),
+  q: zod.coerce
+    .string()
+    .max(searchServicesQueryQMax)
+    .optional()
+    .describe("Free-text search on title, description, tags."),
+  limit: zod.coerce.number().min(1).max(searchServicesQueryLimitMax).optional(),
+});
+
+export const searchServicesResponseServicePriceMin = 0;
+
+export const searchServicesResponseShopServiceProviderOneAgeMin = 16;
+export const searchServicesResponseShopServiceProviderOneAgeMax = 120;
+
+export const searchServicesResponseShopServiceProviderOneYearsExperienceMin = 0;
+export const searchServicesResponseShopServiceProviderOneYearsExperienceMax = 80;
+
+export const searchServicesResponseShopServiceProviderOneServiceRadiusKmMax = 100;
+
+export const searchServicesResponseShopRatingAvgMin = 0;
+export const searchServicesResponseShopRatingAvgMax = 5;
+
+export const searchServicesResponseShopRatingCountMin = 0;
+
+export const searchServicesResponseProviderOneAgeMin = 16;
+export const searchServicesResponseProviderOneAgeMax = 120;
+
+export const searchServicesResponseProviderOneYearsExperienceMin = 0;
+export const searchServicesResponseProviderOneYearsExperienceMax = 80;
+
+export const searchServicesResponseProviderOneServiceRadiusKmMax = 100;
+
+export const SearchServicesResponseItem = zod.object({
+  service: zod.object({
+    id: zod.string(),
+    shopId: zod.string(),
+    sellerId: zod.string(),
+    title: zod.string(),
+    slug: zod.string().nullish(),
+    description: zod.string().nullish(),
+    categories: zod.array(
+      zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        slug: zod.string(),
+        parent: zod.string().nullish(),
+        icon: zod.string().nullish(),
+        kind: zod
+          .enum(["product", "service"])
+          .describe(
+            'Whether this category applies to products or services.\nExisting categories default to \"product\".\n',
+          ),
+      }),
+    ),
+    pricingType: zod.enum(["fixed", "hourly", "quote"]),
+    price: zod.number().min(searchServicesResponseServicePriceMin).nullish(),
+    durationMinutes: zod.number().min(1).nullish(),
+    photos: zod.array(zod.string()),
+    tags: zod.array(zod.string()),
+    isActive: zod.boolean(),
+    createdAt: zod.coerce.date(),
+  }),
+  shop: zod.object({
+    id: zod.string(),
+    sellerId: zod.string(),
+    name: zod.string(),
+    marketName: zod.string().nullish(),
+    stallInfo: zod.string().nullish(),
+    latitude: zod.number(),
+    longitude: zod.number(),
+    isOpen: zod.boolean(),
+    kind: zod
+      .enum(["products", "services", "hybrid"])
+      .describe(
+        'Whether this shop sells products, offers services, or both.\nExisting shops default to \"products\".\n',
+      ),
+    serviceProvider: zod
+      .union([
+        zod.object({
+          firstName: zod.string().nullish(),
+          lastName: zod.string().nullish(),
+          age: zod
+            .number()
+            .min(searchServicesResponseShopServiceProviderOneAgeMin)
+            .max(searchServicesResponseShopServiceProviderOneAgeMax)
+            .nullish(),
+          hideAge: zod
+            .boolean()
+            .describe(
+              "When true, age must NOT be returned on public-facing\nendpoints (search, provider detail). Always returned on\nauthenticated owner endpoints.\n",
+            ),
+          bio: zod.string().nullish(),
+          photoUrl: zod.string().nullish(),
+          yearsExperience: zod
+            .number()
+            .min(searchServicesResponseShopServiceProviderOneYearsExperienceMin)
+            .max(searchServicesResponseShopServiceProviderOneYearsExperienceMax)
+            .nullish(),
+          certifications: zod.array(zod.string()),
+          serviceRadiusKm: zod
+            .number()
+            .min(1)
+            .max(
+              searchServicesResponseShopServiceProviderOneServiceRadiusKmMax,
+            ),
+          portfolioPhotos: zod.array(zod.string()),
+          isVerified: zod.boolean(),
+        }),
+        zod.null(),
+      ])
+      .optional()
+      .describe(
+        'Embedded provider profile, only meaningful when kind is\n\"services\" or \"hybrid\". May be a near-empty object when the\nshop was just created and the profile not yet filled in.\n',
+      ),
+    ratingAvg: zod
+      .number()
+      .min(searchServicesResponseShopRatingAvgMin)
+      .max(searchServicesResponseShopRatingAvgMax)
+      .describe("Mean rating across all reviews (0 when none)."),
+    ratingCount: zod
+      .number()
+      .min(searchServicesResponseShopRatingCountMin)
+      .describe("Number of reviews used for the average."),
+    distanceKm: zod
+      .number()
+      .nullish()
+      .describe(
+        "Distance from the search origin in kilometers. Only present\non results returned by geo search endpoints.\n",
+      ),
+  }),
+  provider: zod
+    .union([
+      zod.object({
+        firstName: zod.string().nullish(),
+        lastName: zod.string().nullish(),
+        age: zod
+          .number()
+          .min(searchServicesResponseProviderOneAgeMin)
+          .max(searchServicesResponseProviderOneAgeMax)
+          .nullish(),
+        hideAge: zod
+          .boolean()
+          .describe(
+            "When true, age must NOT be returned on public-facing\nendpoints (search, provider detail). Always returned on\nauthenticated owner endpoints.\n",
+          ),
+        bio: zod.string().nullish(),
+        photoUrl: zod.string().nullish(),
+        yearsExperience: zod
+          .number()
+          .min(searchServicesResponseProviderOneYearsExperienceMin)
+          .max(searchServicesResponseProviderOneYearsExperienceMax)
+          .nullish(),
+        certifications: zod.array(zod.string()),
+        serviceRadiusKm: zod
+          .number()
+          .min(1)
+          .max(searchServicesResponseProviderOneServiceRadiusKmMax),
+        portfolioPhotos: zod.array(zod.string()),
+        isVerified: zod.boolean(),
+      }),
+      zod.null(),
+    ])
+    .optional()
+    .describe(
+      "Public provider snapshot. The age field is omitted (set to\nnull) when the provider opted to hide it.\n",
+    ),
+  distanceKm: zod
+    .number()
+    .describe("Distance from the search origin in kilometers."),
+});
+export const SearchServicesResponse = zod.array(SearchServicesResponseItem);
+
+export const GetServiceParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const getServiceResponsePriceMin = 0;
+
+export const GetServiceResponse = zod.object({
+  id: zod.string(),
+  shopId: zod.string(),
+  sellerId: zod.string(),
+  title: zod.string(),
+  slug: zod.string().nullish(),
+  description: zod.string().nullish(),
+  categories: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      slug: zod.string(),
+      parent: zod.string().nullish(),
+      icon: zod.string().nullish(),
+      kind: zod
+        .enum(["product", "service"])
+        .describe(
+          'Whether this category applies to products or services.\nExisting categories default to \"product\".\n',
+        ),
+    }),
+  ),
+  pricingType: zod.enum(["fixed", "hourly", "quote"]),
+  price: zod.number().min(getServiceResponsePriceMin).nullish(),
+  durationMinutes: zod.number().min(1).nullish(),
+  photos: zod.array(zod.string()),
+  tags: zod.array(zod.string()),
+  isActive: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+
 export const ListNearbyRequestsParams = zod.object({
   shopId: zod.coerce.string(),
 });
@@ -1035,6 +1885,14 @@ export const AcceptInvitationParams = zod.object({
   token: zod.coerce.string(),
 });
 
+export const acceptInvitationResponseShopServiceProviderOneAgeMin = 16;
+export const acceptInvitationResponseShopServiceProviderOneAgeMax = 120;
+
+export const acceptInvitationResponseShopServiceProviderOneYearsExperienceMin = 0;
+export const acceptInvitationResponseShopServiceProviderOneYearsExperienceMax = 80;
+
+export const acceptInvitationResponseShopServiceProviderOneServiceRadiusKmMax = 100;
+
 export const acceptInvitationResponseShopRatingAvgMin = 0;
 export const acceptInvitationResponseShopRatingAvgMax = 5;
 
@@ -1050,6 +1908,53 @@ export const AcceptInvitationResponse = zod.object({
     latitude: zod.number(),
     longitude: zod.number(),
     isOpen: zod.boolean(),
+    kind: zod
+      .enum(["products", "services", "hybrid"])
+      .describe(
+        'Whether this shop sells products, offers services, or both.\nExisting shops default to \"products\".\n',
+      ),
+    serviceProvider: zod
+      .union([
+        zod.object({
+          firstName: zod.string().nullish(),
+          lastName: zod.string().nullish(),
+          age: zod
+            .number()
+            .min(acceptInvitationResponseShopServiceProviderOneAgeMin)
+            .max(acceptInvitationResponseShopServiceProviderOneAgeMax)
+            .nullish(),
+          hideAge: zod
+            .boolean()
+            .describe(
+              "When true, age must NOT be returned on public-facing\nendpoints (search, provider detail). Always returned on\nauthenticated owner endpoints.\n",
+            ),
+          bio: zod.string().nullish(),
+          photoUrl: zod.string().nullish(),
+          yearsExperience: zod
+            .number()
+            .min(
+              acceptInvitationResponseShopServiceProviderOneYearsExperienceMin,
+            )
+            .max(
+              acceptInvitationResponseShopServiceProviderOneYearsExperienceMax,
+            )
+            .nullish(),
+          certifications: zod.array(zod.string()),
+          serviceRadiusKm: zod
+            .number()
+            .min(1)
+            .max(
+              acceptInvitationResponseShopServiceProviderOneServiceRadiusKmMax,
+            ),
+          portfolioPhotos: zod.array(zod.string()),
+          isVerified: zod.boolean(),
+        }),
+        zod.null(),
+      ])
+      .optional()
+      .describe(
+        'Embedded provider profile, only meaningful when kind is\n\"services\" or \"hybrid\". May be a near-empty object when the\nshop was just created and the profile not yet filled in.\n',
+      ),
     ratingAvg: zod
       .number()
       .min(acceptInvitationResponseShopRatingAvgMin)
@@ -1059,8 +1964,21 @@ export const AcceptInvitationResponse = zod.object({
       .number()
       .min(acceptInvitationResponseShopRatingCountMin)
       .describe("Number of reviews used for the average."),
+    distanceKm: zod
+      .number()
+      .nullish()
+      .describe(
+        "Distance from the search origin in kilometers. Only present\non results returned by geo search endpoints.\n",
+      ),
   }),
   role: zod.enum(["seller", "sub_seller"]),
+});
+
+export const ListCategoriesQueryParams = zod.object({
+  kind: zod
+    .enum(["product", "service"])
+    .optional()
+    .describe("Optionally filter by category kind."),
 });
 
 export const ListCategoriesResponseItem = zod.object({
@@ -1069,6 +1987,11 @@ export const ListCategoriesResponseItem = zod.object({
   slug: zod.string(),
   parent: zod.string().nullish(),
   icon: zod.string().nullish(),
+  kind: zod
+    .enum(["product", "service"])
+    .describe(
+      'Whether this category applies to products or services.\nExisting categories default to \"product\".\n',
+    ),
 });
 export const ListCategoriesResponse = zod.array(ListCategoriesResponseItem);
 

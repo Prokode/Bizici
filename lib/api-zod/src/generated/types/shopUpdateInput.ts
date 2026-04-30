@@ -5,6 +5,7 @@
  * NearBuy Business API (MongoDB-backed)
  * OpenAPI spec version: 0.2.0
  */
+import type { ShopUpdateInputKind } from "./shopUpdateInputKind";
 
 export interface ShopUpdateInput {
   /** @minLength 1 */
@@ -13,4 +14,5 @@ export interface ShopUpdateInput {
   stallInfo?: string | null;
   latitude?: number;
   longitude?: number;
+  kind?: ShopUpdateInputKind;
 }

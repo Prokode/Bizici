@@ -432,6 +432,159 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/DeleteResult" }
 
+  /shops/{shopId}/services:
+    get:
+      operationId: listShopServices
+      tags: [services]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+      responses:
+        "200":
+          description: Service list for the shop
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Service" }
+    post:
+      operationId: createService
+      tags: [services]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ServiceCreateInput" }
+      responses:
+        "200":
+          description: Created service
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Service" }
+
+  /shops/{shopId}/services/{id}:
+    patch:
+      operationId: updateService
+      tags: [services]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ServiceUpdateInput" }
+      responses:
+        "200":
+          description: Updated service
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Service" }
+    delete:
+      operationId: deleteService
+      tags: [services]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DeleteResult" }
+
+  /shops/{shopId}/provider-profile:
+    get:
+      operationId: getProviderProfile
+      tags: [services]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+      responses:
+        "200":
+          description: Provider profile of the shop
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ServiceProviderProfile" }
+    patch:
+      operationId: updateProviderProfile
+      tags: [services]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ServiceProviderProfileInput" }
+      responses:
+        "200":
+          description: Updated provider profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ServiceProviderProfile" }
+
+  /services/search:
+    get:
+      operationId: searchServices
+      tags: [services]
+      parameters:
+        - in: query
+          name: latitude
+          required: true
+          schema: { type: number }
+        - in: query
+          name: longitude
+          required: true
+          schema: { type: number }
+        - in: query
+          name: radiusKm
+          required: false
+          schema: { type: number, minimum: 0.1, maximum: 100 }
+          description: Search radius in kilometers (defaults to 10).
+        - in: query
+          name: categoryId
+          required: false
+          schema: { type: string }
+        - in: query
+          name: q
+          required: false
+          schema: { type: string, maxLength: 120 }
+          description: Free-text search on title, description, tags.
+        - in: query
+          name: limit
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 50 }
+      responses:
+        "200":
+          description: Services matching the geo + filters
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ServiceSearchResult" }
+
+  /services/{id}:
+    get:
+      operationId: getService
+      tags: [services]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Service detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Service" }
+
   /shops/{shopId}/requests:
     get:
       operationId: listNearbyRequests
@@ -577,9 +730,17 @@ paths:
     get:
       operationId: listCategories
       tags: [categories]
+      parameters:
+        - in: query
+          name: kind
+          required: false
+          schema:
+            type: string
+            enum: [product, service]
+          description: Optionally filter by category kind.
       responses:
         "200":
-          description: All categories
+          description: All categories (optionally filtered by kind).
           content:
             application/json:
               schema:
@@ -852,6 +1013,20 @@ components:
         latitude: { type: number }
         longitude: { type: number }
         isOpen: { type: boolean }
+        kind:
+          type: string
+          enum: [products, services, hybrid]
+          description: |
+            Whether this shop sells products, offers services, or both.
+            Existing shops default to "products".
+        serviceProvider:
+          oneOf:
+            - { $ref: "#/components/schemas/ServiceProviderProfile" }
+            - { type: "null" }
+          description: |
+            Embedded provider profile, only meaningful when kind is
+            "services" or "hybrid". May be a near-empty object when the
+            shop was just created and the profile not yet filled in.
         ratingAvg:
           type: number
           minimum: 0
@@ -861,6 +1036,12 @@ components:
           type: integer
           minimum: 0
           description: Number of reviews used for the average.
+        distanceKm:
+          type: number
+          nullable: true
+          description: |
+            Distance from the search origin in kilometers. Only present
+            on results returned by geo search endpoints.
       required:
         - id
         - sellerId
@@ -868,6 +1049,7 @@ components:
         - latitude
         - longitude
         - isOpen
+        - kind
         - ratingAvg
         - ratingCount
 
@@ -926,6 +1108,10 @@ components:
         stallInfo: { type: string, nullable: true }
         latitude: { type: number }
         longitude: { type: number }
+        kind:
+          type: string
+          enum: [products, services, hybrid]
+          description: Defaults to "products" when omitted.
       required: [name, latitude, longitude]
 
     ShopUpdateInput:
@@ -936,6 +1122,9 @@ components:
         stallInfo: { type: string, nullable: true }
         latitude: { type: number }
         longitude: { type: number }
+        kind:
+          type: string
+          enum: [products, services, hybrid]
 
     ShopOpenInput:
       type: object
@@ -951,7 +1140,13 @@ components:
         slug: { type: string }
         parent: { type: string, nullable: true }
         icon: { type: string, nullable: true }
-      required: [id, name, slug]
+        kind:
+          type: string
+          enum: [product, service]
+          description: |
+            Whether this category applies to products or services.
+            Existing categories default to "product".
+      required: [id, name, slug, kind]
 
     Dimension:
       type: object
@@ -1333,3 +1528,188 @@ components:
       properties:
         text: { type: string, minLength: 1, maxLength: 2000 }
       required: [text]
+
+    ServiceProviderProfile:
+      type: object
+      properties:
+        firstName: { type: string, nullable: true }
+        lastName: { type: string, nullable: true }
+        age:
+          type: integer
+          nullable: true
+          minimum: 16
+          maximum: 120
+        hideAge:
+          type: boolean
+          description: |
+            When true, age must NOT be returned on public-facing
+            endpoints (search, provider detail). Always returned on
+            authenticated owner endpoints.
+        bio: { type: string, nullable: true }
+        photoUrl: { type: string, nullable: true }
+        yearsExperience:
+          type: integer
+          nullable: true
+          minimum: 0
+          maximum: 80
+        certifications:
+          type: array
+          items: { type: string }
+        serviceRadiusKm:
+          type: number
+          minimum: 1
+          maximum: 100
+        portfolioPhotos:
+          type: array
+          items: { type: string }
+        isVerified: { type: boolean }
+      required:
+        - hideAge
+        - certifications
+        - serviceRadiusKm
+        - portfolioPhotos
+        - isVerified
+
+    ServiceProviderProfileInput:
+      type: object
+      properties:
+        firstName: { type: string, nullable: true }
+        lastName: { type: string, nullable: true }
+        age:
+          type: integer
+          nullable: true
+          minimum: 16
+          maximum: 120
+        hideAge: { type: boolean }
+        bio: { type: string, nullable: true }
+        photoUrl: { type: string, nullable: true }
+        yearsExperience:
+          type: integer
+          nullable: true
+          minimum: 0
+          maximum: 80
+        certifications:
+          type: array
+          items: { type: string }
+        serviceRadiusKm:
+          type: number
+          minimum: 1
+          maximum: 100
+        portfolioPhotos:
+          type: array
+          items: { type: string }
+
+    Service:
+      type: object
+      properties:
+        id: { type: string }
+        shopId: { type: string }
+        sellerId: { type: string }
+        title: { type: string }
+        slug: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        categories:
+          type: array
+          items: { $ref: "#/components/schemas/Category" }
+        pricingType:
+          type: string
+          enum: [fixed, hourly, quote]
+        price:
+          type: number
+          nullable: true
+          minimum: 0
+        durationMinutes:
+          type: integer
+          nullable: true
+          minimum: 1
+        photos:
+          type: array
+          items: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+      required:
+        - id
+        - shopId
+        - sellerId
+        - title
+        - categories
+        - pricingType
+        - photos
+        - tags
+        - isActive
+        - createdAt
+
+    ServiceCreateInput:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 120 }
+        description: { type: string, nullable: true, maxLength: 4000 }
+        categoryIds:
+          type: array
+          items: { type: string }
+        pricingType:
+          type: string
+          enum: [fixed, hourly, quote]
+        price:
+          type: number
+          nullable: true
+          minimum: 0
+        durationMinutes:
+          type: integer
+          nullable: true
+          minimum: 1
+        photos:
+          type: array
+          items: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        isActive: { type: boolean }
+      required: [title, pricingType]
+
+    ServiceUpdateInput:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 120 }
+        description: { type: string, nullable: true, maxLength: 4000 }
+        categoryIds:
+          type: array
+          items: { type: string }
+        pricingType:
+          type: string
+          enum: [fixed, hourly, quote]
+        price:
+          type: number
+          nullable: true
+          minimum: 0
+        durationMinutes:
+          type: integer
+          nullable: true
+          minimum: 1
+        photos:
+          type: array
+          items: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        isActive: { type: boolean }
+
+    ServiceSearchResult:
+      type: object
+      properties:
+        service: { $ref: "#/components/schemas/Service" }
+        shop: { $ref: "#/components/schemas/Shop" }
+        provider:
+          oneOf:
+            - { $ref: "#/components/schemas/ServiceProviderProfile" }
+            - { type: "null" }
+          description: |
+            Public provider snapshot. The age field is omitted (set to
+            null) when the provider opted to hide it.
+        distanceKm:
+          type: number
+          description: Distance from the search origin in kilometers.
+      required: [service, shop, distanceKm]

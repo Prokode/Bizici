@@ -5,6 +5,7 @@
  * NearBuy Business API (MongoDB-backed)
  * OpenAPI spec version: 0.2.0
  */
+import type { CategoryKind } from "./categoryKind";
 
 export interface Category {
   id: string;
@@ -12,4 +13,8 @@ export interface Category {
   slug: string;
   parent?: string | null;
   icon?: string | null;
+  /** Whether this category applies to products or services.
+Existing categories default to "product".
+ */
+  kind: CategoryKind;
 }

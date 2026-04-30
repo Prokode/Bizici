@@ -1,10 +1,21 @@
 export { User, type UserDoc } from "./User";
-export { Shop, type ShopDoc } from "./Shop";
+export { Shop, type ShopDoc, SHOP_KINDS, type ShopKind } from "./Shop";
 export { ShopMember, type ShopMemberDoc } from "./ShopMember";
 export { ShopInvitation, type ShopInvitationDoc } from "./ShopInvitation";
 export { BroadcastRequest, type BroadcastRequestDoc } from "./BroadcastRequest";
-export { Category, type CategoryDoc } from "./Category";
+export {
+  Category,
+  type CategoryDoc,
+  CATEGORY_KINDS,
+  type CategoryKind,
+} from "./Category";
 export { Product, type ProductDoc } from "./Product";
+export {
+  Service,
+  type ServiceDoc,
+  PRICING_TYPES,
+  type PricingType,
+} from "./Service";
 export { Discount, type DiscountDoc } from "./Discount";
 export { KarmaEvent, type KarmaEventDoc } from "./KarmaEvent";
 export { Conversation, type ConversationDoc } from "./Conversation";

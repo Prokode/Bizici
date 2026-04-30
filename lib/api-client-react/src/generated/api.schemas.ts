@@ -9,6 +9,49 @@ export interface HealthStatus {
   status: string;
 }
 
+/**
+ * Whether this shop sells products, offers services, or both.
+Existing shops default to "products".
+
+ */
+export type ShopKind = (typeof ShopKind)[keyof typeof ShopKind];
+
+export const ShopKind = {
+  products: "products",
+  services: "services",
+  hybrid: "hybrid",
+} as const;
+
+export interface ServiceProviderProfile {
+  firstName?: string | null;
+  lastName?: string | null;
+  /**
+   * @minimum 16
+   * @maximum 120
+   */
+  age?: number | null;
+  /** When true, age must NOT be returned on public-facing
+endpoints (search, provider detail). Always returned on
+authenticated owner endpoints.
+ */
+  hideAge: boolean;
+  bio?: string | null;
+  photoUrl?: string | null;
+  /**
+   * @minimum 0
+   * @maximum 80
+   */
+  yearsExperience?: number | null;
+  certifications: string[];
+  /**
+   * @minimum 1
+   * @maximum 100
+   */
+  serviceRadiusKm: number;
+  portfolioPhotos: string[];
+  isVerified: boolean;
+}
+
 export interface Shop {
   id: string;
   sellerId: string;
@@ -18,6 +61,15 @@ export interface Shop {
   latitude: number;
   longitude: number;
   isOpen: boolean;
+  /** Whether this shop sells products, offers services, or both.
+Existing shops default to "products".
+ */
+  kind: ShopKind;
+  /** Embedded provider profile, only meaningful when kind is
+"services" or "hybrid". May be a near-empty object when the
+shop was just created and the profile not yet filled in.
+ */
+  serviceProvider?: ServiceProviderProfile | null;
   /**
    * Mean rating across all reviews (0 when none).
    * @minimum 0
@@ -29,6 +81,10 @@ export interface Shop {
    * @minimum 0
    */
   ratingCount: number;
+  /** Distance from the search origin in kilometers. Only present
+on results returned by geo search endpoints.
+ */
+  distanceKm?: number | null;
 }
 
 export type ShopWithRoleRole =
@@ -156,6 +212,18 @@ export interface ShopReviewInput {
   comment?: string | null;
 }
 
+/**
+ * Defaults to "products" when omitted.
+ */
+export type ShopCreateInputKind =
+  (typeof ShopCreateInputKind)[keyof typeof ShopCreateInputKind];
+
+export const ShopCreateInputKind = {
+  products: "products",
+  services: "services",
+  hybrid: "hybrid",
+} as const;
+
 export interface ShopCreateInput {
   /** @minLength 1 */
   name: string;
@@ -163,7 +231,18 @@ export interface ShopCreateInput {
   stallInfo?: string | null;
   latitude: number;
   longitude: number;
+  /** Defaults to "products" when omitted. */
+  kind?: ShopCreateInputKind;
 }
+
+export type ShopUpdateInputKind =
+  (typeof ShopUpdateInputKind)[keyof typeof ShopUpdateInputKind];
+
+export const ShopUpdateInputKind = {
+  products: "products",
+  services: "services",
+  hybrid: "hybrid",
+} as const;
 
 export interface ShopUpdateInput {
   /** @minLength 1 */
@@ -172,11 +251,24 @@ export interface ShopUpdateInput {
   stallInfo?: string | null;
   latitude?: number;
   longitude?: number;
+  kind?: ShopUpdateInputKind;
 }
 
 export interface ShopOpenInput {
   isOpen: boolean;
 }
+
+/**
+ * Whether this category applies to products or services.
+Existing categories default to "product".
+
+ */
+export type CategoryKind = (typeof CategoryKind)[keyof typeof CategoryKind];
+
+export const CategoryKind = {
+  product: "product",
+  service: "service",
+} as const;
 
 export interface Category {
   id: string;
@@ -184,6 +276,10 @@ export interface Category {
   slug: string;
   parent?: string | null;
   icon?: string | null;
+  /** Whether this category applies to products or services.
+Existing categories default to "product".
+ */
+  kind: CategoryKind;
 }
 
 export interface Dimension {
@@ -496,10 +592,167 @@ export interface ChatMessageCreateInput {
   text: string;
 }
 
+export interface ServiceProviderProfileInput {
+  firstName?: string | null;
+  lastName?: string | null;
+  /**
+   * @minimum 16
+   * @maximum 120
+   */
+  age?: number | null;
+  hideAge?: boolean;
+  bio?: string | null;
+  photoUrl?: string | null;
+  /**
+   * @minimum 0
+   * @maximum 80
+   */
+  yearsExperience?: number | null;
+  certifications?: string[];
+  /**
+   * @minimum 1
+   * @maximum 100
+   */
+  serviceRadiusKm?: number;
+  portfolioPhotos?: string[];
+}
+
+export type ServicePricingType =
+  (typeof ServicePricingType)[keyof typeof ServicePricingType];
+
+export const ServicePricingType = {
+  fixed: "fixed",
+  hourly: "hourly",
+  quote: "quote",
+} as const;
+
+export interface Service {
+  id: string;
+  shopId: string;
+  sellerId: string;
+  title: string;
+  slug?: string | null;
+  description?: string | null;
+  categories: Category[];
+  pricingType: ServicePricingType;
+  /** @minimum 0 */
+  price?: number | null;
+  /** @minimum 1 */
+  durationMinutes?: number | null;
+  photos: string[];
+  tags: string[];
+  isActive: boolean;
+  createdAt: string;
+}
+
+export type ServiceCreateInputPricingType =
+  (typeof ServiceCreateInputPricingType)[keyof typeof ServiceCreateInputPricingType];
+
+export const ServiceCreateInputPricingType = {
+  fixed: "fixed",
+  hourly: "hourly",
+  quote: "quote",
+} as const;
+
+export interface ServiceCreateInput {
+  /**
+   * @minLength 1
+   * @maxLength 120
+   */
+  title: string;
+  /** @maxLength 4000 */
+  description?: string | null;
+  categoryIds?: string[];
+  pricingType: ServiceCreateInputPricingType;
+  /** @minimum 0 */
+  price?: number | null;
+  /** @minimum 1 */
+  durationMinutes?: number | null;
+  photos?: string[];
+  tags?: string[];
+  isActive?: boolean;
+}
+
+export type ServiceUpdateInputPricingType =
+  (typeof ServiceUpdateInputPricingType)[keyof typeof ServiceUpdateInputPricingType];
+
+export const ServiceUpdateInputPricingType = {
+  fixed: "fixed",
+  hourly: "hourly",
+  quote: "quote",
+} as const;
+
+export interface ServiceUpdateInput {
+  /**
+   * @minLength 1
+   * @maxLength 120
+   */
+  title?: string;
+  /** @maxLength 4000 */
+  description?: string | null;
+  categoryIds?: string[];
+  pricingType?: ServiceUpdateInputPricingType;
+  /** @minimum 0 */
+  price?: number | null;
+  /** @minimum 1 */
+  durationMinutes?: number | null;
+  photos?: string[];
+  tags?: string[];
+  isActive?: boolean;
+}
+
+export interface ServiceSearchResult {
+  service: Service;
+  shop: Shop;
+  /** Public provider snapshot. The age field is omitted (set to
+null) when the provider opted to hide it.
+ */
+  provider?: ServiceProviderProfile | null;
+  /** Distance from the search origin in kilometers. */
+  distanceKm: number;
+}
+
 export type UnregisterPushTokenBody = {
   /** @minLength 1 */
   token: string;
 };
+
+export type SearchServicesParams = {
+  latitude: number;
+  longitude: number;
+  /**
+   * Search radius in kilometers (defaults to 10).
+   * @minimum 0.1
+   * @maximum 100
+   */
+  radiusKm?: number;
+  categoryId?: string;
+  /**
+   * Free-text search on title, description, tags.
+   * @maxLength 120
+   */
+  q?: string;
+  /**
+   * @minimum 1
+   * @maximum 50
+   */
+  limit?: number;
+};
+
+export type ListCategoriesParams = {
+  /**
+   * Optionally filter by category kind.
+   */
+  kind?: ListCategoriesKind;
+};
+
+export type ListCategoriesKind =
+  (typeof ListCategoriesKind)[keyof typeof ListCategoriesKind];
+
+export const ListCategoriesKind = {
+  product: "product",
+  service: "service",
+} as const;
 
 export type ListConversations200 = {
   conversations: ChatConversation[];

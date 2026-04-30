@@ -35,11 +35,17 @@ router.get("/shops", async (req, res) => {
 });
 
 router.post("/shops", async (req, res) => {
-  const { name, marketName, stallInfo, latitude, longitude } = req.body ?? {};
+  const { name, marketName, stallInfo, latitude, longitude, kind } =
+    req.body ?? {};
   if (!name || typeof latitude !== "number" || typeof longitude !== "number") {
     res.status(400).json({ error: "name, latitude, longitude required" });
     return;
   }
+
+  const allowedKinds = ["products", "services", "hybrid"] as const;
+  const shopKind = allowedKinds.includes(kind as (typeof allowedKinds)[number])
+    ? (kind as (typeof allowedKinds)[number])
+    : "products";
 
   const shop = await Shop.create({
     sellerId: new Types.ObjectId(req.userId),
@@ -48,6 +54,7 @@ router.post("/shops", async (req, res) => {
     stallInfo: stallInfo ?? null,
     location: { type: "Point", coordinates: [longitude, latitude] },
     isOpen: true,
+    kind: shopKind,
   });
 
   await ShopMember.create({
@@ -98,13 +105,17 @@ router.put(
   requireShopAccess,
   requireSeller,
   async (req, res) => {
-    const { name, marketName, stallInfo, latitude, longitude } = req.body ?? {};
+    const { name, marketName, stallInfo, latitude, longitude, kind } =
+      req.body ?? {};
     const update: any = {};
     if (typeof name === "string") update.name = name;
     if (marketName !== undefined) update.marketName = marketName;
     if (stallInfo !== undefined) update.stallInfo = stallInfo;
     if (typeof latitude === "number" && typeof longitude === "number") {
       update.location = { type: "Point", coordinates: [longitude, latitude] };
+    }
+    if (kind === "products" || kind === "services" || kind === "hybrid") {
+      update.kind = kind;
     }
     const shop = await Shop.findByIdAndUpdate(req.params.shopId, update, {
       new: true,
@@ -113,7 +124,7 @@ router.put(
       res.status(404).json({ error: "Shop not found" });
       return;
     }
-    res.json(serializeShop(shop));
+    res.json(serializeShop(shop, { viewerIsOwner: true }));
   },
 );
 
