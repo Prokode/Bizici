@@ -13,6 +13,7 @@ import categoriesRouter from "./categories";
 import discountsRouter from "./discounts";
 import conversationsRouter from "./conversations";
 import reviewsRouter from "./reviews";
+import appointmentsRouter from "./appointments";
 import adminRouter from "./admin";
 
 const router: IRouter = Router();
@@ -36,5 +37,6 @@ router.use(categoriesRouter);
 router.use(discountsRouter);
 router.use(conversationsRouter);
 router.use(reviewsRouter);
+router.use(appointmentsRouter);
 
 export default router;

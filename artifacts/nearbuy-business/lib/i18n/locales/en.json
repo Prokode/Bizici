@@ -287,5 +287,37 @@
     "errorGoogle": "Google sign-in failed",
     "errorVerify": "Verification failed",
     "errorGeneric": "Something went wrong"
+  },
+  "appointments": {
+    "headerLink": "Appointments",
+    "listTitle": "Appointments",
+    "empty": "No appointments yet.",
+    "duration": "{{minutes}} min",
+    "declinedBecause": "Reason for decline: {{reason}}",
+    "cancelledBecause": "Reason for cancellation: {{reason}}",
+    "status": {
+      "proposed": "Pending",
+      "confirmed": "Confirmed",
+      "declined": "Declined",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "accept": "Accept",
+      "decline": "Decline",
+      "complete": "Complete",
+      "cancel": "Cancel",
+      "review": "Rate client"
+    },
+    "review": {
+      "titleClient": "Rate {{subject}}",
+      "titleProvider": "Rate your client {{subject}}",
+      "commentLabel": "Comment (optional)",
+      "commentPlaceholder": "How did this appointment go?",
+      "submit": "Submit rating",
+      "update": "Update",
+      "errorRating": "Pick a rating between 1 and 5 stars.",
+      "errorGeneric": "Could not submit the rating. Try again."
+    }
   }
 }

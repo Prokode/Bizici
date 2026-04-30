@@ -269,5 +269,51 @@
     "closedNow": "Closed",
     "matchingProducts": "Matching products",
     "from": "from {{price}}"
+  },
+  "appointments": {
+    "headerLink": "My bookings",
+    "listTitle": "My appointments",
+    "empty": "You don't have any appointments yet.",
+    "duration": "{{minutes}} min",
+    "declinedBecause": "Reason for decline: {{reason}}",
+    "cancelledBecause": "Reason for cancellation: {{reason}}",
+    "status": {
+      "proposed": "Proposed",
+      "confirmed": "Confirmed",
+      "declined": "Declined",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "accept": "Accept",
+      "decline": "Decline",
+      "complete": "Complete",
+      "cancel": "Cancel",
+      "review": "Review"
+    },
+    "ctaPropose": "Book an appointment",
+    "booking": {
+      "title": "Propose an appointment",
+      "withShop": "With {{shop}}",
+      "date": "Date (YYYY-MM-DD)",
+      "time": "Time (HH:MM)",
+      "service": "Service (optional)",
+      "serviceNone": "No specific service",
+      "notes": "Notes (optional)",
+      "notesPlaceholder": "Anything that may help…",
+      "submit": "Send request",
+      "errorInvalidDate": "Please enter a future date and time.",
+      "errorGeneric": "Could not send the request. Try again."
+    },
+    "review": {
+      "titleClient": "Rate {{subject}}",
+      "titleProvider": "Rate your client {{subject}}",
+      "commentLabel": "Comment (optional)",
+      "commentPlaceholder": "Share your experience…",
+      "submit": "Submit rating",
+      "update": "Update",
+      "errorRating": "Pick a rating between 1 and 5 stars.",
+      "errorGeneric": "Could not submit the rating. Try again."
+    }
   }
 }

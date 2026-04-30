@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -14,7 +15,8 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth } from "@clerk/expo";
+import { useAuth, useUser } from "@clerk/expo";
+import { useTranslation } from "react-i18next";
 
 import { useColors } from "@/hooks/useColors";
 import {
@@ -24,6 +26,15 @@ import {
   sendMessage,
   type ChatMessage,
 } from "@/lib/chatApi";
+import {
+  cancelAppointment,
+  completeAppointment,
+  listAppointments,
+  type Appointment,
+} from "@/lib/appointmentsApi";
+import { AppointmentCard } from "@/components/AppointmentCard";
+import { AppointmentBookingModal } from "@/components/AppointmentBookingModal";
+import { AppointmentReviewModal } from "@/components/AppointmentReviewModal";
 
 function formatTime(iso: string): string {
   try {
@@ -44,12 +55,62 @@ export default function ChatThreadScreen() {
   const router = useRouter();
   const qc = useQueryClient();
   const { isSignedIn } = useAuth();
+  const { user } = useUser();
+  const { t } = useTranslation();
   const [draft, setDraft] = useState("");
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const [reviewApptId, setReviewApptId] = useState<string | null>(null);
+  const [pendingApptAction, setPendingApptAction] = useState<{
+    id: string;
+    kind: "complete" | "cancel";
+  } | null>(null);
 
   const conversationQuery = useQuery({
     queryKey: ["chat-conv", id],
     queryFn: () => getConversation(id!),
     enabled: !!id && !!isSignedIn,
+  });
+
+  const appointmentsQuery = useQuery({
+    queryKey: ["appointments-conv", id],
+    queryFn: () => listAppointments({ conversationId: id! }),
+    enabled: !!id && !!isSignedIn,
+    refetchInterval: 5000,
+    refetchIntervalInBackground: false,
+  });
+
+  const completeMutation = useMutation({
+    mutationFn: (apptId: string) => completeAppointment(apptId),
+    onMutate: (apptId) => setPendingApptAction({ id: apptId, kind: "complete" }),
+    onSettled: () => setPendingApptAction(null),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["appointments-conv", id] });
+      void qc.invalidateQueries({ queryKey: ["appointments"] });
+      void qc.invalidateQueries({ queryKey: ["chat-conv-list"] });
+    },
+    onError: (err: unknown) => {
+      Alert.alert(
+        "NearBuy",
+        err instanceof Error ? err.message : "Action impossible.",
+      );
+    },
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: (apptId: string) => cancelAppointment(apptId),
+    onMutate: (apptId) => setPendingApptAction({ id: apptId, kind: "cancel" }),
+    onSettled: () => setPendingApptAction(null),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["appointments-conv", id] });
+      void qc.invalidateQueries({ queryKey: ["appointments"] });
+      void qc.invalidateQueries({ queryKey: ["chat-conv-list"] });
+    },
+    onError: (err: unknown) => {
+      Alert.alert(
+        "NearBuy",
+        err instanceof Error ? err.message : "Action impossible.",
+      );
+    },
   });
 
   const messagesQuery = useQuery({
@@ -107,6 +168,34 @@ export default function ChatThreadScreen() {
         "Client")
       : (conversation?.shop.marketName ?? null);
 
+  // The appointment list for this thread, sorted with the most relevant
+  // (non-terminal) first so the user always sees what's actionable.
+  const appointments = useMemo<Appointment[]>(() => {
+    const arr = appointmentsQuery.data ?? [];
+    const score = (s: Appointment["status"]) =>
+      s === "proposed"
+        ? 0
+        : s === "confirmed"
+          ? 1
+          : s === "completed"
+            ? 2
+            : 3; // declined/cancelled at the bottom
+    return [...arr].sort((a, b) => {
+      const sa = score(a.status);
+      const sb = score(b.status);
+      if (sa !== sb) return sa - sb;
+      return new Date(b.scheduledAt).getTime() -
+        new Date(a.scheduledAt).getTime();
+    });
+  }, [appointmentsQuery.data]);
+
+  const myRole: "customer" | "seller" =
+    conversation?.myRole === "seller" ? "seller" : "customer";
+
+  // For client→provider direction the customer NEVER appears as seller; so
+  // for booking we only let the customer open the modal.
+  const canPropose = myRole === "customer";
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Stack.Screen
@@ -143,7 +232,48 @@ export default function ChatThreadScreen() {
             </Text>
           )}
         </View>
+        <Pressable
+          onPress={() => router.push("/appointments" as never)}
+          hitSlop={12}
+          style={{ paddingHorizontal: 4 }}
+        >
+          <Feather name="calendar" size={22} color={colors.foreground} />
+        </Pressable>
       </View>
+
+      {appointments.length > 0 ? (
+        <View style={styles.apptBand}>
+          {appointments.map((a) => (
+            <View key={a.id} style={{ marginBottom: 8 }}>
+              <AppointmentCard
+                appointment={a}
+                myRole={myRole}
+                pendingAction={
+                  pendingApptAction?.id === a.id
+                    ? pendingApptAction.kind
+                    : null
+                }
+                onComplete={() => completeMutation.mutate(a.id)}
+                onCancel={() => {
+                  Alert.alert(
+                    t("appointments.actions.cancel"),
+                    new Date(a.scheduledAt).toLocaleString(),
+                    [
+                      { text: t("common.cancel"), style: "cancel" },
+                      {
+                        text: t("appointments.actions.cancel"),
+                        style: "destructive",
+                        onPress: () => cancelMutation.mutate(a.id),
+                      },
+                    ],
+                  );
+                }}
+                onReview={() => setReviewApptId(a.id)}
+              />
+            </View>
+          ))}
+        </View>
+      ) : null}
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -244,6 +374,22 @@ export default function ChatThreadScreen() {
             },
           ]}
         >
+          {canPropose ? (
+            <Pressable
+              onPress={() => setBookingOpen(true)}
+              style={[
+                styles.proposeBtn,
+                { backgroundColor: colors.muted, borderColor: colors.border },
+              ]}
+              hitSlop={6}
+            >
+              <Feather
+                name="calendar"
+                size={16}
+                color={colors.primary}
+              />
+            </Pressable>
+          ) : null}
           <TextInput
             value={draft}
             onChangeText={setDraft}
@@ -287,12 +433,62 @@ export default function ChatThreadScreen() {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
+
+      {conversation && canPropose ? (
+        <AppointmentBookingModal
+          visible={bookingOpen}
+          shopId={conversation.shop.id}
+          shopName={conversation.shop.name}
+          onClose={() => setBookingOpen(false)}
+          onCreated={() => {
+            void qc.invalidateQueries({ queryKey: ["appointments-conv", id] });
+          }}
+        />
+      ) : null}
+
+      {reviewApptId && conversation ? (
+        <AppointmentReviewModal
+          visible={!!reviewApptId}
+          appointmentId={reviewApptId}
+          myRole={myRole}
+          meUserId={
+            // The review API resolves direction by role on the server, but
+            // the modal needs the user's id to find their own existing
+            // review. We don't have the api-server-side User._id directly,
+            // so we use the Clerk user id and let the backend filter via
+            // direction. The "from me?" comparison only matters for showing
+            // the existing review — if not found we render a fresh one.
+            user?.id ?? ""
+          }
+          subjectLabel={
+            myRole === "customer"
+              ? conversation.shop.name
+              : conversation.customer.name ??
+                conversation.customer.email ??
+                "Client"
+          }
+          onClose={() => setReviewApptId(null)}
+        />
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  apptBand: {
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 4,
+  },
+  proposeBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",

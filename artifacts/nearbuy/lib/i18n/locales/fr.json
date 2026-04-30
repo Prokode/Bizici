@@ -269,5 +269,51 @@
     "closedNow": "Fermé",
     "matchingProducts": "Produits correspondants",
     "from": "à partir de {{price}}"
+  },
+  "appointments": {
+    "headerLink": "Mes RDV",
+    "listTitle": "Mes rendez-vous",
+    "empty": "Vous n'avez encore aucun rendez-vous.",
+    "duration": "{{minutes}} min",
+    "declinedBecause": "Motif du refus : {{reason}}",
+    "cancelledBecause": "Motif d'annulation : {{reason}}",
+    "status": {
+      "proposed": "Proposé",
+      "confirmed": "Confirmé",
+      "declined": "Refusé",
+      "completed": "Terminé",
+      "cancelled": "Annulé"
+    },
+    "actions": {
+      "accept": "Accepter",
+      "decline": "Refuser",
+      "complete": "Terminer",
+      "cancel": "Annuler",
+      "review": "Noter"
+    },
+    "ctaPropose": "Proposer un rendez-vous",
+    "booking": {
+      "title": "Proposer un rendez-vous",
+      "withShop": "Auprès de {{shop}}",
+      "date": "Date (AAAA-MM-JJ)",
+      "time": "Heure (HH:MM)",
+      "service": "Service (optionnel)",
+      "serviceNone": "Aucun service précis",
+      "notes": "Précisions (optionnel)",
+      "notesPlaceholder": "Indiquez tout ce qui peut aider…",
+      "submit": "Envoyer la demande",
+      "errorInvalidDate": "Veuillez saisir une date et une heure futures.",
+      "errorGeneric": "Impossible d'envoyer la demande. Réessayez."
+    },
+    "review": {
+      "titleClient": "Noter {{subject}}",
+      "titleProvider": "Noter votre client {{subject}}",
+      "commentLabel": "Commentaire (optionnel)",
+      "commentPlaceholder": "Partagez votre expérience…",
+      "submit": "Envoyer la note",
+      "update": "Mettre à jour",
+      "errorRating": "Choisissez une note entre 1 et 5 étoiles.",
+      "errorGeneric": "Impossible d'envoyer la note. Réessayez."
+    }
   }
 }

@@ -57,6 +57,96 @@ export function serializeProviderProfile(
     serviceRadiusKm: typeof p?.serviceRadiusKm === "number" ? p.serviceRadiusKm : 10,
     portfolioPhotos: Array.isArray(p?.portfolioPhotos) ? p.portfolioPhotos : [],
     isVerified: !!p?.isVerified,
+    appointmentRating:
+      typeof p?.appointmentRating === "number" ? p.appointmentRating : 0,
+    appointmentReviewsCount:
+      typeof p?.appointmentReviewsCount === "number"
+        ? p.appointmentReviewsCount
+        : 0,
+  };
+}
+
+/**
+ * Public-safe view of a User. Exposes only what's needed for an appointment
+ * card or a provider's customer screen — never the raw Clerk id or admin
+ * fields.
+ */
+export function serializeUserPublic(u: any) {
+  if (!u) return null;
+  return {
+    id: String(u._id),
+    name: u.name ?? null,
+    trustRating: typeof u.trustRating === "number" ? u.trustRating : 0,
+    trustReviewsCount:
+      typeof u.trustReviewsCount === "number" ? u.trustReviewsCount : 0,
+  };
+}
+
+export function serializeAppointment(a: any) {
+  return {
+    id: String(a._id),
+    shopId: String(a.shopId?._id ?? a.shopId),
+    customerUserId: String(a.customerUserId?._id ?? a.customerUserId),
+    sellerUserId: String(a.sellerUserId?._id ?? a.sellerUserId),
+    serviceId: a.serviceId ? String(a.serviceId?._id ?? a.serviceId) : null,
+    conversationId: String(a.conversationId?._id ?? a.conversationId),
+    scheduledAt: (a.scheduledAt instanceof Date
+      ? a.scheduledAt
+      : new Date(a.scheduledAt)
+    ).toISOString(),
+    durationMinutes:
+      typeof a.durationMinutes === "number" ? a.durationMinutes : null,
+    notes: a.notes ?? null,
+    status: a.status as
+      | "proposed"
+      | "confirmed"
+      | "declined"
+      | "completed"
+      | "cancelled",
+    acceptedAt: a.acceptedAt
+      ? (a.acceptedAt instanceof Date ? a.acceptedAt : new Date(a.acceptedAt)).toISOString()
+      : null,
+    declinedAt: a.declinedAt
+      ? (a.declinedAt instanceof Date ? a.declinedAt : new Date(a.declinedAt)).toISOString()
+      : null,
+    declineReason: a.declineReason ?? null,
+    completedAt: a.completedAt
+      ? (a.completedAt instanceof Date ? a.completedAt : new Date(a.completedAt)).toISOString()
+      : null,
+    cancelledAt: a.cancelledAt
+      ? (a.cancelledAt instanceof Date ? a.cancelledAt : new Date(a.cancelledAt)).toISOString()
+      : null,
+    cancelledBy: (a.cancelledBy ?? null) as "customer" | "seller" | null,
+    cancelReason: a.cancelReason ?? null,
+    createdAt: (a.createdAt instanceof Date
+      ? a.createdAt
+      : new Date(a.createdAt)
+    ).toISOString(),
+    updatedAt: (a.updatedAt instanceof Date
+      ? a.updatedAt
+      : new Date(a.updatedAt)
+    ).toISOString(),
+  };
+}
+
+export function serializeAppointmentReview(r: any) {
+  return {
+    id: String(r._id),
+    appointmentId: String(r.appointmentId?._id ?? r.appointmentId),
+    fromUserId: String(r.fromUserId?._id ?? r.fromUserId),
+    toUserId: String(r.toUserId?._id ?? r.toUserId),
+    shopId: String(r.shopId?._id ?? r.shopId),
+    direction: r.direction as "client_to_provider" | "provider_to_client",
+    rating: Number(r.rating ?? 0),
+    comment: r.comment ?? null,
+    createdAt: (r.createdAt instanceof Date
+      ? r.createdAt
+      : new Date(r.createdAt)
+    ).toISOString(),
+    updatedAt: (r.updatedAt instanceof Date
+      ? r.updatedAt
+      : new Date(r.updatedAt)
+    ).toISOString(),
   };
 }
 

@@ -22,6 +22,20 @@ export { Conversation, type ConversationDoc } from "./Conversation";
 export { Message, type MessageDoc } from "./Message";
 export { ShopReview, type ShopReviewDoc } from "./ShopReview";
 export {
+  Appointment,
+  type AppointmentDoc,
+  APPOINTMENT_STATUSES,
+  type AppointmentStatus,
+  APPOINTMENT_ACTOR_ROLES,
+  type AppointmentActorRole,
+} from "./Appointment";
+export {
+  AppointmentReview,
+  type AppointmentReviewDoc,
+  APPOINTMENT_REVIEW_DIRECTIONS,
+  type AppointmentReviewDirection,
+} from "./AppointmentReview";
+export {
   Admin,
   type AdminDoc,
   type AdminRole,

@@ -287,5 +287,37 @@
     "errorGoogle": "Connexion Google impossible",
     "errorVerify": "Vérification impossible",
     "errorGeneric": "Une erreur est survenue"
+  },
+  "appointments": {
+    "headerLink": "Rendez-vous",
+    "listTitle": "Rendez-vous",
+    "empty": "Aucun rendez-vous pour le moment.",
+    "duration": "{{minutes}} min",
+    "declinedBecause": "Motif du refus : {{reason}}",
+    "cancelledBecause": "Motif d'annulation : {{reason}}",
+    "status": {
+      "proposed": "À traiter",
+      "confirmed": "Confirmé",
+      "declined": "Refusé",
+      "completed": "Terminé",
+      "cancelled": "Annulé"
+    },
+    "actions": {
+      "accept": "Accepter",
+      "decline": "Refuser",
+      "complete": "Terminer",
+      "cancel": "Annuler",
+      "review": "Noter le client"
+    },
+    "review": {
+      "titleClient": "Noter {{subject}}",
+      "titleProvider": "Noter votre client {{subject}}",
+      "commentLabel": "Commentaire (optionnel)",
+      "commentPlaceholder": "Comment s'est passé ce rendez-vous ?",
+      "submit": "Envoyer la note",
+      "update": "Mettre à jour",
+      "errorRating": "Choisissez une note entre 1 et 5 étoiles.",
+      "errorGeneric": "Impossible d'envoyer la note. Réessayez."
+    }
   }
 }

@@ -34,6 +34,11 @@ const ServiceProviderSchema = new Schema(
     serviceRadiusKm: { type: Number, default: 10, min: 1, max: 100 },
     portfolioPhotos: { type: [String], default: [] },
     isVerified: { type: Boolean, default: false },
+    // Aggregates fed by AppointmentReview (client → provider direction only).
+    // Denormalized so list/map/search responses can sort by reputation
+    // without an extra aggregation pass.
+    appointmentRating: { type: Number, default: 0, min: 0, max: 5 },
+    appointmentReviewsCount: { type: Number, default: 0, min: 0 },
   },
   { _id: false, timestamps: false },
 );

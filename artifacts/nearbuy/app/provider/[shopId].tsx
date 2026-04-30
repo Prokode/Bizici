@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -22,6 +22,7 @@ import {
   type PublicProviderDetail,
   type PublicService,
 } from "@/lib/publicApi";
+import { AppointmentBookingModal } from "@/components/AppointmentBookingModal";
 
 function formatPrice(svc: PublicService, t: (k: string, o?: Record<string, unknown>) => string): string {
   if (svc.pricingType === "quote") return t("search.onQuote");
@@ -37,6 +38,7 @@ export default function ProviderScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   const {
     data,
@@ -352,14 +354,38 @@ export default function ProviderScreen() {
           },
         ]}
       >
-        <Button
-          title={t("provider.chat")}
-          onPress={() => router.push(`/chat-shop/${shop.id}` as never)}
-          icon={
-            <Feather name="message-circle" size={18} color="#ffffff" />
-          }
-        />
+        <View style={styles.ctaRow}>
+          <View style={{ flex: 1 }}>
+            <Button
+              title={t("provider.chat")}
+              onPress={() => router.push(`/chat-shop/${shop.id}` as never)}
+              icon={
+                <Feather name="message-circle" size={18} color="#ffffff" />
+              }
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Button
+              title={t("appointments.ctaPropose")}
+              onPress={() => setBookingOpen(true)}
+              icon={<Feather name="calendar" size={18} color="#ffffff" />}
+            />
+          </View>
+        </View>
       </View>
+
+      <AppointmentBookingModal
+        visible={bookingOpen}
+        shopId={shop.id}
+        shopName={shop.name}
+        services={services.map((s) => ({ id: s.id, title: s.title }))}
+        onClose={() => setBookingOpen(false)}
+        onCreated={() => {
+          // After creation, send the user straight into the chat where the
+          // banner shows the new RDV with its lifecycle controls.
+          router.push(`/chat-shop/${shop.id}` as never);
+        }}
+      />
     </View>
   );
 }
@@ -481,4 +507,5 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
+  ctaRow: { flexDirection: "row", gap: 10 },
 });

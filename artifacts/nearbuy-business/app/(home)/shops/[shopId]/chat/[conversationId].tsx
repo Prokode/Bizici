@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -14,6 +15,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useUser } from "@clerk/expo";
 
 import { useColors } from "@/hooks/useColors";
 import {
@@ -23,6 +25,15 @@ import {
   sendMessage,
   type ChatMessage,
 } from "@/lib/chatApi";
+import {
+  acceptAppointment,
+  cancelAppointment,
+  declineAppointment,
+  listAppointments,
+  type Appointment,
+} from "@/lib/appointmentsApi";
+import { AppointmentCard } from "@/components/AppointmentCard";
+import { AppointmentReviewModal } from "@/components/AppointmentReviewModal";
 import { useTranslation } from "react-i18next";
 
 function formatTime(iso: string): string {
@@ -38,20 +49,74 @@ function formatTime(iso: string): string {
 }
 
 export default function SellerChatThreadScreen() {
-  const { conversationId } = useLocalSearchParams<{
+  const { conversationId, shopId } = useLocalSearchParams<{
     conversationId: string;
+    shopId: string;
   }>();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const qc = useQueryClient();
   const { t } = useTranslation();
+  const { user } = useUser();
   const [draft, setDraft] = useState("");
+  const [reviewApptId, setReviewApptId] = useState<string | null>(null);
+  const [pendingApptAction, setPendingApptAction] = useState<{
+    id: string;
+    kind: "accept" | "decline" | "cancel";
+  } | null>(null);
 
   const conversationQuery = useQuery({
     queryKey: ["chat-conv", conversationId],
     queryFn: () => getConversation(conversationId!),
     enabled: !!conversationId,
+  });
+
+  const appointmentsQuery = useQuery({
+    queryKey: ["appointments-conv", conversationId],
+    queryFn: () => listAppointments({ conversationId: conversationId! }),
+    enabled: !!conversationId,
+    refetchInterval: 5000,
+    refetchIntervalInBackground: false,
+  });
+
+  const acceptMutation = useMutation({
+    mutationFn: (apptId: string) => acceptAppointment(apptId),
+    onMutate: (apptId) => setPendingApptAction({ id: apptId, kind: "accept" }),
+    onSettled: () => setPendingApptAction(null),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["appointments-conv", conversationId] });
+      void qc.invalidateQueries({ queryKey: ["appointments"] });
+      void qc.invalidateQueries({ queryKey: ["chat-conv-list"] });
+    },
+    onError: (err: unknown) =>
+      Alert.alert("NearBuy", err instanceof Error ? err.message : t("auth.errorGeneric")),
+  });
+
+  const declineMutation = useMutation({
+    mutationFn: (apptId: string) => declineAppointment(apptId),
+    onMutate: (apptId) => setPendingApptAction({ id: apptId, kind: "decline" }),
+    onSettled: () => setPendingApptAction(null),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["appointments-conv", conversationId] });
+      void qc.invalidateQueries({ queryKey: ["appointments"] });
+      void qc.invalidateQueries({ queryKey: ["chat-conv-list"] });
+    },
+    onError: (err: unknown) =>
+      Alert.alert("NearBuy", err instanceof Error ? err.message : t("auth.errorGeneric")),
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: (apptId: string) => cancelAppointment(apptId),
+    onMutate: (apptId) => setPendingApptAction({ id: apptId, kind: "cancel" }),
+    onSettled: () => setPendingApptAction(null),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["appointments-conv", conversationId] });
+      void qc.invalidateQueries({ queryKey: ["appointments"] });
+      void qc.invalidateQueries({ queryKey: ["chat-conv-list"] });
+    },
+    onError: (err: unknown) =>
+      Alert.alert("NearBuy", err instanceof Error ? err.message : t("auth.errorGeneric")),
   });
 
   const messagesQuery = useQuery({
@@ -109,6 +174,18 @@ export default function SellerChatThreadScreen() {
       ? conversation.customer.email
       : null;
 
+  const appointments = useMemo<Appointment[]>(() => {
+    const arr = appointmentsQuery.data ?? [];
+    const score = (s: Appointment["status"]) =>
+      s === "proposed" ? 0 : s === "confirmed" ? 1 : s === "completed" ? 2 : 3;
+    return [...arr].sort((a, b) => {
+      const sa = score(a.status);
+      const sb = score(b.status);
+      if (sa !== sb) return sa - sb;
+      return new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime();
+    });
+  }, [appointmentsQuery.data]);
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View
@@ -140,7 +217,64 @@ export default function SellerChatThreadScreen() {
             </Text>
           )}
         </View>
+        <Pressable
+          onPress={() =>
+            router.push(
+              `/shops/${shopId}/appointments` as never,
+            )
+          }
+          hitSlop={12}
+          style={{ paddingHorizontal: 4 }}
+        >
+          <Feather name="calendar" size={22} color={colors.foreground} />
+        </Pressable>
       </View>
+
+      {appointments.length > 0 ? (
+        <View style={styles.apptBand}>
+          {appointments.map((a) => (
+            <View key={a.id} style={{ marginBottom: 8 }}>
+              <AppointmentCard
+                appointment={a}
+                myRole="seller"
+                pendingAction={
+                  pendingApptAction?.id === a.id ? pendingApptAction.kind : null
+                }
+                onAccept={() => acceptMutation.mutate(a.id)}
+                onDecline={() =>
+                  Alert.alert(
+                    t("appointments.actions.decline"),
+                    new Date(a.scheduledAt).toLocaleString(),
+                    [
+                      { text: t("common.cancel"), style: "cancel" },
+                      {
+                        text: t("appointments.actions.decline"),
+                        style: "destructive",
+                        onPress: () => declineMutation.mutate(a.id),
+                      },
+                    ],
+                  )
+                }
+                onCancel={() =>
+                  Alert.alert(
+                    t("appointments.actions.cancel"),
+                    new Date(a.scheduledAt).toLocaleString(),
+                    [
+                      { text: t("common.cancel"), style: "cancel" },
+                      {
+                        text: t("appointments.actions.cancel"),
+                        style: "destructive",
+                        onPress: () => cancelMutation.mutate(a.id),
+                      },
+                    ],
+                  )
+                }
+                onReview={() => setReviewApptId(a.id)}
+              />
+            </View>
+          ))}
+        </View>
+      ) : null}
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -283,12 +417,28 @@ export default function SellerChatThreadScreen() {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
+
+      {reviewApptId && conversation ? (
+        <AppointmentReviewModal
+          visible={!!reviewApptId}
+          appointmentId={reviewApptId}
+          myRole="seller"
+          meUserId={user?.id ?? ""}
+          subjectLabel={customerName}
+          onClose={() => setReviewApptId(null)}
+        />
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  apptBand: {
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 4,
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
