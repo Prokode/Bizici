@@ -46,7 +46,7 @@ const slides: Slide[] = [
     titleKey: "onboarding.slide1Title",
     descriptionKey: "onboarding.slide1Body",
     visual: "logo",
-    gradient: ["#FF6B35", "#FF3D7F"],
+    gradient: ["#F58220", "#E26A0A"],
   },
   {
     key: "inventory",
@@ -54,7 +54,7 @@ const slides: Slide[] = [
     descriptionKey: "onboarding.slide2Body",
     visual: "icon",
     iconName: "package",
-    gradient: ["#FF8A3D", "#FF5E62"],
+    gradient: ["#1B2A5C", "#3A4F8A"],
   },
   {
     key: "nearby",
@@ -62,7 +62,7 @@ const slides: Slide[] = [
     descriptionKey: "onboarding.slide3Body",
     visual: "icon",
     iconName: "map-pin",
-    gradient: ["#F97316", "#EAB308"],
+    gradient: ["#7FB927", "#5C9618"],
   },
 ];
 
@@ -135,7 +135,7 @@ function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
       <Animated.View style={[styles.visualWrap, visualStyle]}>
         {slide.visual === "logo" ? (
           <Image
-            source={require("../assets/images/icon.png")}
+            source={require("../assets/images/bizici-pin.png")}
             style={styles.logo}
             resizeMode="contain"
           />
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     borderRadius: 90,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#FF3D7F",
+    shadowColor: "#F58220",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.25,
     shadowRadius: 18,

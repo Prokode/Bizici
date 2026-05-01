@@ -2,19 +2,25 @@
 
 ## Overview
 
-NearBuy is a two-sided marketplace connecting local shops with customers via "NearBuy Business" (seller app) and "BizIci" (customer app, formerly "NearBuy") mobile applications. Its core purpose is to digitize local commerce, enhance customer shopping with map-centric and visual search, and provide robust inventory management for businesses. The project aims for community engagement through features like "Still There?" verification and broadcast requests.
+BizIci is a two-sided marketplace connecting local shops with customers via "BizIci Pro" (seller app, dir `nearbuy-business`) and "BizIci" (customer app, dir `nearbuy`) mobile applications. Its core purpose is to digitize local commerce, enhance customer shopping with map-centric and visual search, and provide robust inventory management for businesses. The project aims for community engagement through features like "Still There?" verification and broadcast requests.
 
-### BizIci Branding (customer app)
+### BizIci Branding (both mobile apps)
 
-The customer-facing app uses the "BizIci" brand with the tagline "Trouvez tout près de vous". Palette derived from the BizIci logo:
+Both apps share the same brand language. Palette derived from the BizIci logo:
 
 - Primary orange `#F58220` — pin, CTA, brand accent
 - Navy `#1B2A5C` — wordmark "Biz", headings, ink, pin base
 - Green `#7FB927` — wordmark "Ici", success states, storefront awning, sparks
 
-The cold-start splash (`components/AnimatedSplash.tsx`) plays a six-step Reanimated sequence on mobile (skipped on web), totalling ~6 s before fade-out: orange pin drops in → green storefront with scalloped awning materialises inside → three green sparks burst → navy oval base appears under the pin → composition shrinks/lifts → "BizIci" wordmark + tagline fade in.
+The cold-start splash (`components/AnimatedSplash.tsx` in each Expo app) plays the same six-step Reanimated sequence on mobile (skipped on web), totalling ~6 s before fade-out: orange pin drops in → green storefront with scalloped awning materialises inside → three green sparks burst → navy oval base appears under the pin → composition shrinks/lifts → "BizIci" wordmark + tagline fade in. The seller app variant adds a small orange "PRO" badge next to the wordmark and uses tagline "Gérez votre boutique"; the customer variant uses "Trouvez tout près de vous".
 
-Static brand bitmaps live in `assets/images/`:
+App identifiers:
+
+- Customer app: name "BizIci", scheme `bizici`, bundle `com.bizici.app`.
+- Seller app: name "BizIci Pro", scheme `bizici-pro`, bundle `com.bizici.pro`.
+- Internal slugs (`nearbuy`, `nearbuy-business`), package names (`@workspace/nearbuy`, `@workspace/nearbuy-business`), and AsyncStorage keys (`nearbuy.*`) intentionally preserved to avoid breaking workspace tooling and existing user state.
+
+Static brand bitmaps live in each app's `assets/images/`:
 
 - `bizici-pin.png` — AI-regenerated transparent-background **pin only** (no wordmark), used as app icon, OS splash, web favicon, notification icon, and onboarding hero. Faithfully matches the reference logo (orange teardrop, scalloped green awning + stripes, navy door with green window, green shopping bag with handle, three green sparks, navy oval base).
 - `bizici-logo.png` — original full reference logo (pin + wordmark on white background), kept as brand reference.

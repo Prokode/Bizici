@@ -43,12 +43,12 @@ function statusColor(
     case "proposed":
       return colors.primary;
     case "confirmed":
-      return "#16a34a";
+      return colors.success;
     case "completed":
       return colors.mutedForeground;
     case "declined":
     case "cancelled":
-      return "#dc2626";
+      return colors.destructive;
   }
 }
 
@@ -239,7 +239,7 @@ function ActionBtn({
     tone === "primary"
       ? colors.primary
       : tone === "danger"
-        ? "#dc2626"
+        ? colors.destructive
         : colors.muted;
   const fg =
     tone === "muted" ? colors.foreground : colors.primaryForeground ?? "#fff";
