@@ -40,6 +40,7 @@ export default function KycSubmitScreen() {
   const [docType, setDocType] = useState<DocType>("id_card");
   const [front, setFront] = useState<{ uri: string; base64: string } | null>(null);
   const [back, setBack] = useState<{ uri: string; base64: string } | null>(null);
+  const [consent, setConsent] = useState(false);
 
   const needsBack = DOC_TYPES.find((d) => d.key === docType)?.needsBack ?? false;
 
@@ -63,6 +64,17 @@ export default function KycSubmitScreen() {
     },
   });
 
+  const handleSubmit = () => {
+    if (!consent) {
+      Alert.alert(
+        t("kyc.submit.privacyTitle"),
+        t("kyc.submit.consentRequired"),
+      );
+      return;
+    }
+    mutation.mutate();
+  };
+
   const pick = async (slot: "front" | "back") => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
@@ -84,7 +96,8 @@ export default function KycSubmitScreen() {
     }
   };
 
-  const canSubmit = !!front && (!needsBack || !!back) && !mutation.isPending;
+  const canSubmit =
+    !!front && (!needsBack || !!back) && consent && !mutation.isPending;
 
   return (
     <>
@@ -180,7 +193,20 @@ export default function KycSubmitScreen() {
         ) : null}
 
         <Card style={styles.privacyCard}>
-          <Feather name="lock" size={16} color={colors.mutedForeground} />
+          <View style={styles.privacyHeader}>
+            <Feather name="shield" size={18} color={colors.primary} />
+            <Text
+              style={[
+                styles.privacyTitle,
+                {
+                  color: colors.foreground,
+                  fontFamily: "PlusJakartaSans_700Bold",
+                },
+              ]}
+            >
+              {t("kyc.submit.privacyTitle")}
+            </Text>
+          </View>
           <Text
             style={[
               styles.privacyText,
@@ -190,17 +216,97 @@ export default function KycSubmitScreen() {
               },
             ]}
           >
-            {t("kyc.submit.privacy")}
+            {t("kyc.submit.privacyBody")}
           </Text>
+          <View style={styles.privacyBullet}>
+            <Feather name="users" size={13} color={colors.mutedForeground} />
+            <Text
+              style={[
+                styles.privacyBulletText,
+                {
+                  color: colors.mutedForeground,
+                  fontFamily: "PlusJakartaSans_400Regular",
+                },
+              ]}
+            >
+              {t("kyc.submit.privacyAccess")}
+            </Text>
+          </View>
+          <View style={styles.privacyBullet}>
+            <Feather name="clock" size={13} color={colors.mutedForeground} />
+            <Text
+              style={[
+                styles.privacyBulletText,
+                {
+                  color: colors.mutedForeground,
+                  fontFamily: "PlusJakartaSans_400Regular",
+                },
+              ]}
+            >
+              {t("kyc.submit.privacyRetention")}
+            </Text>
+          </View>
+          <View style={styles.privacyBullet}>
+            <Feather name="key" size={13} color={colors.mutedForeground} />
+            <Text
+              style={[
+                styles.privacyBulletText,
+                {
+                  color: colors.mutedForeground,
+                  fontFamily: "PlusJakartaSans_400Regular",
+                },
+              ]}
+            >
+              {t("kyc.submit.privacyRights")}
+            </Text>
+          </View>
         </Card>
+
+        <TouchableOpacity
+          onPress={() => setConsent((v) => !v)}
+          style={[
+            styles.consentRow,
+            {
+              borderColor: consent ? colors.primary : colors.border,
+              backgroundColor: consent ? colors.primary + "11" : "transparent",
+            },
+          ]}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: consent }}
+        >
+          <View
+            style={[
+              styles.consentBox,
+              {
+                borderColor: consent ? colors.primary : colors.mutedForeground,
+                backgroundColor: consent ? colors.primary : "transparent",
+              },
+            ]}
+          >
+            {consent ? (
+              <Feather name="check" size={14} color="#fff" />
+            ) : null}
+          </View>
+          <Text
+            style={[
+              styles.consentLabel,
+              {
+                color: colors.foreground,
+                fontFamily: "PlusJakartaSans_500Medium",
+              },
+            ]}
+          >
+            {t("kyc.submit.consentLabel")}
+          </Text>
+        </TouchableOpacity>
 
         <Button
           title={t("kyc.submit.submitCta")}
-          onPress={() => mutation.mutate()}
+          onPress={handleSubmit}
           disabled={!canSubmit}
           loading={mutation.isPending}
           fullWidth
-          style={{ marginTop: 8 }}
+          style={{ marginTop: 16 }}
         />
       </ScrollView>
     </>
@@ -293,12 +399,42 @@ const styles = StyleSheet.create({
   },
   photoHint: { fontSize: 13, textAlign: "center", paddingHorizontal: 16 },
   privacyCard: {
+    padding: 14,
+    marginTop: 20,
+    marginBottom: 12,
+    gap: 8,
+  },
+  privacyHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    padding: 12,
-    marginTop: 20,
-    marginBottom: 16,
+    gap: 8,
+    marginBottom: 2,
   },
-  privacyText: { flex: 1, fontSize: 12, lineHeight: 16 },
+  privacyTitle: { fontSize: 14 },
+  privacyText: { fontSize: 12, lineHeight: 17 },
+  privacyBullet: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    marginTop: 2,
+  },
+  privacyBulletText: { flex: 1, fontSize: 11, lineHeight: 16 },
+  consentRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  consentBox: {
+    width: 22,
+    height: 22,
+    borderRadius: 5,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 1,
+  },
+  consentLabel: { flex: 1, fontSize: 13, lineHeight: 18 },
 });
