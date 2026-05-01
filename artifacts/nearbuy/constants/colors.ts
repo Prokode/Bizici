@@ -1,73 +1,76 @@
 /**
- * Semantic design tokens for the mobile app.
+ * Semantic design tokens for the BizIci mobile app.
  *
- * Warm orange/amber and deep teal palette
+ * Palette derived from the BizIci logo:
+ *  - Orange  #F58220  → primary CTA / brand accent (the pin)
+ *  - Navy    #1B2A5C  → headings, "Biz" wordmark, pin base
+ *  - Green   #7FB927  → success, "Ici" wordmark, storefront/awning, sparks
  */
 
 const colors = {
   light: {
-    text: "#1e293b",
-    tint: "#e65100",
+    text: "#1B2A5C", // navy as primary ink
+    tint: "#F58220",
 
     background: "#ffffff",
-    foreground: "#1e293b",
+    foreground: "#1B2A5C",
 
-    card: "#f8fafc",
-    cardForeground: "#1e293b",
+    card: "#F7F9FC",
+    cardForeground: "#1B2A5C",
 
-    primary: "#e65100", // warm orange
+    primary: "#F58220", // brand orange
     primaryForeground: "#ffffff",
 
-    secondary: "#0f766e", // deep teal
+    secondary: "#1B2A5C", // brand navy
     secondaryForeground: "#ffffff",
 
-    muted: "#f1f5f9",
+    muted: "#EEF2F7",
     mutedForeground: "#64748b",
 
-    accent: "#ffedd5",
-    accentForeground: "#ea580c",
+    accent: "#FFE9D6", // soft orange tint for chips/badges
+    accentForeground: "#C2620E",
 
     destructive: "#ef4444",
     destructiveForeground: "#ffffff",
 
-    border: "#e2e8f0",
-    input: "#e2e8f0",
+    border: "#E2E8F0",
+    input: "#E2E8F0",
 
-    success: "#22c55e",
+    success: "#7FB927", // brand green
     successForeground: "#ffffff",
   },
   dark: {
-    text: "#f8fafc",
-    tint: "#f97316",
+    text: "#F8FAFC",
+    tint: "#FFA463",
 
-    background: "#0f172a",
-    foreground: "#f8fafc",
+    background: "#0E1530", // deeper navy
+    foreground: "#F8FAFC",
 
-    card: "#1e293b",
-    cardForeground: "#f8fafc",
+    card: "#162048",
+    cardForeground: "#F8FAFC",
 
-    primary: "#f97316", // warm orange
-    primaryForeground: "#ffffff",
+    primary: "#FFA463", // brighter orange for dark
+    primaryForeground: "#0E1530",
 
-    secondary: "#14b8a6", // deep teal
-    secondaryForeground: "#ffffff",
+    secondary: "#A4B4DD", // soft navy tint
+    secondaryForeground: "#0E1530",
 
-    muted: "#334155",
-    mutedForeground: "#94a3b8",
+    muted: "#1E2A55",
+    mutedForeground: "#9AA8C9",
 
-    accent: "#431407",
-    accentForeground: "#fdba74",
+    accent: "#3A2412",
+    accentForeground: "#FFC79A",
 
     destructive: "#f87171",
     destructiveForeground: "#ffffff",
 
-    border: "#334155",
-    input: "#334155",
+    border: "#2A356A",
+    input: "#2A356A",
 
-    success: "#4ade80",
-    successForeground: "#ffffff",
+    success: "#A1D14B", // brighter green for dark
+    successForeground: "#0E1530",
   },
-  radius: 12,
+  radius: 14,
 };
 
 export default colors;

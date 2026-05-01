@@ -9,14 +9,14 @@ type Props = {
 };
 
 /**
- * Custom map marker that mirrors the NearBuy pin (gradient orange/coral)
+ * Custom map marker that mirrors the BizIci pin (orange brand gradient)
  * and shows the in-stock product count when there is at least one.
  */
 export function ShopMarker({ productCount, isOpen }: Props) {
   return (
     <View style={styles.wrapper}>
       <LinearGradient
-        colors={isOpen ? ["#FF6B35", "#FF3D7F"] : ["#9CA3AF", "#6B7280"]}
+        colors={isOpen ? ["#F58220", "#E26A0A"] : ["#9CA3AF", "#6B7280"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.bubble}
@@ -34,7 +34,7 @@ export function ShopMarker({ productCount, isOpen }: Props) {
         style={[
           styles.tail,
           {
-            borderTopColor: isOpen ? "#FF3D7F" : "#6B7280",
+            borderTopColor: isOpen ? "#E26A0A" : "#6B7280",
           },
         ]}
       />
@@ -82,10 +82,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1.5,
-    borderColor: "#FF3D7F",
+    borderColor: "#F58220",
   },
   badgeText: {
-    color: "#FF3D7F",
+    color: "#F58220",
     fontSize: 10,
     fontWeight: "800",
   },

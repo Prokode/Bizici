@@ -111,7 +111,7 @@ export default function SignInScreen() {
 
         <View style={styles.header}>
           <LinearGradient
-            colors={["#FF6B35", "#FF3D7F"]}
+            colors={["#F58220", "#E26A0A"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.logo}

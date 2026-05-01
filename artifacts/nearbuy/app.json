@@ -1,27 +1,27 @@
 {
   "expo": {
-    "name": "NearBuy",
+    "name": "BizIci",
     "slug": "nearbuy",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "nearbuy",
+    "icon": "./assets/images/bizici-logo.png",
+    "scheme": "bizici",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/icon.png",
+      "image": "./assets/images/bizici-logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.nearbuy.app"
+      "bundleIdentifier": "com.bizici.app"
     },
     "android": {
-      "package": "com.nearbuy.app"
+      "package": "com.bizici.app"
     },
     "web": {
-      "favicon": "./assets/images/icon.png"
+      "favicon": "./assets/images/bizici-logo.png"
     },
     "plugins": [
       [
@@ -35,26 +35,26 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Autorisez NearBuy à accéder à votre caméra pour rechercher des produits par photo."
+          "cameraPermission": "Autorisez BizIci à accéder à votre caméra pour rechercher des produits par photo."
         }
       ],
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Autorisez NearBuy à utiliser votre position pour vous montrer les boutiques autour de vous."
+          "locationAlwaysAndWhenInUsePermission": "Autorisez BizIci à utiliser votre position pour vous montrer les boutiques autour de vous."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Autorisez NearBuy à accéder à vos photos pour la recherche visuelle."
+          "photosPermission": "Autorisez BizIci à accéder à vos photos pour la recherche visuelle."
         }
       ],
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/icon.png",
-          "color": "#16A34A",
+          "icon": "./assets/images/bizici-logo.png",
+          "color": "#F58220",
           "defaultChannel": "default"
         }
       ]

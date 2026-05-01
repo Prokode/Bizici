@@ -112,7 +112,7 @@ export default function ChatThreadScreen() {
     },
     onError: (err: unknown) => {
       Alert.alert(
-        "NearBuy",
+        "BizIci",
         err instanceof Error ? err.message : "Action impossible.",
       );
     },
@@ -129,7 +129,7 @@ export default function ChatThreadScreen() {
     },
     onError: (err: unknown) => {
       Alert.alert(
-        "NearBuy",
+        "BizIci",
         err instanceof Error ? err.message : "Action impossible.",
       );
     },

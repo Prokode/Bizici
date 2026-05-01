@@ -2,7 +2,17 @@
 
 ## Overview
 
-NearBuy is a two-sided marketplace connecting local shops with customers via "NearBuy Business" (seller app) and "NearBuy" (customer app) mobile applications. Its core purpose is to digitize local commerce, enhance customer shopping with map-centric and visual search, and provide robust inventory management for businesses. The project aims for community engagement through features like "Still There?" verification and broadcast requests.
+NearBuy is a two-sided marketplace connecting local shops with customers via "NearBuy Business" (seller app) and "BizIci" (customer app, formerly "NearBuy") mobile applications. Its core purpose is to digitize local commerce, enhance customer shopping with map-centric and visual search, and provide robust inventory management for businesses. The project aims for community engagement through features like "Still There?" verification and broadcast requests.
+
+### BizIci Branding (customer app)
+
+The customer-facing app uses the "BizIci" brand with the tagline "Trouvez tout près de vous". Palette derived from the BizIci logo:
+
+- Primary orange `#F58220` — pin, CTA, brand accent
+- Navy `#1B2A5C` — wordmark "Biz", headings, ink, pin base
+- Green `#7FB927` — wordmark "Ici", success states, storefront awning, sparks
+
+The cold-start splash (`components/AnimatedSplash.tsx`) plays a six-step Reanimated sequence on mobile (skipped on web): orange pin drops in → green storefront pops inside → three green sparks burst → navy base appears under the pin → composition shrinks/lifts → "BizIci" wordmark fades in below.
 
 ## User Preferences
 

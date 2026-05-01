@@ -48,7 +48,7 @@ const SLIDE_DEFS: SlideDef[] = [
     bodyKey: "onboarding.slide1Body",
     chipKey: "onboarding.slide1Chip",
     visual: "logo",
-    gradient: ["#FF6B35", "#FF3D7F"],
+    gradient: ["#F58220", "#E26A0A"],
   },
   {
     key: "search",
@@ -201,7 +201,7 @@ function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
         <Animated.View style={heroStyle}>
           {slide.visual === "logo" ? (
             <Image
-              source={require("../assets/images/icon.png")}
+              source={require("../assets/images/bizici-logo-transparent.png")}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -433,8 +433,8 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.08)",
   },
   logo: {
-    height: 240,
-    width: 240,
+    height: 260,
+    width: 320,
   },
   iconHalo: {
     height: 200,

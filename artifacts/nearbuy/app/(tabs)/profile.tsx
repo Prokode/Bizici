@@ -80,7 +80,7 @@ export default function ProfileTab() {
       >
         <View style={styles.signInHero}>
           <LinearGradient
-            colors={["#FF6B35", "#FF3D7F"]}
+            colors={["#F58220", "#E26A0A"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.signInCircle}
@@ -156,7 +156,7 @@ export default function ProfileTab() {
       </View>
 
       <LinearGradient
-        colors={["#FF6B35", "#FF3D7F"]}
+        colors={["#F58220", "#E26A0A"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.karmaCard}
@@ -249,7 +249,7 @@ export default function ProfileTab() {
         ]}
       >
         <LinearGradient
-          colors={["#FF6B35", "#FF3D7F"]}
+          colors={["#F58220", "#E26A0A"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.courseIcon}
