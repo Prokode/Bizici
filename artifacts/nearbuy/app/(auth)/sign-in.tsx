@@ -8,7 +8,7 @@ import { useSignIn, useSSO } from "@clerk/expo";
 import { Link, useLocalSearchParams, useRouter, type Href } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import * as AuthSession from "expo-auth-session";
-import { Feather } from "@expo/vector-icons";
+import { Feather, FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -73,26 +73,42 @@ export default function SignInScreen() {
     }
   };
 
-  const onGoogle = useCallback(async () => {
-    setSubmitError(null);
-    try {
-      const { createdSessionId, setActive } = await startSSOFlow({
-        strategy: "oauth_google",
-        redirectUrl: AuthSession.makeRedirectUri(),
-      });
-      if (createdSessionId && setActive) {
-        await setActive({
-          session: createdSessionId,
-          navigate: async ({ session }) => {
-            if (session?.currentTask) return;
-            goHome();
-          },
+  /**
+   * Single SSO entry point shared by Google + Apple. Provider config in
+   * Clerk dashboard + Apple Developer portal + Expo plugin must be done
+   * separately — this is UI wiring only.
+   */
+  const onSSO = useCallback(
+    async (strategy: "oauth_google" | "oauth_apple") => {
+      setSubmitError(null);
+      try {
+        const { createdSessionId, setActive } = await startSSOFlow({
+          strategy,
+          redirectUrl: AuthSession.makeRedirectUri(),
         });
+        if (createdSessionId && setActive) {
+          await setActive({
+            session: createdSessionId,
+            navigate: async ({ session }) => {
+              if (session?.currentTask) return;
+              goHome();
+            },
+          });
+        }
+      } catch (err: any) {
+        setSubmitError(
+          err?.message ??
+            (strategy === "oauth_apple"
+              ? t("auth.errorApple")
+              : t("auth.errorGoogle")),
+        );
       }
-    } catch (err: any) {
-      setSubmitError(err?.message ?? t("auth.errorGoogle"));
-    }
-  }, [goHome, startSSOFlow, t]);
+    },
+    [goHome, startSSOFlow, t],
+  );
+
+  const onGoogle = useCallback(() => onSSO("oauth_google"), [onSSO]);
+  const onApple = useCallback(() => onSSO("oauth_apple"), [onSSO]);
 
   return (
     <View
@@ -154,8 +170,23 @@ export default function SignInScreen() {
               />
             }
             onPress={onGoogle}
-            style={{ marginBottom: 16 }}
+            style={{ marginBottom: 12 }}
           />
+          {/* Apple SSO — iOS/web only (Apple HIG). UI only; provider must be
+              enabled in Clerk before it works end-to-end. */}
+          {Platform.OS !== "android" && (
+            <Button
+              title={t("auth.continueApple")}
+              icon={<FontAwesome name="apple" size={18} color="#FFFFFF" />}
+              onPress={onApple}
+              style={{
+                backgroundColor: "#000000",
+                borderColor: "#000000",
+                marginBottom: 16,
+              }}
+              textStyle={{ color: "#FFFFFF" }}
+            />
+          )}
 
           <View style={styles.dividerRow}>
             <View

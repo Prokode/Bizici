@@ -17,7 +17,9 @@ import { useSignUp, useSSO } from "@clerk/expo";
 import { Link, useRouter, type Href } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import * as AuthSession from "expo-auth-session";
-import { Feather } from "@expo/vector-icons";
+import { Feather, FontAwesome } from "@expo/vector-icons";
+import { LEGAL_VERSION } from "@workspace/legal-content";
+import { recordConsent, type ConsentSource } from "@/lib/consentApi";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 
@@ -77,6 +79,9 @@ export default function SignUpScreen() {
         await signUp.finalize({
           navigate: ({ session }) => {
             if (session?.currentTask) return;
+            // Audit-trail the consent. Fire-and-forget — must NOT block
+            // the navigation if the API is briefly unreachable.
+            void recordConsent({ version: LEGAL_VERSION, source: "email" });
             router.replace("/(home)" as Href);
           },
         });
@@ -86,30 +91,52 @@ export default function SignUpScreen() {
     }
   };
 
-  const onGoogle = useCallback(async () => {
-    setSubmitError(null);
-    if (!acceptedTerms) {
-      Alert.alert(t("auth.termsRequiredTitle"), t("auth.termsRequiredBody"));
-      return;
-    }
-    try {
-      const { createdSessionId, setActive } = await startSSOFlow({
-        strategy: "oauth_google",
-        redirectUrl: AuthSession.makeRedirectUri(),
-      });
-      if (createdSessionId && setActive) {
-        await setActive({
-          session: createdSessionId,
-          navigate: async ({ session }) => {
-            if (session?.currentTask) return;
-            router.replace("/(home)" as Href);
-          },
-        });
+  /**
+   * Single SSO entry point shared by Google + Apple. The strategy decides
+   * which OAuth provider Clerk talks to. The provider must be enabled in
+   * the Clerk dashboard (and, for Apple, configured in the Apple Developer
+   * portal + Expo plugin) — that wiring is intentionally out of scope for
+   * this UI-only change.
+   */
+  const onSSO = useCallback(
+    async (strategy: "oauth_google" | "oauth_apple", source: ConsentSource) => {
+      setSubmitError(null);
+      if (!acceptedTerms) {
+        Alert.alert(t("auth.termsRequiredTitle"), t("auth.termsRequiredBody"));
+        return;
       }
-    } catch (err: any) {
-      setSubmitError(err?.message ?? t("auth.errorGoogle"));
-    }
-  }, [acceptedTerms, router, startSSOFlow, t]);
+      try {
+        const { createdSessionId, setActive } = await startSSOFlow({
+          strategy,
+          redirectUrl: AuthSession.makeRedirectUri(),
+        });
+        if (createdSessionId && setActive) {
+          await setActive({
+            session: createdSessionId,
+            navigate: async ({ session }) => {
+              if (session?.currentTask) return;
+              void recordConsent({ version: LEGAL_VERSION, source });
+              router.replace("/(home)" as Href);
+            },
+          });
+        }
+      } catch (err: any) {
+        setSubmitError(
+          err?.message ??
+            (strategy === "oauth_apple"
+              ? t("auth.errorApple")
+              : t("auth.errorGoogle")),
+        );
+      }
+    },
+    [acceptedTerms, router, startSSOFlow, t],
+  );
+
+  const onGoogle = useCallback(
+    () => onSSO("oauth_google", "google"),
+    [onSSO],
+  );
+  const onApple = useCallback(() => onSSO("oauth_apple", "apple"), [onSSO]);
 
   const isVerifying =
     signUp.status === "missing_requirements" &&
@@ -167,8 +194,29 @@ export default function SignUpScreen() {
               variant="secondary"
               icon={<Feather name="chrome" size={18} color={colors.secondaryForeground} />}
               onPress={onGoogle}
-              style={{ marginBottom: 16 }}
+              style={{ marginBottom: 12 }}
             />
+            {/*
+              Apple Sign-In: hidden on Android per Apple HIG (only required
+              when Android also offers another third-party SSO; we surface
+              Google there). Provider config (Clerk dashboard + Apple
+              Developer portal + Expo plugin) is intentionally NOT included
+              in this change — the button will gracefully fail until that
+              wiring is done.
+            */}
+            {Platform.OS !== "android" && (
+              <Button
+                title={t("auth.continueApple")}
+                icon={<FontAwesome name="apple" size={18} color="#FFFFFF" />}
+                onPress={onApple}
+                style={{
+                  backgroundColor: "#000000",
+                  borderColor: "#000000",
+                  marginBottom: 16,
+                }}
+                textStyle={{ color: "#FFFFFF" }}
+              />
+            )}
 
             <View style={styles.dividerRow}>
               <View style={[styles.divider, { backgroundColor: colors.border }]} />

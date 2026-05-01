@@ -1,4 +1,9 @@
-export { User, type UserDoc } from "./User";
+export {
+  User,
+  type UserDoc,
+  CONSENT_SOURCES,
+  type ConsentSource,
+} from "./User";
 export {
   Shop,
   type ShopDoc,

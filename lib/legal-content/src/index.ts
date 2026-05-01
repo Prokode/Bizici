@@ -12,6 +12,13 @@
  * before going to production.
  */
 
+/**
+ * Version stamp for the legal corpus below. Bump this string whenever the
+ * privacy policy or terms of use are materially changed so we can prove,
+ * per-user, *which* version they accepted at signup. Format: ISO date.
+ */
+export const LEGAL_VERSION = "2026-05-01";
+
 export type LegalLang = "fr" | "en";
 
 export type LegalSection = {

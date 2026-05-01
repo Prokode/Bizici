@@ -10,6 +10,8 @@ import {
   PUSH_PLATFORMS,
   type PushPlatform,
   Basket,
+  CONSENT_SOURCES,
+  type ConsentSource,
 } from "@workspace/db";
 import { requireAuth } from "../lib/auth";
 import { serializeShop } from "../lib/serialize";
@@ -174,6 +176,73 @@ router.delete(
       expoPushToken: token,
       userId: new Types.ObjectId(req.userId),
     });
+    res.status(204).end();
+  },
+);
+
+// ---- Legal consent audit trail -----------------------------------------
+//
+// Each signup screen gates account creation behind a "I accept Terms +
+// Privacy" checkbox. After the Clerk session is active the client POSTs
+// here so we have a server-stamped, tamper-resistant record of *which
+// version* of the legal corpus was accepted, by which signup pathway, and
+// at what time. CNIL/GDPR-friendly audit trail.
+//
+// Idempotent: a repeat call with the same version is a no-op; a call with
+// a newer version overwrites (the user has re-accepted updated terms).
+
+const MAX_CONSENT_VERSION_LEN = 32;
+
+router.post(
+  "/me/consent",
+  requireAuth,
+  async (req: Request, res: Response) => {
+    const version =
+      typeof req.body?.version === "string" ? req.body.version.trim() : "";
+    if (!version) {
+      res.status(400).json({ error: "version is required" });
+      return;
+    }
+    if (version.length > MAX_CONSENT_VERSION_LEN) {
+      res
+        .status(400)
+        .json({ error: `version is too long (max ${MAX_CONSENT_VERSION_LEN})` });
+      return;
+    }
+
+    const rawSource = req.body?.source;
+    const source: ConsentSource =
+      typeof rawSource === "string" &&
+      (CONSENT_SOURCES as readonly string[]).includes(rawSource)
+        ? (rawSource as ConsentSource)
+        : "unknown";
+
+    const userOid = new Types.ObjectId(req.userId);
+    const existing = await User.findById(userOid).select({ consent: 1 }).lean();
+    if (!existing) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    // Skip the write when the user already accepted this exact version —
+    // keeps the original acceptedAt/source intact for audit purposes.
+    if (existing.consent && existing.consent.version === version) {
+      res.status(204).end();
+      return;
+    }
+
+    await User.updateOne(
+      { _id: userOid },
+      {
+        $set: {
+          consent: {
+            acceptedAt: new Date(),
+            version,
+            source,
+          },
+        },
+      },
+    );
     res.status(204).end();
   },
 );
