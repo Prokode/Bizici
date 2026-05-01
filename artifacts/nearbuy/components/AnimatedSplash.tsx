@@ -65,61 +65,70 @@ export function AnimatedSplash({ onFinish }: Props) {
       return () => clearTimeout(t);
     }
 
-    // 1) Pin drops in
-    pinOpacity.value = withTiming(1, { duration: 320 });
-    pinTranslate.value = withSpring(0, { damping: 9, stiffness: 110 });
+    // Sequence is intentionally generous so the user can read each beat:
+    // pin (0–700) → pause → store (900–1700) → pause → sparks (1900–2500)
+    // → pause → base (2700–3400) → hold → shrink (3800–4500) → wordmark
+    // (4200–5000) → hold → fade-out (5700).
 
-    // 2) Storefront pops inside
-    storeOpacity.value = withDelay(450, withTiming(1, { duration: 280 }));
+    // 1) Pin drops in
+    pinOpacity.value = withTiming(1, { duration: 500 });
+    pinTranslate.value = withSpring(0, {
+      damping: 10,
+      stiffness: 90,
+      mass: 1.1,
+    });
+
+    // 2) Storefront materialises inside (slow + clear)
+    storeOpacity.value = withDelay(900, withTiming(1, { duration: 600 }));
     storeScale.value = withDelay(
-      450,
-      withSpring(1, { damping: 8, stiffness: 140 }),
+      900,
+      withSpring(1, { damping: 10, stiffness: 120 }),
     );
 
     // 3) Three sparks burst
-    sparksOpacity.value = withDelay(820, withTiming(1, { duration: 240 }));
+    sparksOpacity.value = withDelay(1900, withTiming(1, { duration: 400 }));
     sparksScale.value = withDelay(
-      820,
+      1900,
       withSequence(
-        withSpring(1.15, { damping: 6, stiffness: 180 }),
-        withSpring(1, { damping: 8, stiffness: 200 }),
+        withSpring(1.2, { damping: 6, stiffness: 160 }),
+        withSpring(1, { damping: 9, stiffness: 200 }),
       ),
     );
 
     // 4) Navy base appears
-    baseOpacity.value = withDelay(1180, withTiming(1, { duration: 260 }));
+    baseOpacity.value = withDelay(2700, withTiming(1, { duration: 500 }));
     baseScale.value = withDelay(
-      1180,
-      withSpring(1, { damping: 9, stiffness: 130 }),
+      2700,
+      withSpring(1, { damping: 10, stiffness: 110 }),
     );
 
-    // 5) Whole composition shrinks + slides up
+    // 5) Whole composition shrinks + slides up (held longer first)
     groupScale.value = withDelay(
-      1700,
-      withTiming(0.55, {
-        duration: 520,
+      3800,
+      withTiming(0.5, {
+        duration: 720,
         easing: Easing.inOut(Easing.cubic),
       }),
     );
     groupTranslate.value = withDelay(
-      1700,
-      withTiming(-90, {
-        duration: 520,
+      3800,
+      withTiming(-100, {
+        duration: 720,
         easing: Easing.inOut(Easing.cubic),
       }),
     );
 
     // 6) Wordmark fades in below the shrunken pin
-    wordOpacity.value = withDelay(2050, withTiming(1, { duration: 380 }));
+    wordOpacity.value = withDelay(4200, withTiming(1, { duration: 600 }));
     wordTranslate.value = withDelay(
-      2050,
-      withSpring(0, { damping: 10, stiffness: 120 }),
+      4200,
+      withSpring(0, { damping: 11, stiffness: 100 }),
     );
 
-    // Final fade-out → onFinish
+    // Final fade-out → onFinish (long hold so the wordmark is read)
     containerOpacity.value = withDelay(
-      2850,
-      withTiming(0, { duration: 380, easing: Easing.out(Easing.quad) }, () => {
+      5700,
+      withTiming(0, { duration: 500, easing: Easing.out(Easing.quad) }, () => {
         runOnJS(onFinish)();
       }),
     );
@@ -224,30 +233,45 @@ export function AnimatedSplash({ onFinish }: Props) {
           </Svg>
         </Animated.View>
 
-        {/* Layer 2: storefront inside the pin window */}
+        {/* Layer 2: storefront inside the pin window
+            (awning with scalloped bottom + vertical stripes, navy door
+            with green window, green shopping bag with handle) */}
         <Animated.View style={[styles.layer, storeStyle]}>
           <Svg width={PIN_W} height={PIN_H} viewBox="0 0 100 130">
             <G>
-              {/* Awning base (green) */}
+              {/* Awning base (darker green) with 4 scallops at the bottom */}
               <Path
-                d="M 30 33 L 70 33 L 65 41 L 35 41 Z"
+                d="M 28 31 H 72 V 38
+                   Q 66.5 43 61 38
+                   Q 55.5 43 50 38
+                   Q 44.5 43 39 38
+                   Q 33.5 43 28 38 Z"
                 fill={GREEN}
               />
-              {/* Awning stripes (lighter green slivers) */}
-              <Path d="M 36 33 L 33 41 L 38 41 L 41 33 Z" fill={AWNING} />
-              <Path d="M 48 33 L 45 41 L 50 41 L 53 33 Z" fill={AWNING} />
-              <Path d="M 60 33 L 57 41 L 62 41 L 65 41 L 65 33 Z" fill={AWNING} />
-              {/* Building (navy) */}
-              <Rect x="34" y="41" width="32" height="24" rx="1.5" fill={NAVY} />
-              {/* Door (navy with green hint) */}
-              <Rect x="38" y="46" width="9" height="19" rx="1" fill="#0E1530" />
-              {/* Shopping bag (green) on the right */}
-              <Rect x="52" y="50" width="10" height="13" rx="1.5" fill={GREEN} />
+              {/* Awning vertical stripes (lighter green) */}
+              <Rect x="33" y="31" width="6" height="7" fill={AWNING} />
+              <Rect x="44" y="31" width="6" height="7" fill={AWNING} />
+              <Rect x="55" y="31" width="6" height="7" fill={AWNING} />
+              <Rect x="66" y="31" width="6" height="7" fill={AWNING} />
+
+              {/* Building body (navy) */}
               <Path
-                d="M 54 50 C 54 47.5 56 46 57 46 C 58 46 60 47.5 60 50"
+                d="M 30 41 H 70 V 70 H 30 Z"
+                fill={NAVY}
+              />
+
+              {/* Door on the left (slightly darker navy with a green window) */}
+              <Rect x="34" y="48" width="13" height="22" rx="1.2" fill="#0E1530" />
+              <Rect x="36" y="51" width="3" height="4" fill={GREEN} />
+
+              {/* Shopping bag on the right (green) with curved handle */}
+              <Rect x="52" y="53" width="13" height="15" rx="1.5" fill={GREEN} />
+              <Path
+                d="M 55 53 Q 55 48 58.5 48 Q 62 48 62 53"
                 stroke={GREEN}
-                strokeWidth={1.2}
+                strokeWidth={1.6}
                 fill="none"
+                strokeLinecap="round"
               />
             </G>
           </Svg>
