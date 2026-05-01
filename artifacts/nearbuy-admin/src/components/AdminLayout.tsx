@@ -57,7 +57,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <img
-                src="/bizici-pin.png"
+                src={`${import.meta.env.BASE_URL}bizici-pin.png`}
                 alt="BizIci"
                 className="size-9 object-contain"
               />

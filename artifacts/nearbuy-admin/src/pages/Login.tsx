@@ -78,7 +78,7 @@ export default function LoginPage() {
           <div className="flex items-start justify-between gap-3 mb-2">
             <div className="flex items-center gap-3">
               <img
-                src="/bizici-pin.png"
+                src={`${import.meta.env.BASE_URL}bizici-pin.png`}
                 alt="BizIci"
                 className="size-10 rounded-lg object-contain"
               />
