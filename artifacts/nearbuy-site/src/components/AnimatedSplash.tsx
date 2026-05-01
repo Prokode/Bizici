@@ -44,7 +44,7 @@ export function AnimatedSplash({ onFinish }: Props) {
     <div
       className={`bsplash${isFading ? " bsplash--fade" : ""}`}
       aria-hidden="true"
-      data-testid="admin-splash"
+      data-testid="site-splash"
     >
       {/* Wordmark anchored at top — fades in at the end */}
       <div className="bsplash__wordmark">
@@ -53,8 +53,8 @@ export function AnimatedSplash({ onFinish }: Props) {
           <span className="bsplash__brand-ici">Ici</span>
         </div>
         <div className="bsplash__tagline">
-          <span className="bsplash__tagline-navy">Espace </span>
-          <span className="bsplash__tagline-orange">administrateur</span>
+          <span className="bsplash__tagline-navy">Trouvez tout </span>
+          <span className="bsplash__tagline-orange">près de vous</span>
         </div>
       </div>
 

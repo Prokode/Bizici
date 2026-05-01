@@ -1,13 +1,34 @@
+import { useState } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AnimatedSplash } from "@/components/AnimatedSplash";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/Home";
 import DeleteAccountPage from "@/pages/DeleteAccount";
 import DeleteAccountConfirmationPage from "@/pages/DeleteAccountConfirmation";
 
 const queryClient = new QueryClient();
+
+const SPLASH_FLAG_KEY = "bizici_site_splash_played";
+
+function shouldPlaySplash(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.sessionStorage.getItem(SPLASH_FLAG_KEY) !== "1";
+  } catch {
+    return true;
+  }
+}
+
+function markSplashPlayed(): void {
+  try {
+    window.sessionStorage.setItem(SPLASH_FLAG_KEY, "1");
+  } catch {
+    /* sessionStorage unavailable — splash will replay; harmless */
+  }
+}
 
 function Router() {
   return (
@@ -24,9 +45,19 @@ function Router() {
 }
 
 function App() {
+  const [showSplash, setShowSplash] = useState<boolean>(() => shouldPlaySplash());
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        {showSplash ? (
+          <AnimatedSplash
+            onFinish={() => {
+              markSplashPlayed();
+              setShowSplash(false);
+            }}
+          />
+        ) : null}
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <Router />
         </WouterRouter>
