@@ -66,6 +66,12 @@ uri = "file://attached_assets/bizici_logo_v4_storefront.png"
 type = "image"
 title = "bizici storefront illustration"
 
+[[generated]]
+id = "QEnRk7k5i1cxZwNfO34Tl"
+uri = "file://artifacts/nearbuy/assets/images/bizici-pin.png"
+type = "image"
+title = "BizIci pin only logo"
+
 [[outputs]]
 id = "nEsLMAOsSAP1n3KemC4uS"
 uri = "file://attached_assets/logo_concepts/concept-1-pin-bag.png"

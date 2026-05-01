@@ -12,7 +12,13 @@ The customer-facing app uses the "BizIci" brand with the tagline "Trouvez tout p
 - Navy `#1B2A5C` — wordmark "Biz", headings, ink, pin base
 - Green `#7FB927` — wordmark "Ici", success states, storefront awning, sparks
 
-The cold-start splash (`components/AnimatedSplash.tsx`) plays a six-step Reanimated sequence on mobile (skipped on web): orange pin drops in → green storefront pops inside → three green sparks burst → navy base appears under the pin → composition shrinks/lifts → "BizIci" wordmark fades in below.
+The cold-start splash (`components/AnimatedSplash.tsx`) plays a six-step Reanimated sequence on mobile (skipped on web), totalling ~6 s before fade-out: orange pin drops in → green storefront with scalloped awning materialises inside → three green sparks burst → navy oval base appears under the pin → composition shrinks/lifts → "BizIci" wordmark + tagline fade in.
+
+Static brand bitmaps live in `assets/images/`:
+
+- `bizici-pin.png` — AI-regenerated transparent-background **pin only** (no wordmark), used as app icon, OS splash, web favicon, notification icon, and onboarding hero. Faithfully matches the reference logo (orange teardrop, scalloped green awning + stripes, navy door with green window, green shopping bag with handle, three green sparks, navy oval base).
+- `bizici-logo.png` — original full reference logo (pin + wordmark on white background), kept as brand reference.
+- `bizici-logo-transparent.png` — auto-bg-removed version of the original, kept as fallback.
 
 ## User Preferences
 

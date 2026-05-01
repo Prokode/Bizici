@@ -57,7 +57,7 @@ const SLIDE_DEFS: SlideDef[] = [
     chipKey: "onboarding.slide2Chip",
     visual: "icon",
     iconName: "search",
-    gradient: ["#FF8A3D", "#FF5E62"],
+    gradient: ["#F58220", "#1B2A5C"],
   },
   {
     key: "visual",
@@ -66,7 +66,7 @@ const SLIDE_DEFS: SlideDef[] = [
     chipKey: "onboarding.slide3Chip",
     visual: "icon",
     iconName: "camera",
-    gradient: ["#A855F7", "#EC4899"],
+    gradient: ["#1B2A5C", "#3A4F8A"],
   },
   {
     key: "karma",
@@ -75,7 +75,7 @@ const SLIDE_DEFS: SlideDef[] = [
     chipKey: "onboarding.slide4Chip",
     visual: "icon",
     iconName: "award",
-    gradient: ["#0EA5E9", "#22D3EE"],
+    gradient: ["#7FB927", "#5C9618"],
   },
   {
     key: "run",
@@ -84,7 +84,7 @@ const SLIDE_DEFS: SlideDef[] = [
     chipKey: "onboarding.slide5Chip",
     visual: "icon",
     iconName: "shopping-bag",
-    gradient: ["#10B981", "#06B6D4"],
+    gradient: ["#7FB927", "#1B2A5C"],
   },
 ];
 
@@ -201,7 +201,7 @@ function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
         <Animated.View style={heroStyle}>
           {slide.visual === "logo" ? (
             <Image
-              source={require("../assets/images/bizici-logo-transparent.png")}
+              source={require("../assets/images/bizici-pin.png")}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     height: 260,
-    width: 320,
+    width: 260,
   },
   iconHalo: {
     height: 200,

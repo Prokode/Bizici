@@ -4,12 +4,12 @@
     "slug": "nearbuy",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/bizici-logo.png",
+    "icon": "./assets/images/bizici-pin.png",
     "scheme": "bizici",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/bizici-logo.png",
+      "image": "./assets/images/bizici-pin.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -21,7 +21,7 @@
       "package": "com.bizici.app"
     },
     "web": {
-      "favicon": "./assets/images/bizici-logo.png"
+      "favicon": "./assets/images/bizici-pin.png"
     },
     "plugins": [
       [
@@ -53,7 +53,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/bizici-logo.png",
+          "icon": "./assets/images/bizici-pin.png",
           "color": "#F58220",
           "defaultChannel": "default"
         }
