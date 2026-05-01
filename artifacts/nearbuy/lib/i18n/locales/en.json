@@ -301,8 +301,15 @@
       "serviceNone": "No specific service",
       "notes": "Notes (optional)",
       "notesPlaceholder": "Anything that may help…",
+      "locationLabel": "Where will it take place?",
+      "locationAtShop": "At their place",
+      "locationAtCustomer": "At my place",
+      "address": "Full address",
+      "addressPlaceholder": "Street, postcode, city…",
       "submit": "Send request",
       "errorInvalidDate": "Please enter a future date and time.",
+      "errorPickLocation": "Pick where the appointment takes place.",
+      "errorAddressRequired": "Please provide your address for an at-home appointment.",
       "errorGeneric": "Could not send the request. Try again."
     },
     "review": {
@@ -315,5 +322,20 @@
       "errorRating": "Pick a rating between 1 and 5 stars.",
       "errorGeneric": "Could not submit the rating. Try again."
     }
+  },
+  "serviceLocation": {
+    "badgeAtShop": "On site",
+    "badgeAtCustomer": "Comes to you",
+    "badgeBoth": "On site or at your place",
+    "filterAtCustomer": "Comes to me",
+    "appointmentAtShop": "At the provider",
+    "appointmentAtCustomer": "At your home"
+  },
+  "fulfillment": {
+    "badgePickup": "Pickup only",
+    "badgeDelivery": "Delivery only",
+    "badgeDeliveryWithRadius": "Delivery ({{km}} km)",
+    "badgeBoth": "Pickup or delivery",
+    "badgeBothWithRadius": "Pickup or delivery ({{km}} km)"
   }
 }

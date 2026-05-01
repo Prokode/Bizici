@@ -557,6 +557,19 @@ paths:
           schema: { type: string, maxLength: 120 }
           description: Free-text search on title, description, tags.
         - in: query
+          name: serviceLocation
+          required: false
+          schema:
+            type: string
+            enum: [at_shop, at_customer, both]
+          description: |
+            Restrict to services that can be performed in this mode.
+            Matches `at_customer` returns providers that go to the customer
+            (effective location is `at_customer` or `both`); matches
+            `at_shop` returns providers the customer can visit (effective
+            location is `at_shop` or `both`); matches `both` only returns
+            providers that explicitly support both modes.
+        - in: query
           name: limit
           required: false
           schema: { type: integer, minimum: 1, maximum: 50 }
@@ -1036,6 +1049,16 @@ components:
           type: integer
           minimum: 0
           description: Number of reviews used for the average.
+        fulfillment:
+          $ref: "#/components/schemas/ShopFulfillment"
+        deliveryRadiusKm:
+          type: number
+          nullable: true
+          minimum: 1
+          maximum: 100
+          description: |
+            Optional delivery radius in km. Only meaningful when
+            fulfillment is "delivery_only" or "both".
         distanceKm:
           type: number
           nullable: true
@@ -1052,6 +1075,7 @@ components:
         - kind
         - ratingAvg
         - ratingCount
+        - fulfillment
 
     ShopReview:
       type: object
@@ -1112,6 +1136,13 @@ components:
           type: string
           enum: [products, services, hybrid]
           description: Defaults to "products" when omitted.
+        fulfillment:
+          $ref: "#/components/schemas/ShopFulfillment"
+        deliveryRadiusKm:
+          type: number
+          nullable: true
+          minimum: 1
+          maximum: 100
       required: [name, latitude, longitude]
 
     ShopUpdateInput:
@@ -1125,6 +1156,13 @@ components:
         kind:
           type: string
           enum: [products, services, hybrid]
+        fulfillment:
+          $ref: "#/components/schemas/ShopFulfillment"
+        deliveryRadiusKm:
+          type: number
+          nullable: true
+          minimum: 1
+          maximum: 100
 
     ShopOpenInput:
       type: object
@@ -1529,6 +1567,27 @@ components:
         text: { type: string, minLength: 1, maxLength: 2000 }
       required: [text]
 
+    ServiceLocation:
+      type: string
+      enum: [at_shop, at_customer, both]
+      description: |
+        Where a service is performed. `at_shop` = customer must come,
+        `at_customer` = provider travels to the customer, `both` = either.
+
+    ServiceLocationOverride:
+      type: string
+      enum: [inherit, at_shop, at_customer, both]
+      description: |
+        Per-service override of the provider's default. `inherit` means
+        use the parent shop's `serviceProvider.serviceLocation`.
+
+    ShopFulfillment:
+      type: string
+      enum: [pickup_only, delivery_only, both]
+      description: |
+        How a product shop fulfils orders. `pickup_only` = customer must
+        come, `delivery_only` = shop only delivers, `both` = either.
+
     ServiceProviderProfile:
       type: object
       properties:
@@ -1563,12 +1622,15 @@ components:
           type: array
           items: { type: string }
         isVerified: { type: boolean }
+        serviceLocation:
+          $ref: "#/components/schemas/ServiceLocation"
       required:
         - hideAge
         - certifications
         - serviceRadiusKm
         - portfolioPhotos
         - isVerified
+        - serviceLocation
 
     ServiceProviderProfileInput:
       type: object
@@ -1598,6 +1660,8 @@ components:
         portfolioPhotos:
           type: array
           items: { type: string }
+        serviceLocation:
+          $ref: "#/components/schemas/ServiceLocation"
 
     Service:
       type: object
@@ -1629,6 +1693,14 @@ components:
           type: array
           items: { type: string }
         isActive: { type: boolean }
+        serviceLocation:
+          $ref: "#/components/schemas/ServiceLocationOverride"
+        effectiveServiceLocation:
+          $ref: "#/components/schemas/ServiceLocation"
+          description: |
+            Resolved location for this service: the override when set, or
+            the parent shop's `serviceProvider.serviceLocation` when the
+            override is `inherit`.
         createdAt: { type: string, format: date-time }
       required:
         - id
@@ -1640,6 +1712,8 @@ components:
         - photos
         - tags
         - isActive
+        - serviceLocation
+        - effectiveServiceLocation
         - createdAt
 
     ServiceCreateInput:
@@ -1668,6 +1742,8 @@ components:
           type: array
           items: { type: string }
         isActive: { type: boolean }
+        serviceLocation:
+          $ref: "#/components/schemas/ServiceLocationOverride"
       required: [title, pricingType]
 
     ServiceUpdateInput:
@@ -1696,6 +1772,8 @@ components:
           type: array
           items: { type: string }
         isActive: { type: boolean }
+        serviceLocation:
+          $ref: "#/components/schemas/ServiceLocationOverride"
 
     ServiceSearchResult:
       type: object

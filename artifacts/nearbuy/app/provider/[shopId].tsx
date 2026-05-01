@@ -23,6 +23,7 @@ import {
   type PublicService,
 } from "@/lib/publicApi";
 import { AppointmentBookingModal } from "@/components/AppointmentBookingModal";
+import { LocationBadge } from "@/components/LocationBadge";
 
 function formatPrice(svc: PublicService, t: (k: string, o?: Record<string, unknown>) => string): string {
   if (svc.pricingType === "quote") return t("search.onQuote");
@@ -208,6 +209,15 @@ export default function ProviderScreen() {
               </Text>
             </View>
           ) : null}
+          {provider?.serviceLocation ? (
+            <View style={[styles.radiusRow, { marginTop: 6 }]}>
+              <LocationBadge
+                mode={provider.serviceLocation}
+                colors={colors}
+                t={t}
+              />
+            </View>
+          ) : null}
         </View>
 
         {/* Bio */}
@@ -311,11 +321,18 @@ export default function ProviderScreen() {
                       </View>
                     ) : null}
                   </View>
-                  <Text
-                    style={[styles.servicePrice, { color: colors.primary }]}
-                  >
-                    {formatPrice(s, t)}
-                  </Text>
+                  <View style={{ alignItems: "flex-end", gap: 6 }}>
+                    <Text
+                      style={[styles.servicePrice, { color: colors.primary }]}
+                    >
+                      {formatPrice(s, t)}
+                    </Text>
+                    <LocationBadge
+                      mode={s.effectiveServiceLocation}
+                      colors={colors}
+                      t={t}
+                    />
+                  </View>
                 </View>
               ))}
             </View>
@@ -378,7 +395,12 @@ export default function ProviderScreen() {
         visible={bookingOpen}
         shopId={shop.id}
         shopName={shop.name}
-        services={services.map((s) => ({ id: s.id, title: s.title }))}
+        services={services.map((s) => ({
+          id: s.id,
+          title: s.title,
+          effectiveServiceLocation: s.effectiveServiceLocation,
+        }))}
+        shopServiceLocation={provider?.serviceLocation ?? "at_shop"}
         onClose={() => setBookingOpen(false)}
         onCreated={() => {
           // After creation, send the user straight into the chat where the

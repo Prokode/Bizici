@@ -33,6 +33,8 @@ export type Appointment = {
   cancelledAt: string | null;
   cancelledBy: "customer" | "seller" | null;
   cancelReason: string | null;
+  serviceLocation: "at_shop" | "at_customer";
+  customerAddress: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -90,6 +92,8 @@ export async function createAppointment(input: {
   scheduledAt: string;
   durationMinutes?: number | null;
   notes?: string | null;
+  serviceLocation?: "at_shop" | "at_customer";
+  customerAddress?: string | null;
 }): Promise<Appointment> {
   return customFetch<Appointment>("/api/me/appointments", {
     method: "POST",

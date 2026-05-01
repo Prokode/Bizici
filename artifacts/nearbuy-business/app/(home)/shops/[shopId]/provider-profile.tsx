@@ -12,7 +12,9 @@ import {
   getGetProviderProfileQueryOptions,
   useUpdateProviderProfile,
   getGetProviderProfileQueryKey,
+  type ServiceLocation,
 } from "@workspace/api-client-react";
+import { ServiceLocationSelector } from "@/components/ServiceLocationSelector";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function ProviderProfileScreen() {
@@ -35,6 +37,8 @@ export default function ProviderProfileScreen() {
   const [certifications, setCertifications] = useState<string[]>([]);
   const [certInput, setCertInput] = useState("");
   const [radiusStr, setRadiusStr] = useState("10");
+  const [serviceLocation, setServiceLocation] =
+    useState<ServiceLocation>("at_shop");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -55,6 +59,7 @@ export default function ProviderProfileScreen() {
           ? String(profile.serviceRadiusKm)
           : "10",
       );
+      setServiceLocation(profile.serviceLocation ?? "at_shop");
     }
   }, [profile]);
 
@@ -88,6 +93,7 @@ export default function ProviderProfileScreen() {
           serviceRadiusKm: radiusStr.trim()
             ? parseInt(radiusStr, 10)
             : undefined,
+          serviceLocation,
           portfolioPhotos: profile?.portfolioPhotos ?? [],
         },
       },
@@ -230,6 +236,12 @@ export default function ProviderProfileScreen() {
           value={radiusStr}
           onChangeText={setRadiusStr}
           keyboardType="number-pad"
+        />
+
+        <ServiceLocationSelector
+          value={serviceLocation}
+          onChange={setServiceLocation}
+          hint={t("serviceLocation.profileHint")}
         />
 
         {error ? (

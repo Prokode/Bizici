@@ -244,6 +244,34 @@
     "save": "Save profile",
     "saveError": "Failed to save"
   },
+  "serviceLocation": {
+    "label": "Default execution location",
+    "overrideLabel": "Execution location",
+    "atShop": "At my place",
+    "atCustomer": "At customer's",
+    "both": "Both",
+    "inherit": "Inherit",
+    "profileHint": "Sets where your services take place by default. You can override this per service.",
+    "serviceHint": "\"Inherit\" uses your shop's default.",
+    "badgeAtShop": "On site",
+    "badgeAtCustomer": "Travels to you",
+    "badgeBoth": "Either",
+    "filterAtCustomer": "Travels to me",
+    "appointmentAtShop": "On site",
+    "appointmentAtCustomer": "At your place"
+  },
+  "fulfillment": {
+    "label": "Fulfillment",
+    "pickup": "Pickup only",
+    "delivery": "Delivery",
+    "both": "Both",
+    "shopHint": "How do customers receive their orders?",
+    "deliveryRadiusKm": "Delivery radius (km)",
+    "deliveryRadiusPlaceholder": "e.g. 5",
+    "badgePickup": "Pickup",
+    "badgeDelivery": "Delivery",
+    "badgeBoth": "Pickup + delivery"
+  },
   "onboarding": {
     "skip": "Skip",
     "next": "Next",

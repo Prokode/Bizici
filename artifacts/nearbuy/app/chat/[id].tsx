@@ -35,6 +35,7 @@ import {
 import { AppointmentCard } from "@/components/AppointmentCard";
 import { AppointmentBookingModal } from "@/components/AppointmentBookingModal";
 import { AppointmentReviewModal } from "@/components/AppointmentReviewModal";
+import { fetchProviderDetail } from "@/lib/publicApi";
 
 function formatTime(iso: string): string {
   try {
@@ -69,6 +70,27 @@ export default function ChatThreadScreen() {
     queryKey: ["chat-conv", id],
     queryFn: () => getConversation(id!),
     enabled: !!id && !!isSignedIn,
+  });
+
+  // Lazily fetch the provider's public profile so the booking modal knows the
+  // shop's default `serviceLocation` and each service's effective mode. We
+  // only need it once the customer opens the modal — fetching always would
+  // waste a request for product-only chats.
+  const shopIdForBooking = conversationQuery.data?.shop.id;
+  const providerDetailQuery = useQuery({
+    queryKey: ["provider-detail", shopIdForBooking],
+    // Returns null on 404 — product-only shops don't expose a provider profile,
+    // so we treat it as "no execution-location metadata, default to at_shop".
+    queryFn: async () => {
+      try {
+        return await fetchProviderDetail(shopIdForBooking!);
+      } catch {
+        return null;
+      }
+    },
+    enabled: !!shopIdForBooking && bookingOpen,
+    staleTime: 60_000,
+    retry: false,
   });
 
   const appointmentsQuery = useQuery({
@@ -439,6 +461,14 @@ export default function ChatThreadScreen() {
           visible={bookingOpen}
           shopId={conversation.shop.id}
           shopName={conversation.shop.name}
+          services={providerDetailQuery.data?.services.map((s) => ({
+            id: s.id,
+            title: s.title,
+            effectiveServiceLocation: s.effectiveServiceLocation,
+          }))}
+          shopServiceLocation={
+            providerDetailQuery.data?.provider?.serviceLocation ?? "at_shop"
+          }
           onClose={() => setBookingOpen(false)}
           onCreated={() => {
             void qc.invalidateQueries({ queryKey: ["appointments-conv", id] });

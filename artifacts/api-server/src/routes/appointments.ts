@@ -68,7 +68,7 @@ router.post("/me/appointments", async (req: Request, res: Response) => {
   }
 
   const shop = await Shop.findById(shopOid)
-    .select({ sellerId: 1, kind: 1 })
+    .select({ sellerId: 1, kind: 1, serviceProvider: 1 })
     .lean();
   if (!shop) {
     res.status(404).json({ error: "Shop not found" });
@@ -80,6 +80,12 @@ router.post("/me/appointments", async (req: Request, res: Response) => {
       .json({ error: "This shop does not offer services" });
     return;
   }
+  const shopDefaultLoc =
+    (shop.serviceProvider?.serviceLocation as
+      | "at_shop"
+      | "at_customer"
+      | "both"
+      | undefined) ?? "at_shop";
 
   // Refuse self-booking — a shop member proposing an appointment to their own
   // shop would generate nonsensical reviews and corrupt aggregates.
@@ -93,6 +99,12 @@ router.post("/me/appointments", async (req: Request, res: Response) => {
 
   // Optional service id — must belong to this shop if provided.
   let serviceOid: Types.ObjectId | null = null;
+  let serviceOverrideLoc:
+    | "at_shop"
+    | "at_customer"
+    | "both"
+    | "inherit"
+    | null = null;
   if (body.serviceId !== undefined && body.serviceId !== null) {
     serviceOid = objectId(body.serviceId);
     if (!serviceOid) {
@@ -104,7 +116,7 @@ router.post("/me/appointments", async (req: Request, res: Response) => {
       shop: shopOid,
       deletedAt: null,
     })
-      .select({ _id: 1 })
+      .select({ _id: 1, serviceLocation: 1 })
       .lean();
     if (!svc) {
       res
@@ -112,6 +124,9 @@ router.post("/me/appointments", async (req: Request, res: Response) => {
         .json({ error: "Service not found in this shop" });
       return;
     }
+    serviceOverrideLoc =
+      (svc.serviceLocation as Exclude<typeof serviceOverrideLoc, null>) ??
+      "inherit";
   }
 
   if (typeof body.scheduledAt !== "string") {
@@ -154,6 +169,56 @@ router.post("/me/appointments", async (req: Request, res: Response) => {
     notes = trimmed.length === 0 ? null : trimmed;
   }
 
+  // Resolve effective execution mode at booking time. We snapshot a single
+  // concrete value (at_shop OR at_customer) on the appointment so post-hoc
+  // provider edits never rewrite history.
+  const effectiveLoc =
+    serviceOverrideLoc && serviceOverrideLoc !== "inherit"
+      ? serviceOverrideLoc
+      : shopDefaultLoc;
+  let serviceLocation: "at_shop" | "at_customer";
+  if (body.serviceLocation === "at_shop" || body.serviceLocation === "at_customer") {
+    // Customer's explicit choice — must be supported by the provider.
+    if (
+      effectiveLoc !== "both" &&
+      effectiveLoc !== body.serviceLocation
+    ) {
+      res
+        .status(400)
+        .json({ error: "Selected serviceLocation not offered by provider" });
+      return;
+    }
+    serviceLocation = body.serviceLocation;
+  } else if (effectiveLoc === "both") {
+    res.status(400).json({
+      error:
+        "serviceLocation is required (provider offers both at_shop and at_customer)",
+    });
+    return;
+  } else {
+    serviceLocation = effectiveLoc;
+  }
+
+  let customerAddress: string | null = null;
+  if (body.customerAddress !== undefined && body.customerAddress !== null) {
+    if (typeof body.customerAddress !== "string") {
+      res.status(400).json({ error: "customerAddress must be a string" });
+      return;
+    }
+    const trimmed = body.customerAddress.trim();
+    if (trimmed.length > 500) {
+      res.status(400).json({ error: "customerAddress must be <= 500 chars" });
+      return;
+    }
+    customerAddress = trimmed.length === 0 ? null : trimmed;
+  }
+  if (serviceLocation === "at_customer" && !customerAddress) {
+    res.status(400).json({
+      error: "customerAddress is required when the service is at_customer",
+    });
+    return;
+  }
+
   const customerOid = new Types.ObjectId(req.userId);
   const conversationId = await ensureConversation(shopOid, customerOid);
 
@@ -166,6 +231,8 @@ router.post("/me/appointments", async (req: Request, res: Response) => {
     scheduledAt,
     durationMinutes,
     notes,
+    serviceLocation,
+    customerAddress,
     status: "proposed",
   });
 

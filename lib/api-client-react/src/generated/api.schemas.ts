@@ -22,6 +22,20 @@ export const ShopKind = {
   hybrid: "hybrid",
 } as const;
 
+/**
+ * Where a service is performed. `at_shop` = customer must come,
+`at_customer` = provider travels to the customer, `both` = either.
+
+ */
+export type ServiceLocation =
+  (typeof ServiceLocation)[keyof typeof ServiceLocation];
+
+export const ServiceLocation = {
+  at_shop: "at_shop",
+  at_customer: "at_customer",
+  both: "both",
+} as const;
+
 export interface ServiceProviderProfile {
   firstName?: string | null;
   lastName?: string | null;
@@ -50,7 +64,22 @@ authenticated owner endpoints.
   serviceRadiusKm: number;
   portfolioPhotos: string[];
   isVerified: boolean;
+  serviceLocation: ServiceLocation;
 }
+
+/**
+ * How a product shop fulfils orders. `pickup_only` = customer must
+come, `delivery_only` = shop only delivers, `both` = either.
+
+ */
+export type ShopFulfillment =
+  (typeof ShopFulfillment)[keyof typeof ShopFulfillment];
+
+export const ShopFulfillment = {
+  pickup_only: "pickup_only",
+  delivery_only: "delivery_only",
+  both: "both",
+} as const;
 
 export interface Shop {
   id: string;
@@ -81,6 +110,15 @@ shop was just created and the profile not yet filled in.
    * @minimum 0
    */
   ratingCount: number;
+  fulfillment: ShopFulfillment;
+  /**
+   * Optional delivery radius in km. Only meaningful when
+fulfillment is "delivery_only" or "both".
+
+   * @minimum 1
+   * @maximum 100
+   */
+  deliveryRadiusKm?: number | null;
   /** Distance from the search origin in kilometers. Only present
 on results returned by geo search endpoints.
  */
@@ -233,6 +271,12 @@ export interface ShopCreateInput {
   longitude: number;
   /** Defaults to "products" when omitted. */
   kind?: ShopCreateInputKind;
+  fulfillment?: ShopFulfillment;
+  /**
+   * @minimum 1
+   * @maximum 100
+   */
+  deliveryRadiusKm?: number | null;
 }
 
 export type ShopUpdateInputKind =
@@ -252,6 +296,12 @@ export interface ShopUpdateInput {
   latitude?: number;
   longitude?: number;
   kind?: ShopUpdateInputKind;
+  fulfillment?: ShopFulfillment;
+  /**
+   * @minimum 1
+   * @maximum 100
+   */
+  deliveryRadiusKm?: number | null;
 }
 
 export interface ShopOpenInput {
@@ -592,6 +642,21 @@ export interface ChatMessageCreateInput {
   text: string;
 }
 
+/**
+ * Per-service override of the provider's default. `inherit` means
+use the parent shop's `serviceProvider.serviceLocation`.
+
+ */
+export type ServiceLocationOverride =
+  (typeof ServiceLocationOverride)[keyof typeof ServiceLocationOverride];
+
+export const ServiceLocationOverride = {
+  inherit: "inherit",
+  at_shop: "at_shop",
+  at_customer: "at_customer",
+  both: "both",
+} as const;
+
 export interface ServiceProviderProfileInput {
   firstName?: string | null;
   lastName?: string | null;
@@ -615,6 +680,7 @@ export interface ServiceProviderProfileInput {
    */
   serviceRadiusKm?: number;
   portfolioPhotos?: string[];
+  serviceLocation?: ServiceLocation;
 }
 
 export type ServicePricingType =
@@ -642,6 +708,12 @@ export interface Service {
   photos: string[];
   tags: string[];
   isActive: boolean;
+  serviceLocation: ServiceLocationOverride;
+  /** Resolved location for this service: the override when set, or
+the parent shop's `serviceProvider.serviceLocation` when the
+override is `inherit`.
+ */
+  effectiveServiceLocation: ServiceLocation;
   createdAt: string;
 }
 
@@ -671,6 +743,7 @@ export interface ServiceCreateInput {
   photos?: string[];
   tags?: string[];
   isActive?: boolean;
+  serviceLocation?: ServiceLocationOverride;
 }
 
 export type ServiceUpdateInputPricingType =
@@ -699,6 +772,7 @@ export interface ServiceUpdateInput {
   photos?: string[];
   tags?: string[];
   isActive?: boolean;
+  serviceLocation?: ServiceLocationOverride;
 }
 
 export interface ServiceSearchResult {
@@ -733,11 +807,30 @@ export type SearchServicesParams = {
    */
   q?: string;
   /**
+ * Restrict to services that can be performed in this mode.
+Matches `at_customer` returns providers that go to the customer
+(effective location is `at_customer` or `both`); matches
+`at_shop` returns providers the customer can visit (effective
+location is `at_shop` or `both`); matches `both` only returns
+providers that explicitly support both modes.
+
+ */
+  serviceLocation?: SearchServicesServiceLocation;
+  /**
    * @minimum 1
    * @maximum 50
    */
   limit?: number;
 };
+
+export type SearchServicesServiceLocation =
+  (typeof SearchServicesServiceLocation)[keyof typeof SearchServicesServiceLocation];
+
+export const SearchServicesServiceLocation = {
+  at_shop: "at_shop",
+  at_customer: "at_customer",
+  both: "both",
+} as const;
 
 export type ListCategoriesParams = {
   /**

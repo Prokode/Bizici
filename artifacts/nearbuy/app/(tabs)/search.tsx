@@ -71,6 +71,7 @@ export default function SearchTab() {
   );
   const [openShop, setOpenShop] = useState<PublicShop | null>(null);
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
+  const [atCustomerOnly, setAtCustomerOnly] = useState(false);
 
   // Debounce typing → 300 ms
   useEffect(() => {
@@ -180,6 +181,7 @@ export default function SearchTab() {
     radiusKm: 10,
     ...(selectedCatId ? { categoryId: selectedCatId } : {}),
     ...(debouncedQ.length >= 2 ? { q: debouncedQ } : {}),
+    ...(atCustomerOnly ? { serviceLocation: "at_customer" as const } : {}),
   };
   const { data: serviceHits = [], isLoading: loadingServices } =
     useSearchServices(servicesParams, {
@@ -323,15 +325,26 @@ export default function SearchTab() {
       </View>
 
       {mode === "services" ? (
-        <CategoryChips
-          categories={serviceCategories}
-          loading={loadingCats}
-          selectedId={selectedCatId}
-          onSelect={(id) => setSelectedCatId(id)}
-          allLabel={t("search.allCategories")}
-          loadingLabel={t("search.loadingCategories")}
-          colors={colors}
-        />
+        <>
+          <CategoryChips
+            categories={serviceCategories}
+            loading={loadingCats}
+            selectedId={selectedCatId}
+            onSelect={(id) => setSelectedCatId(id)}
+            allLabel={t("search.allCategories")}
+            loadingLabel={t("search.loadingCategories")}
+            colors={colors}
+          />
+          <View style={styles.atCustomerRow}>
+            <CategoryChip
+              label={t("serviceLocation.filterAtCustomer")}
+              icon="home"
+              active={atCustomerOnly}
+              onPress={() => setAtCustomerOnly((v) => !v)}
+              colors={colors}
+            />
+          </View>
+        </>
       ) : null}
 
       {mode === "products" ? (
@@ -828,6 +841,11 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontSize: 15, padding: 0 },
   chipsScroll: { marginBottom: 12, marginHorizontal: -16 },
   chipsRow: { paddingHorizontal: 16, gap: 8 },
+  atCustomerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
   chipsLoading: {
     flexDirection: "row",
     alignItems: "center",

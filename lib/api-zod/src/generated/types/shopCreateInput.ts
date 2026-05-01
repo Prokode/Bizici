@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.2.0
  */
 import type { ShopCreateInputKind } from "./shopCreateInputKind";
+import type { ShopFulfillment } from "./shopFulfillment";
 
 export interface ShopCreateInput {
   /** @minLength 1 */
@@ -16,4 +17,10 @@ export interface ShopCreateInput {
   longitude: number;
   /** Defaults to "products" when omitted. */
   kind?: ShopCreateInputKind;
+  fulfillment?: ShopFulfillment;
+  /**
+   * @minimum 1
+   * @maximum 100
+   */
+  deliveryRadiusKm?: number | null;
 }

@@ -5,6 +5,7 @@
  * NearBuy Business API (MongoDB-backed)
  * OpenAPI spec version: 0.2.0
  */
+import type { ShopFulfillment } from "./shopFulfillment";
 import type { ShopUpdateInputKind } from "./shopUpdateInputKind";
 
 export interface ShopUpdateInput {
@@ -15,4 +16,10 @@ export interface ShopUpdateInput {
   latitude?: number;
   longitude?: number;
   kind?: ShopUpdateInputKind;
+  fulfillment?: ShopFulfillment;
+  /**
+   * @minimum 1
+   * @maximum 100
+   */
+  deliveryRadiusKm?: number | null;
 }

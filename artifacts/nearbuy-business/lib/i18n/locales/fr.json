@@ -244,6 +244,34 @@
     "save": "Enregistrer le profil",
     "saveError": "Enregistrement impossible"
   },
+  "serviceLocation": {
+    "label": "Lieu d'exécution par défaut",
+    "overrideLabel": "Lieu d'exécution",
+    "atShop": "Chez moi",
+    "atCustomer": "Chez le client",
+    "both": "Les deux",
+    "inherit": "Hériter",
+    "profileHint": "Définit où vos services se déroulent par défaut. Vous pouvez changer ce réglage par service.",
+    "serviceHint": "« Hériter » utilise le réglage par défaut de votre boutique.",
+    "badgeAtShop": "Sur place",
+    "badgeAtCustomer": "Vient chez vous",
+    "badgeBoth": "Au choix",
+    "filterAtCustomer": "Vient chez moi",
+    "appointmentAtShop": "Sur place",
+    "appointmentAtCustomer": "À domicile"
+  },
+  "fulfillment": {
+    "label": "Mode de remise",
+    "pickup": "Retrait sur place",
+    "delivery": "Livraison",
+    "both": "Les deux",
+    "shopHint": "Comment vos clients récupèrent-ils leurs produits ?",
+    "deliveryRadiusKm": "Rayon de livraison (km)",
+    "deliveryRadiusPlaceholder": "ex. 5",
+    "badgePickup": "Retrait",
+    "badgeDelivery": "Livraison",
+    "badgeBoth": "Retrait + livraison"
+  },
   "onboarding": {
     "skip": "Passer",
     "next": "Suivant",

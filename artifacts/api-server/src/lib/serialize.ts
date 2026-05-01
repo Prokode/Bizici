@@ -33,6 +33,12 @@ export function serializeShop(
       : null,
     ratingAvg: typeof s.ratingAvg === "number" ? s.ratingAvg : 0,
     ratingCount: typeof s.ratingCount === "number" ? s.ratingCount : 0,
+    fulfillment: (s.fulfillment ?? "pickup_only") as
+      | "pickup_only"
+      | "delivery_only"
+      | "both",
+    deliveryRadiusKm:
+      typeof s.deliveryRadiusKm === "number" ? s.deliveryRadiusKm : null,
     distanceKm:
       typeof opts.distanceKm === "number" ? opts.distanceKm : undefined,
   };
@@ -57,6 +63,10 @@ export function serializeProviderProfile(
     serviceRadiusKm: typeof p?.serviceRadiusKm === "number" ? p.serviceRadiusKm : 10,
     portfolioPhotos: Array.isArray(p?.portfolioPhotos) ? p.portfolioPhotos : [],
     isVerified: !!p?.isVerified,
+    serviceLocation: (p?.serviceLocation ?? "at_shop") as
+      | "at_shop"
+      | "at_customer"
+      | "both",
     appointmentRating:
       typeof p?.appointmentRating === "number" ? p.appointmentRating : 0,
     appointmentReviewsCount:
@@ -118,6 +128,10 @@ export function serializeAppointment(a: any) {
       : null,
     cancelledBy: (a.cancelledBy ?? null) as "customer" | "seller" | null,
     cancelReason: a.cancelReason ?? null,
+    serviceLocation: (a.serviceLocation ?? "at_shop") as
+      | "at_shop"
+      | "at_customer",
+    customerAddress: a.customerAddress ?? null,
     createdAt: (a.createdAt instanceof Date
       ? a.createdAt
       : new Date(a.createdAt)
@@ -184,7 +198,30 @@ export function serializeCategory(c: any) {
   };
 }
 
-export function serializeService(s: any) {
+/**
+ * Resolve the actual location at which a service can be performed.
+ * Falls back from the per-service override to the parent shop's
+ * provider-profile default. Always returns one of the three runtime
+ * values (never "inherit").
+ */
+export function resolveEffectiveServiceLocation(
+  serviceLocation: string | null | undefined,
+  shopServiceLocation: string | null | undefined,
+): "at_shop" | "at_customer" | "both" {
+  const override = serviceLocation ?? "inherit";
+  if (override === "inherit") {
+    const sl = shopServiceLocation ?? "at_shop";
+    return sl === "at_customer" || sl === "both" ? sl : "at_shop";
+  }
+  return override === "at_customer" || override === "both"
+    ? override
+    : "at_shop";
+}
+
+export function serializeService(
+  s: any,
+  opts: { shopServiceLocation?: string | null } = {},
+) {
   const cats = Array.isArray(s.categories)
     ? s.categories.map((c: any) =>
         c && typeof c === "object" && c._id
@@ -199,6 +236,19 @@ export function serializeService(s: any) {
             },
       )
     : [];
+  // If shop is populated on the service, prefer that. Otherwise fall back
+  // to the explicit hint passed by the caller (saves a round-trip when the
+  // route already loaded the shop separately).
+  const populatedShopLocation =
+    s.shop && typeof s.shop === "object" && s.shop.serviceProvider
+      ? s.shop.serviceProvider.serviceLocation
+      : null;
+  const shopLoc = populatedShopLocation ?? opts.shopServiceLocation ?? null;
+  const serviceLocation = (s.serviceLocation ?? "inherit") as
+    | "inherit"
+    | "at_shop"
+    | "at_customer"
+    | "both";
   return {
     id: String(s._id),
     shopId: String(s.shop?._id ?? s.shop),
@@ -214,6 +264,11 @@ export function serializeService(s: any) {
     photos: Array.isArray(s.photos) ? s.photos : [],
     tags: Array.isArray(s.tags) ? s.tags : [],
     isActive: s.isActive !== false,
+    serviceLocation,
+    effectiveServiceLocation: resolveEffectiveServiceLocation(
+      serviceLocation,
+      shopLoc,
+    ),
     createdAt: (s.createdAt instanceof Date
       ? s.createdAt
       : new Date(s.createdAt ?? Date.now())

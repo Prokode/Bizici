@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import type { PublicShop } from "@/lib/publicApi";
+import { LocationBadge } from "@/components/LocationBadge";
 
 type Props = {
   shop: PublicShop;
@@ -105,6 +106,10 @@ export function ProviderBottomCard({ shop, onClose, onOpenProfile }: Props) {
           <Feather name="x" size={18} color={colors.mutedForeground} />
         </Pressable>
       </View>
+
+      {provider?.serviceLocation && (
+        <LocationBadge mode={provider.serviceLocation} colors={colors} t={t} />
+      )}
 
       {provider?.bio && (
         <Text

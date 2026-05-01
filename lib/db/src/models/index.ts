@@ -1,5 +1,14 @@
 export { User, type UserDoc } from "./User";
-export { Shop, type ShopDoc, SHOP_KINDS, type ShopKind } from "./Shop";
+export {
+  Shop,
+  type ShopDoc,
+  SHOP_KINDS,
+  type ShopKind,
+  SERVICE_LOCATIONS,
+  type ServiceLocation,
+  SHOP_FULFILLMENTS,
+  type ShopFulfillment,
+} from "./Shop";
 export { ShopMember, type ShopMemberDoc } from "./ShopMember";
 export { ShopInvitation, type ShopInvitationDoc } from "./ShopInvitation";
 export { BroadcastRequest, type BroadcastRequestDoc } from "./BroadcastRequest";
@@ -15,6 +24,8 @@ export {
   type ServiceDoc,
   PRICING_TYPES,
   type PricingType,
+  SERVICE_LOCATION_OVERRIDES,
+  type ServiceLocationOverride,
 } from "./Service";
 export { Discount, type DiscountDoc } from "./Discount";
 export { KarmaEvent, type KarmaEventDoc } from "./KarmaEvent";
@@ -28,6 +39,8 @@ export {
   type AppointmentStatus,
   APPOINTMENT_ACTOR_ROLES,
   type AppointmentActorRole,
+  APPOINTMENT_SERVICE_LOCATIONS,
+  type AppointmentServiceLocation,
 } from "./Appointment";
 export {
   AppointmentReview,

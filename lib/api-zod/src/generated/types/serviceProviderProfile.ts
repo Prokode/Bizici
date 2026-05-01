@@ -5,6 +5,7 @@
  * NearBuy Business API (MongoDB-backed)
  * OpenAPI spec version: 0.2.0
  */
+import type { ServiceLocation } from "./serviceLocation";
 
 export interface ServiceProviderProfile {
   firstName?: string | null;
@@ -34,4 +35,5 @@ authenticated owner endpoints.
   serviceRadiusKm: number;
   portfolioPhotos: string[];
   isVerified: boolean;
+  serviceLocation: ServiceLocation;
 }

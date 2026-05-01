@@ -27,6 +27,8 @@ export type PublicShop = {
   previewProducts: PublicProductPreview[];
   // Set when the shop is `services` or `hybrid`; null for pure product shops.
   kind?: "products" | "services" | "hybrid";
+  fulfillment?: "pickup_only" | "delivery_only" | "both";
+  deliveryRadiusKm?: number | null;
   serviceProvider?: {
     firstName: string | null;
     lastName: string | null;
@@ -39,6 +41,7 @@ export type PublicShop = {
     serviceRadiusKm: number;
     portfolioPhotos: string[];
     isVerified: boolean;
+    serviceLocation: "at_shop" | "at_customer" | "both";
   } | null;
 };
 
@@ -214,6 +217,8 @@ export type PublicService = {
   tags: string[];
   isActive: boolean;
   createdAt: string;
+  serviceLocation: "at_shop" | "at_customer" | "both" | "inherit";
+  effectiveServiceLocation: "at_shop" | "at_customer" | "both";
 };
 
 export type PublicProviderProfile = {
@@ -228,6 +233,7 @@ export type PublicProviderProfile = {
   serviceRadiusKm: number;
   portfolioPhotos: string[];
   isVerified: boolean;
+  serviceLocation: "at_shop" | "at_customer" | "both";
 };
 
 export type PublicProviderDetail = {
@@ -243,6 +249,8 @@ export type PublicProviderDetail = {
     kind: "products" | "services" | "hybrid";
     ratingAvg: number;
     ratingCount: number;
+    fulfillment: "pickup_only" | "delivery_only" | "both";
+    deliveryRadiusKm: number | null;
   };
   provider: PublicProviderProfile | null;
   services: PublicService[];

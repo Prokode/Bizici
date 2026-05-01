@@ -39,6 +39,15 @@ router.get("/services/search", async (req, res) => {
       ? new Types.ObjectId(categoryIdRaw)
       : null;
   const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  // Optional execution-mode filter. Applied AFTER serialization since it
+  // operates on the resolved (effective) location, which depends on both
+  // the service override and the parent shop's default.
+  const slFilter =
+    req.query.serviceLocation === "at_shop" ||
+    req.query.serviceLocation === "at_customer" ||
+    req.query.serviceLocation === "both"
+      ? (req.query.serviceLocation as "at_shop" | "at_customer" | "both")
+      : null;
 
   const shops = await Shop.aggregate<any>([
     {
@@ -83,8 +92,11 @@ router.get("/services/search", async (req, res) => {
         typeof shop.distanceMeters === "number"
           ? Math.round((shop.distanceMeters / 1000) * 10) / 10
           : 0;
+      const serializedService = serializeService(svc, {
+        shopServiceLocation: shop.serviceProvider?.serviceLocation ?? null,
+      });
       return {
-        service: serializeService(svc),
+        service: serializedService,
         shop: serializeShop(shop, { distanceKm }),
         provider: shop.serviceProvider
           ? serializeProviderProfile(shop.serviceProvider, {
@@ -95,6 +107,15 @@ router.get("/services/search", async (req, res) => {
       };
     })
     .filter((r): r is NonNullable<typeof r> => r !== null)
+    .filter((r) => {
+      if (!slFilter) return true;
+      const eff = r.service.effectiveServiceLocation;
+      // "at_customer" filter accepts both pure-mobile and "both" providers.
+      // "at_shop" filter accepts pure-shop and "both" providers.
+      // "both" only matches providers explicitly supporting both modes.
+      if (slFilter === "both") return eff === "both";
+      return eff === slFilter || eff === "both";
+    })
     .sort((a, b) => a.distanceKm - b.distanceKm)
     .slice(0, limit);
 
@@ -125,12 +146,15 @@ router.get("/services/providers/:shopId", async (req, res) => {
     .populate("categories")
     .lean();
 
+  const shopLoc = shop.serviceProvider?.serviceLocation ?? null;
   res.json({
     shop: serializeShop(shop, { distanceKm: 0 }),
     provider: shop.serviceProvider
       ? serializeProviderProfile(shop.serviceProvider, { viewerIsOwner: false })
       : null,
-    services: services.map((s) => serializeService(s)),
+    services: services.map((s) =>
+      serializeService(s, { shopServiceLocation: shopLoc }),
+    ),
   });
 });
 

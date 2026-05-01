@@ -35,8 +35,16 @@ router.get("/shops", async (req, res) => {
 });
 
 router.post("/shops", async (req, res) => {
-  const { name, marketName, stallInfo, latitude, longitude, kind } =
-    req.body ?? {};
+  const {
+    name,
+    marketName,
+    stallInfo,
+    latitude,
+    longitude,
+    kind,
+    fulfillment,
+    deliveryRadiusKm,
+  } = req.body ?? {};
   if (!name || typeof latitude !== "number" || typeof longitude !== "number") {
     res.status(400).json({ error: "name, latitude, longitude required" });
     return;
@@ -46,6 +54,12 @@ router.post("/shops", async (req, res) => {
   const shopKind = allowedKinds.includes(kind as (typeof allowedKinds)[number])
     ? (kind as (typeof allowedKinds)[number])
     : "products";
+  const allowedFulfillments = ["pickup_only", "delivery_only", "both"] as const;
+  const shopFulfillment = allowedFulfillments.includes(
+    fulfillment as (typeof allowedFulfillments)[number],
+  )
+    ? (fulfillment as (typeof allowedFulfillments)[number])
+    : "pickup_only";
 
   const shop = await Shop.create({
     sellerId: new Types.ObjectId(req.userId),
@@ -55,6 +69,11 @@ router.post("/shops", async (req, res) => {
     location: { type: "Point", coordinates: [longitude, latitude] },
     isOpen: true,
     kind: shopKind,
+    fulfillment: shopFulfillment,
+    deliveryRadiusKm:
+      typeof deliveryRadiusKm === "number"
+        ? Math.min(Math.max(deliveryRadiusKm, 1), 100)
+        : null,
   });
 
   await ShopMember.create({
@@ -105,8 +124,16 @@ router.put(
   requireShopAccess,
   requireSeller,
   async (req, res) => {
-    const { name, marketName, stallInfo, latitude, longitude, kind } =
-      req.body ?? {};
+    const {
+      name,
+      marketName,
+      stallInfo,
+      latitude,
+      longitude,
+      kind,
+      fulfillment,
+      deliveryRadiusKm,
+    } = req.body ?? {};
     const update: any = {};
     if (typeof name === "string") update.name = name;
     if (marketName !== undefined) update.marketName = marketName;
@@ -116,6 +143,18 @@ router.put(
     }
     if (kind === "products" || kind === "services" || kind === "hybrid") {
       update.kind = kind;
+    }
+    if (
+      fulfillment === "pickup_only" ||
+      fulfillment === "delivery_only" ||
+      fulfillment === "both"
+    ) {
+      update.fulfillment = fulfillment;
+    }
+    if (deliveryRadiusKm === null) {
+      update.deliveryRadiusKm = null;
+    } else if (typeof deliveryRadiusKm === "number") {
+      update.deliveryRadiusKm = Math.min(Math.max(deliveryRadiusKm, 1), 100);
     }
     const shop = await Shop.findByIdAndUpdate(req.params.shopId, update, {
       new: true,

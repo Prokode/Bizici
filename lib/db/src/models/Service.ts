@@ -3,6 +3,19 @@ import { Schema, model, models, type Model, type InferSchemaType, Types } from "
 export const PRICING_TYPES = ["fixed", "hourly", "quote"] as const;
 export type PricingType = (typeof PRICING_TYPES)[number];
 
+// Per-service override of the provider's default execution location.
+// "inherit" (default) means: use the parent shop's
+// `serviceProvider.serviceLocation`. The other three values mirror the
+// shop-level enum.
+export const SERVICE_LOCATION_OVERRIDES = [
+  "inherit",
+  "at_shop",
+  "at_customer",
+  "both",
+] as const;
+export type ServiceLocationOverride =
+  (typeof SERVICE_LOCATION_OVERRIDES)[number];
+
 function slugify(text: string): string {
   return text
     .toString()
@@ -40,6 +53,18 @@ const ServiceSchema = new Schema(
 
     photos: { type: [String], default: [] },
     tags: { type: [String], default: [] },
+
+    // Where the service is executed. "inherit" (default) means use the
+    // parent shop's serviceProvider.serviceLocation. Use one of the other
+    // enum values to override per-service (e.g. a salon offers "Coupe en
+    // boutique" + "Coupe à domicile" as two distinct services).
+    serviceLocation: {
+      type: String,
+      enum: SERVICE_LOCATION_OVERRIDES,
+      default: "inherit",
+      required: true,
+      index: true,
+    },
 
     isActive: { type: Boolean, default: true, index: true },
 

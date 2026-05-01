@@ -5,6 +5,7 @@
  * NearBuy Business API (MongoDB-backed)
  * OpenAPI spec version: 0.2.0
  */
+import type { SearchServicesServiceLocation } from "./searchServicesServiceLocation";
 
 export type SearchServicesParams = {
   latitude: number;
@@ -21,6 +22,16 @@ export type SearchServicesParams = {
    * @maxLength 120
    */
   q?: string;
+  /**
+ * Restrict to services that can be performed in this mode.
+Matches `at_customer` returns providers that go to the customer
+(effective location is `at_customer` or `both`); matches
+`at_shop` returns providers the customer can visit (effective
+location is `at_shop` or `both`); matches `both` only returns
+providers that explicitly support both modes.
+
+ */
+  serviceLocation?: SearchServicesServiceLocation;
   /**
    * @minimum 1
    * @maximum 50

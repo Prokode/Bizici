@@ -19,6 +19,14 @@ export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
 export const APPOINTMENT_ACTOR_ROLES = ["customer", "seller"] as const;
 export type AppointmentActorRole = (typeof APPOINTMENT_ACTOR_ROLES)[number];
 
+// Snapshot of the chosen execution location at booking time. We freeze it
+// on the appointment so later changes to the Service / Shop don't rewrite
+// the contract: a RDV booked "at customer" stays "at customer" even if the
+// provider changes their default afterwards.
+export const APPOINTMENT_SERVICE_LOCATIONS = ["at_shop", "at_customer"] as const;
+export type AppointmentServiceLocation =
+  (typeof APPOINTMENT_SERVICE_LOCATIONS)[number];
+
 /**
  * An Appointment is a single rendez-vous between a customer and a service
  * provider (shop). The customer is always the initiator (project rule).
@@ -92,6 +100,18 @@ const AppointmentSchema = new Schema(
       default: null,
     },
     cancelReason: { type: String, default: null, maxlength: 500 },
+
+    // Where the RDV will physically take place. Snapshot at booking time
+    // (the customer picks one of the allowed values based on the provider's
+    // current configuration). When "at_customer", `customerAddress` is
+    // required so the provider knows where to go.
+    serviceLocation: {
+      type: String,
+      enum: APPOINTMENT_SERVICE_LOCATIONS,
+      default: "at_shop",
+      required: true,
+    },
+    customerAddress: { type: String, default: null, maxlength: 500 },
   },
   { timestamps: true },
 );

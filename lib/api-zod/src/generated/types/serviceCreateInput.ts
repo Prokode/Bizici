@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.2.0
  */
 import type { ServiceCreateInputPricingType } from "./serviceCreateInputPricingType";
+import type { ServiceLocationOverride } from "./serviceLocationOverride";
 
 export interface ServiceCreateInput {
   /**
@@ -24,4 +25,5 @@ export interface ServiceCreateInput {
   photos?: string[];
   tags?: string[];
   isActive?: boolean;
+  serviceLocation?: ServiceLocationOverride;
 }

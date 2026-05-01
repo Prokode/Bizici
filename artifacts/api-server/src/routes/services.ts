@@ -30,19 +30,38 @@ function clampPricing(value: unknown): "fixed" | "hourly" | "quote" | null {
   return null;
 }
 
+function clampServiceLocationOverride(
+  value: unknown,
+): "inherit" | "at_shop" | "at_customer" | "both" | null {
+  if (
+    value === "inherit" ||
+    value === "at_shop" ||
+    value === "at_customer" ||
+    value === "both"
+  )
+    return value;
+  return null;
+}
+
 // List my shop's services (owner view — includes inactive).
 router.get(
   "/shops/:shopId/services",
   requireShopAccess,
   async (req, res) => {
-    const services = await Service.find({
-      shop: new Types.ObjectId(req.params.shopId as string),
-      deletedAt: null,
-    })
-      .populate("categories")
-      .sort({ createdAt: -1 })
-      .lean();
-    res.json(services.map(serializeService));
+    const shopId = new Types.ObjectId(req.params.shopId as string);
+    const [services, shop] = await Promise.all([
+      Service.find({ shop: shopId, deletedAt: null })
+        .populate("categories")
+        .sort({ createdAt: -1 })
+        .lean(),
+      Shop.findById(shopId).select("serviceProvider.serviceLocation").lean(),
+    ]);
+    const shopLoc = shop?.serviceProvider?.serviceLocation ?? null;
+    res.json(
+      services.map((s) =>
+        serializeService(s, { shopServiceLocation: shopLoc }),
+      ),
+    );
   },
 );
 
@@ -68,7 +87,7 @@ router.post(
     }
 
     const shopDoc = await Shop.findById(req.params.shopId as string)
-      .select("sellerId kind")
+      .select("sellerId kind serviceProvider.serviceLocation")
       .lean();
     if (!shopDoc) {
       res.status(404).json({ error: "Shop not found" });
@@ -81,6 +100,9 @@ router.post(
         { $set: { kind: "hybrid" } },
       );
     }
+
+    const serviceLocation =
+      clampServiceLocationOverride(body.serviceLocation) ?? "inherit";
 
     const created = await Service.create({
       shop: new Types.ObjectId(req.params.shopId as string),
@@ -100,12 +122,18 @@ router.post(
         ? body.tags.filter((t: unknown) => typeof t === "string")
         : [],
       isActive: body.isActive !== false,
+      serviceLocation,
     });
 
     const populated = await Service.findById(created._id)
       .populate("categories")
       .lean();
-    res.json(serializeService(populated));
+    res.json(
+      serializeService(populated, {
+        shopServiceLocation:
+          shopDoc.serviceProvider?.serviceLocation ?? null,
+      }),
+    );
   },
 );
 
@@ -136,23 +164,34 @@ router.patch(
     if (Array.isArray(body.photos)) update.photos = body.photos;
     if (Array.isArray(body.tags)) update.tags = body.tags;
     if (typeof body.isActive === "boolean") update.isActive = body.isActive;
+    const sl = clampServiceLocationOverride(body.serviceLocation);
+    if (sl) update.serviceLocation = sl;
 
-    const service = await Service.findOneAndUpdate(
-      {
-        _id: new Types.ObjectId(req.params.id as string),
-        shop: new Types.ObjectId(req.params.shopId as string),
-        deletedAt: null,
-      },
-      update,
-      { new: true },
-    )
-      .populate("categories")
-      .lean();
+    const [service, shop] = await Promise.all([
+      Service.findOneAndUpdate(
+        {
+          _id: new Types.ObjectId(req.params.id as string),
+          shop: new Types.ObjectId(req.params.shopId as string),
+          deletedAt: null,
+        },
+        update,
+        { new: true },
+      )
+        .populate("categories")
+        .lean(),
+      Shop.findById(req.params.shopId as string)
+        .select("serviceProvider.serviceLocation")
+        .lean(),
+    ]);
     if (!service) {
       res.status(404).json({ error: "Service not found" });
       return;
     }
-    res.json(serializeService(service));
+    res.json(
+      serializeService(service, {
+        shopServiceLocation: shop?.serviceProvider?.serviceLocation ?? null,
+      }),
+    );
   },
 );
 
@@ -241,6 +280,13 @@ router.patch(
       profileUpdate["serviceProvider.portfolioPhotos"] = body.portfolioPhotos.filter(
         (p: unknown) => typeof p === "string",
       );
+    }
+    if (
+      body.serviceLocation === "at_shop" ||
+      body.serviceLocation === "at_customer" ||
+      body.serviceLocation === "both"
+    ) {
+      profileUpdate["serviceProvider.serviceLocation"] = body.serviceLocation;
     }
 
     const updated = await Shop.findByIdAndUpdate(

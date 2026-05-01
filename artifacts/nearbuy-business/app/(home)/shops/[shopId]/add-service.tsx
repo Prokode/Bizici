@@ -11,9 +11,11 @@ import {
   useCreateService,
   getListShopServicesQueryKey,
   type ServiceCreateInputPricingType,
+  type ServiceLocationOverride,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { PricingTypeSelector } from "@/components/PricingTypeSelector";
+import { ServiceLocationOverrideSelector } from "@/components/ServiceLocationSelector";
 
 export default function AddServiceScreen() {
   const colors = useColors();
@@ -29,6 +31,8 @@ export default function AddServiceScreen() {
   const [priceStr, setPriceStr] = useState("");
   const [durationStr, setDurationStr] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [serviceLocation, setServiceLocation] =
+    useState<ServiceLocationOverride>("inherit");
   const [error, setError] = useState<string | null>(null);
 
   const createService = useCreateService();
@@ -56,6 +60,7 @@ export default function AddServiceScreen() {
           photos: [],
           tags: [],
           isActive,
+          serviceLocation,
         },
       },
       {
@@ -138,6 +143,12 @@ export default function AddServiceScreen() {
           value={durationStr}
           onChangeText={setDurationStr}
           keyboardType="number-pad"
+        />
+
+        <ServiceLocationOverrideSelector
+          value={serviceLocation}
+          onChange={setServiceLocation}
+          hint={t("serviceLocation.serviceHint")}
         />
 
         <View style={styles.toggleRow}>

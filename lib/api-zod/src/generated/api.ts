@@ -24,6 +24,8 @@ export const getMeResponseShopsItemShopRatingAvgMax = 5;
 
 export const getMeResponseShopsItemShopRatingCountMin = 0;
 
+export const getMeResponseShopsItemShopDeliveryRadiusKmMax = 100;
+
 export const GetMeResponse = zod.object({
   id: zod.string(),
   email: zod.string().nullish(),
@@ -79,6 +81,11 @@ export const GetMeResponse = zod.object({
                 ),
               portfolioPhotos: zod.array(zod.string()),
               isVerified: zod.boolean(),
+              serviceLocation: zod
+                .enum(["at_shop", "at_customer", "both"])
+                .describe(
+                  "Where a service is performed. `at_shop` = customer must come,\n`at_customer` = provider travels to the customer, `both` = either.\n",
+                ),
             }),
             zod.null(),
           ])
@@ -95,6 +102,19 @@ export const GetMeResponse = zod.object({
           .number()
           .min(getMeResponseShopsItemShopRatingCountMin)
           .describe("Number of reviews used for the average."),
+        fulfillment: zod
+          .enum(["pickup_only", "delivery_only", "both"])
+          .describe(
+            "How a product shop fulfils orders. `pickup_only` = customer must\ncome, `delivery_only` = shop only delivers, `both` = either.\n",
+          ),
+        deliveryRadiusKm: zod
+          .number()
+          .min(1)
+          .max(getMeResponseShopsItemShopDeliveryRadiusKmMax)
+          .nullish()
+          .describe(
+            'Optional delivery radius in km. Only meaningful when\nfulfillment is \"delivery_only\" or \"both\".\n',
+          ),
         distanceKm: zod
           .number()
           .nullish()
@@ -279,6 +299,8 @@ export const listShopsResponseShopRatingAvgMax = 5;
 
 export const listShopsResponseShopRatingCountMin = 0;
 
+export const listShopsResponseShopDeliveryRadiusKmMax = 100;
+
 export const ListShopsResponseItem = zod.object({
   shop: zod.object({
     id: zod.string(),
@@ -323,6 +345,11 @@ export const ListShopsResponseItem = zod.object({
             .max(listShopsResponseShopServiceProviderOneServiceRadiusKmMax),
           portfolioPhotos: zod.array(zod.string()),
           isVerified: zod.boolean(),
+          serviceLocation: zod
+            .enum(["at_shop", "at_customer", "both"])
+            .describe(
+              "Where a service is performed. `at_shop` = customer must come,\n`at_customer` = provider travels to the customer, `both` = either.\n",
+            ),
         }),
         zod.null(),
       ])
@@ -339,6 +366,19 @@ export const ListShopsResponseItem = zod.object({
       .number()
       .min(listShopsResponseShopRatingCountMin)
       .describe("Number of reviews used for the average."),
+    fulfillment: zod
+      .enum(["pickup_only", "delivery_only", "both"])
+      .describe(
+        "How a product shop fulfils orders. `pickup_only` = customer must\ncome, `delivery_only` = shop only delivers, `both` = either.\n",
+      ),
+    deliveryRadiusKm: zod
+      .number()
+      .min(1)
+      .max(listShopsResponseShopDeliveryRadiusKmMax)
+      .nullish()
+      .describe(
+        'Optional delivery radius in km. Only meaningful when\nfulfillment is \"delivery_only\" or \"both\".\n',
+      ),
     distanceKm: zod
       .number()
       .nullish()
@@ -350,6 +390,8 @@ export const ListShopsResponseItem = zod.object({
 });
 export const ListShopsResponse = zod.array(ListShopsResponseItem);
 
+export const createShopBodyDeliveryRadiusKmMax = 100;
+
 export const CreateShopBody = zod.object({
   name: zod.string().min(1),
   marketName: zod.string().nullish(),
@@ -360,6 +402,17 @@ export const CreateShopBody = zod.object({
     .enum(["products", "services", "hybrid"])
     .optional()
     .describe('Defaults to \"products\" when omitted.'),
+  fulfillment: zod
+    .enum(["pickup_only", "delivery_only", "both"])
+    .optional()
+    .describe(
+      "How a product shop fulfils orders. `pickup_only` = customer must\ncome, `delivery_only` = shop only delivers, `both` = either.\n",
+    ),
+  deliveryRadiusKm: zod
+    .number()
+    .min(1)
+    .max(createShopBodyDeliveryRadiusKmMax)
+    .nullish(),
 });
 
 export const createShopResponseServiceProviderOneAgeMin = 16;
@@ -374,6 +427,8 @@ export const createShopResponseRatingAvgMin = 0;
 export const createShopResponseRatingAvgMax = 5;
 
 export const createShopResponseRatingCountMin = 0;
+
+export const createShopResponseDeliveryRadiusKmMax = 100;
 
 export const CreateShopResponse = zod.object({
   id: zod.string(),
@@ -418,6 +473,11 @@ export const CreateShopResponse = zod.object({
           .max(createShopResponseServiceProviderOneServiceRadiusKmMax),
         portfolioPhotos: zod.array(zod.string()),
         isVerified: zod.boolean(),
+        serviceLocation: zod
+          .enum(["at_shop", "at_customer", "both"])
+          .describe(
+            "Where a service is performed. `at_shop` = customer must come,\n`at_customer` = provider travels to the customer, `both` = either.\n",
+          ),
       }),
       zod.null(),
     ])
@@ -434,6 +494,19 @@ export const CreateShopResponse = zod.object({
     .number()
     .min(createShopResponseRatingCountMin)
     .describe("Number of reviews used for the average."),
+  fulfillment: zod
+    .enum(["pickup_only", "delivery_only", "both"])
+    .describe(
+      "How a product shop fulfils orders. `pickup_only` = customer must\ncome, `delivery_only` = shop only delivers, `both` = either.\n",
+    ),
+  deliveryRadiusKm: zod
+    .number()
+    .min(1)
+    .max(createShopResponseDeliveryRadiusKmMax)
+    .nullish()
+    .describe(
+      'Optional delivery radius in km. Only meaningful when\nfulfillment is \"delivery_only\" or \"both\".\n',
+    ),
   distanceKm: zod
     .number()
     .nullish()
@@ -458,6 +531,8 @@ export const getShopResponseRatingAvgMin = 0;
 export const getShopResponseRatingAvgMax = 5;
 
 export const getShopResponseRatingCountMin = 0;
+
+export const getShopResponseDeliveryRadiusKmMax = 100;
 
 export const GetShopResponse = zod.object({
   id: zod.string(),
@@ -502,6 +577,11 @@ export const GetShopResponse = zod.object({
           .max(getShopResponseServiceProviderOneServiceRadiusKmMax),
         portfolioPhotos: zod.array(zod.string()),
         isVerified: zod.boolean(),
+        serviceLocation: zod
+          .enum(["at_shop", "at_customer", "both"])
+          .describe(
+            "Where a service is performed. `at_shop` = customer must come,\n`at_customer` = provider travels to the customer, `both` = either.\n",
+          ),
       }),
       zod.null(),
     ])
@@ -518,6 +598,19 @@ export const GetShopResponse = zod.object({
     .number()
     .min(getShopResponseRatingCountMin)
     .describe("Number of reviews used for the average."),
+  fulfillment: zod
+    .enum(["pickup_only", "delivery_only", "both"])
+    .describe(
+      "How a product shop fulfils orders. `pickup_only` = customer must\ncome, `delivery_only` = shop only delivers, `both` = either.\n",
+    ),
+  deliveryRadiusKm: zod
+    .number()
+    .min(1)
+    .max(getShopResponseDeliveryRadiusKmMax)
+    .nullish()
+    .describe(
+      'Optional delivery radius in km. Only meaningful when\nfulfillment is \"delivery_only\" or \"both\".\n',
+    ),
   distanceKm: zod
     .number()
     .nullish()
@@ -530,6 +623,8 @@ export const UpdateShopParams = zod.object({
   shopId: zod.coerce.string(),
 });
 
+export const updateShopBodyDeliveryRadiusKmMax = 100;
+
 export const UpdateShopBody = zod.object({
   name: zod.string().min(1).optional(),
   marketName: zod.string().nullish(),
@@ -537,6 +632,17 @@ export const UpdateShopBody = zod.object({
   latitude: zod.number().optional(),
   longitude: zod.number().optional(),
   kind: zod.enum(["products", "services", "hybrid"]).optional(),
+  fulfillment: zod
+    .enum(["pickup_only", "delivery_only", "both"])
+    .optional()
+    .describe(
+      "How a product shop fulfils orders. `pickup_only` = customer must\ncome, `delivery_only` = shop only delivers, `both` = either.\n",
+    ),
+  deliveryRadiusKm: zod
+    .number()
+    .min(1)
+    .max(updateShopBodyDeliveryRadiusKmMax)
+    .nullish(),
 });
 
 export const updateShopResponseServiceProviderOneAgeMin = 16;
@@ -551,6 +657,8 @@ export const updateShopResponseRatingAvgMin = 0;
 export const updateShopResponseRatingAvgMax = 5;
 
 export const updateShopResponseRatingCountMin = 0;
+
+export const updateShopResponseDeliveryRadiusKmMax = 100;
 
 export const UpdateShopResponse = zod.object({
   id: zod.string(),
@@ -595,6 +703,11 @@ export const UpdateShopResponse = zod.object({
           .max(updateShopResponseServiceProviderOneServiceRadiusKmMax),
         portfolioPhotos: zod.array(zod.string()),
         isVerified: zod.boolean(),
+        serviceLocation: zod
+          .enum(["at_shop", "at_customer", "both"])
+          .describe(
+            "Where a service is performed. `at_shop` = customer must come,\n`at_customer` = provider travels to the customer, `both` = either.\n",
+          ),
       }),
       zod.null(),
     ])
@@ -611,6 +724,19 @@ export const UpdateShopResponse = zod.object({
     .number()
     .min(updateShopResponseRatingCountMin)
     .describe("Number of reviews used for the average."),
+  fulfillment: zod
+    .enum(["pickup_only", "delivery_only", "both"])
+    .describe(
+      "How a product shop fulfils orders. `pickup_only` = customer must\ncome, `delivery_only` = shop only delivers, `both` = either.\n",
+    ),
+  deliveryRadiusKm: zod
+    .number()
+    .min(1)
+    .max(updateShopResponseDeliveryRadiusKmMax)
+    .nullish()
+    .describe(
+      'Optional delivery radius in km. Only meaningful when\nfulfillment is \"delivery_only\" or \"both\".\n',
+    ),
   distanceKm: zod
     .number()
     .nullish()
@@ -639,6 +765,8 @@ export const setShopOpenResponseRatingAvgMin = 0;
 export const setShopOpenResponseRatingAvgMax = 5;
 
 export const setShopOpenResponseRatingCountMin = 0;
+
+export const setShopOpenResponseDeliveryRadiusKmMax = 100;
 
 export const SetShopOpenResponse = zod.object({
   id: zod.string(),
@@ -683,6 +811,11 @@ export const SetShopOpenResponse = zod.object({
           .max(setShopOpenResponseServiceProviderOneServiceRadiusKmMax),
         portfolioPhotos: zod.array(zod.string()),
         isVerified: zod.boolean(),
+        serviceLocation: zod
+          .enum(["at_shop", "at_customer", "both"])
+          .describe(
+            "Where a service is performed. `at_shop` = customer must come,\n`at_customer` = provider travels to the customer, `both` = either.\n",
+          ),
       }),
       zod.null(),
     ])
@@ -699,6 +832,19 @@ export const SetShopOpenResponse = zod.object({
     .number()
     .min(setShopOpenResponseRatingCountMin)
     .describe("Number of reviews used for the average."),
+  fulfillment: zod
+    .enum(["pickup_only", "delivery_only", "both"])
+    .describe(
+      "How a product shop fulfils orders. `pickup_only` = customer must\ncome, `delivery_only` = shop only delivers, `both` = either.\n",
+    ),
+  deliveryRadiusKm: zod
+    .number()
+    .min(1)
+    .max(setShopOpenResponseDeliveryRadiusKmMax)
+    .nullish()
+    .describe(
+      'Optional delivery radius in km. Only meaningful when\nfulfillment is \"delivery_only\" or \"both\".\n',
+    ),
   distanceKm: zod
     .number()
     .nullish()
@@ -1304,6 +1450,16 @@ export const ListShopServicesResponseItem = zod.object({
   photos: zod.array(zod.string()),
   tags: zod.array(zod.string()),
   isActive: zod.boolean(),
+  serviceLocation: zod
+    .enum(["inherit", "at_shop", "at_customer", "both"])
+    .describe(
+      "Per-service override of the provider's default. `inherit` means\nuse the parent shop's `serviceProvider.serviceLocation`.\n",
+    ),
+  effectiveServiceLocation: zod
+    .enum(["at_shop", "at_customer", "both"])
+    .describe(
+      "Resolved location for this service: the override when set, or\nthe parent shop's `serviceProvider.serviceLocation` when the\noverride is `inherit`.\n",
+    ),
   createdAt: zod.coerce.date(),
 });
 export const ListShopServicesResponse = zod.array(ListShopServicesResponseItem);
@@ -1328,6 +1484,12 @@ export const CreateServiceBody = zod.object({
   photos: zod.array(zod.string()).optional(),
   tags: zod.array(zod.string()).optional(),
   isActive: zod.boolean().optional(),
+  serviceLocation: zod
+    .enum(["inherit", "at_shop", "at_customer", "both"])
+    .optional()
+    .describe(
+      "Per-service override of the provider's default. `inherit` means\nuse the parent shop's `serviceProvider.serviceLocation`.\n",
+    ),
 });
 
 export const createServiceResponsePriceMin = 0;
@@ -1359,6 +1521,16 @@ export const CreateServiceResponse = zod.object({
   photos: zod.array(zod.string()),
   tags: zod.array(zod.string()),
   isActive: zod.boolean(),
+  serviceLocation: zod
+    .enum(["inherit", "at_shop", "at_customer", "both"])
+    .describe(
+      "Per-service override of the provider's default. `inherit` means\nuse the parent shop's `serviceProvider.serviceLocation`.\n",
+    ),
+  effectiveServiceLocation: zod
+    .enum(["at_shop", "at_customer", "both"])
+    .describe(
+      "Resolved location for this service: the override when set, or\nthe parent shop's `serviceProvider.serviceLocation` when the\noverride is `inherit`.\n",
+    ),
   createdAt: zod.coerce.date(),
 });
 
@@ -1383,6 +1555,12 @@ export const UpdateServiceBody = zod.object({
   photos: zod.array(zod.string()).optional(),
   tags: zod.array(zod.string()).optional(),
   isActive: zod.boolean().optional(),
+  serviceLocation: zod
+    .enum(["inherit", "at_shop", "at_customer", "both"])
+    .optional()
+    .describe(
+      "Per-service override of the provider's default. `inherit` means\nuse the parent shop's `serviceProvider.serviceLocation`.\n",
+    ),
 });
 
 export const updateServiceResponsePriceMin = 0;
@@ -1414,6 +1592,16 @@ export const UpdateServiceResponse = zod.object({
   photos: zod.array(zod.string()),
   tags: zod.array(zod.string()),
   isActive: zod.boolean(),
+  serviceLocation: zod
+    .enum(["inherit", "at_shop", "at_customer", "both"])
+    .describe(
+      "Per-service override of the provider's default. `inherit` means\nuse the parent shop's `serviceProvider.serviceLocation`.\n",
+    ),
+  effectiveServiceLocation: zod
+    .enum(["at_shop", "at_customer", "both"])
+    .describe(
+      "Resolved location for this service: the override when set, or\nthe parent shop's `serviceProvider.serviceLocation` when the\noverride is `inherit`.\n",
+    ),
   createdAt: zod.coerce.date(),
 });
 
@@ -1465,6 +1653,11 @@ export const GetProviderProfileResponse = zod.object({
     .max(getProviderProfileResponseServiceRadiusKmMax),
   portfolioPhotos: zod.array(zod.string()),
   isVerified: zod.boolean(),
+  serviceLocation: zod
+    .enum(["at_shop", "at_customer", "both"])
+    .describe(
+      "Where a service is performed. `at_shop` = customer must come,\n`at_customer` = provider travels to the customer, `both` = either.\n",
+    ),
 });
 
 export const UpdateProviderProfileParams = zod.object({
@@ -1502,6 +1695,12 @@ export const UpdateProviderProfileBody = zod.object({
     .max(updateProviderProfileBodyServiceRadiusKmMax)
     .optional(),
   portfolioPhotos: zod.array(zod.string()).optional(),
+  serviceLocation: zod
+    .enum(["at_shop", "at_customer", "both"])
+    .optional()
+    .describe(
+      "Where a service is performed. `at_shop` = customer must come,\n`at_customer` = provider travels to the customer, `both` = either.\n",
+    ),
 });
 
 export const updateProviderProfileResponseAgeMin = 16;
@@ -1539,6 +1738,11 @@ export const UpdateProviderProfileResponse = zod.object({
     .max(updateProviderProfileResponseServiceRadiusKmMax),
   portfolioPhotos: zod.array(zod.string()),
   isVerified: zod.boolean(),
+  serviceLocation: zod
+    .enum(["at_shop", "at_customer", "both"])
+    .describe(
+      "Where a service is performed. `at_shop` = customer must come,\n`at_customer` = provider travels to the customer, `both` = either.\n",
+    ),
 });
 
 export const searchServicesQueryRadiusKmMin = 0.1;
@@ -1563,6 +1767,12 @@ export const SearchServicesQueryParams = zod.object({
     .max(searchServicesQueryQMax)
     .optional()
     .describe("Free-text search on title, description, tags."),
+  serviceLocation: zod
+    .enum(["at_shop", "at_customer", "both"])
+    .optional()
+    .describe(
+      "Restrict to services that can be performed in this mode.\nMatches `at_customer` returns providers that go to the customer\n(effective location is `at_customer` or `both`); matches\n`at_shop` returns providers the customer can visit (effective\nlocation is `at_shop` or `both`); matches `both` only returns\nproviders that explicitly support both modes.\n",
+    ),
   limit: zod.coerce.number().min(1).max(searchServicesQueryLimitMax).optional(),
 });
 
@@ -1580,6 +1790,8 @@ export const searchServicesResponseShopRatingAvgMin = 0;
 export const searchServicesResponseShopRatingAvgMax = 5;
 
 export const searchServicesResponseShopRatingCountMin = 0;
+
+export const searchServicesResponseShopDeliveryRadiusKmMax = 100;
 
 export const searchServicesResponseProviderOneAgeMin = 16;
 export const searchServicesResponseProviderOneAgeMax = 120;
@@ -1617,6 +1829,16 @@ export const SearchServicesResponseItem = zod.object({
     photos: zod.array(zod.string()),
     tags: zod.array(zod.string()),
     isActive: zod.boolean(),
+    serviceLocation: zod
+      .enum(["inherit", "at_shop", "at_customer", "both"])
+      .describe(
+        "Per-service override of the provider's default. `inherit` means\nuse the parent shop's `serviceProvider.serviceLocation`.\n",
+      ),
+    effectiveServiceLocation: zod
+      .enum(["at_shop", "at_customer", "both"])
+      .describe(
+        "Resolved location for this service: the override when set, or\nthe parent shop's `serviceProvider.serviceLocation` when the\noverride is `inherit`.\n",
+      ),
     createdAt: zod.coerce.date(),
   }),
   shop: zod.object({
@@ -1664,6 +1886,11 @@ export const SearchServicesResponseItem = zod.object({
             ),
           portfolioPhotos: zod.array(zod.string()),
           isVerified: zod.boolean(),
+          serviceLocation: zod
+            .enum(["at_shop", "at_customer", "both"])
+            .describe(
+              "Where a service is performed. `at_shop` = customer must come,\n`at_customer` = provider travels to the customer, `both` = either.\n",
+            ),
         }),
         zod.null(),
       ])
@@ -1680,6 +1907,19 @@ export const SearchServicesResponseItem = zod.object({
       .number()
       .min(searchServicesResponseShopRatingCountMin)
       .describe("Number of reviews used for the average."),
+    fulfillment: zod
+      .enum(["pickup_only", "delivery_only", "both"])
+      .describe(
+        "How a product shop fulfils orders. `pickup_only` = customer must\ncome, `delivery_only` = shop only delivers, `both` = either.\n",
+      ),
+    deliveryRadiusKm: zod
+      .number()
+      .min(1)
+      .max(searchServicesResponseShopDeliveryRadiusKmMax)
+      .nullish()
+      .describe(
+        'Optional delivery radius in km. Only meaningful when\nfulfillment is \"delivery_only\" or \"both\".\n',
+      ),
     distanceKm: zod
       .number()
       .nullish()
@@ -1716,6 +1956,11 @@ export const SearchServicesResponseItem = zod.object({
           .max(searchServicesResponseProviderOneServiceRadiusKmMax),
         portfolioPhotos: zod.array(zod.string()),
         isVerified: zod.boolean(),
+        serviceLocation: zod
+          .enum(["at_shop", "at_customer", "both"])
+          .describe(
+            "Where a service is performed. `at_shop` = customer must come,\n`at_customer` = provider travels to the customer, `both` = either.\n",
+          ),
       }),
       zod.null(),
     ])
@@ -1762,6 +2007,16 @@ export const GetServiceResponse = zod.object({
   photos: zod.array(zod.string()),
   tags: zod.array(zod.string()),
   isActive: zod.boolean(),
+  serviceLocation: zod
+    .enum(["inherit", "at_shop", "at_customer", "both"])
+    .describe(
+      "Per-service override of the provider's default. `inherit` means\nuse the parent shop's `serviceProvider.serviceLocation`.\n",
+    ),
+  effectiveServiceLocation: zod
+    .enum(["at_shop", "at_customer", "both"])
+    .describe(
+      "Resolved location for this service: the override when set, or\nthe parent shop's `serviceProvider.serviceLocation` when the\noverride is `inherit`.\n",
+    ),
   createdAt: zod.coerce.date(),
 });
 
@@ -1898,6 +2153,8 @@ export const acceptInvitationResponseShopRatingAvgMax = 5;
 
 export const acceptInvitationResponseShopRatingCountMin = 0;
 
+export const acceptInvitationResponseShopDeliveryRadiusKmMax = 100;
+
 export const AcceptInvitationResponse = zod.object({
   shop: zod.object({
     id: zod.string(),
@@ -1948,6 +2205,11 @@ export const AcceptInvitationResponse = zod.object({
             ),
           portfolioPhotos: zod.array(zod.string()),
           isVerified: zod.boolean(),
+          serviceLocation: zod
+            .enum(["at_shop", "at_customer", "both"])
+            .describe(
+              "Where a service is performed. `at_shop` = customer must come,\n`at_customer` = provider travels to the customer, `both` = either.\n",
+            ),
         }),
         zod.null(),
       ])
@@ -1964,6 +2226,19 @@ export const AcceptInvitationResponse = zod.object({
       .number()
       .min(acceptInvitationResponseShopRatingCountMin)
       .describe("Number of reviews used for the average."),
+    fulfillment: zod
+      .enum(["pickup_only", "delivery_only", "both"])
+      .describe(
+        "How a product shop fulfils orders. `pickup_only` = customer must\ncome, `delivery_only` = shop only delivers, `both` = either.\n",
+      ),
+    deliveryRadiusKm: zod
+      .number()
+      .min(1)
+      .max(acceptInvitationResponseShopDeliveryRadiusKmMax)
+      .nullish()
+      .describe(
+        'Optional delivery radius in km. Only meaningful when\nfulfillment is \"delivery_only\" or \"both\".\n',
+      ),
     distanceKm: zod
       .number()
       .nullish()

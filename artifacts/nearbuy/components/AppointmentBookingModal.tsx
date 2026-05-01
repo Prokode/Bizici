@@ -20,13 +20,30 @@ import {
   type Appointment,
 } from "@/lib/appointmentsApi";
 
-type Service = { id: string; title: string };
+type ServiceLocationMode = "at_shop" | "at_customer" | "both";
+
+type Service = {
+  id: string;
+  title: string;
+  /**
+   * Resolved (effective) execution mode for this service. Optional for
+   * backwards compatibility — when missing, the modal falls back to the
+   * shop default.
+   */
+  effectiveServiceLocation?: ServiceLocationMode;
+};
 
 type Props = {
   visible: boolean;
   shopId: string;
   shopName: string;
   services?: Service[];
+  /**
+   * Provider's default execution mode. When the customer hasn't picked a
+   * service (or the service inherits), this is what governs the address
+   * field. Defaults to "at_shop" if unknown.
+   */
+  shopServiceLocation?: ServiceLocationMode;
   onClose: () => void;
   onCreated?: (appt: Appointment) => void;
 };
@@ -41,6 +58,7 @@ export function AppointmentBookingModal({
   shopId,
   shopName,
   services,
+  shopServiceLocation,
   onClose,
   onCreated,
 }: Props) {
@@ -52,13 +70,37 @@ export function AppointmentBookingModal({
   const [time, setTime] = useState("");
   const [serviceId, setServiceId] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
+  const [serviceLocation, setServiceLocation] = useState<
+    "at_shop" | "at_customer" | null
+  >(null);
+  const [customerAddress, setCustomerAddress] = useState("");
   const [error, setError] = useState<string | null>(null);
+
+  // Resolve effective execution mode for the chosen service (or fall back to
+  // shop default). When the service inherits, that defers to the shop.
+  const effectiveMode: ServiceLocationMode = useMemo(() => {
+    const svc = services?.find((s) => s.id === serviceId);
+    return (
+      svc?.effectiveServiceLocation ?? shopServiceLocation ?? "at_shop"
+    );
+  }, [services, serviceId, shopServiceLocation]);
+
+  // The actual mode that will be persisted: when the provider supports both,
+  // the customer must pick one, otherwise it's deterministic.
+  const resolvedMode: "at_shop" | "at_customer" = useMemo(() => {
+    if (effectiveMode === "both") return serviceLocation ?? "at_shop";
+    return effectiveMode;
+  }, [effectiveMode, serviceLocation]);
+
+  const needsAddress = resolvedMode === "at_customer";
 
   const reset = () => {
     setDate("");
     setTime("");
     setServiceId(null);
     setNotes("");
+    setServiceLocation(null);
+    setCustomerAddress("");
     setError(null);
   };
 
@@ -94,11 +136,24 @@ export function AppointmentBookingModal({
     return d.toISOString();
   }, [date, time]);
 
-  const canSubmit = parsedIso != null && !mutation.isPending;
+  const trimmedAddress = customerAddress.trim();
+  const canSubmit =
+    parsedIso != null &&
+    !mutation.isPending &&
+    (effectiveMode !== "both" || serviceLocation != null) &&
+    (!needsAddress || trimmedAddress.length > 0);
 
   const onSubmit = () => {
     if (!parsedIso) {
       setError(t("appointments.booking.errorInvalidDate"));
+      return;
+    }
+    if (effectiveMode === "both" && serviceLocation == null) {
+      setError(t("appointments.booking.errorPickLocation"));
+      return;
+    }
+    if (needsAddress && trimmedAddress.length === 0) {
+      setError(t("appointments.booking.errorAddressRequired"));
       return;
     }
     setError(null);
@@ -107,6 +162,8 @@ export function AppointmentBookingModal({
       serviceId: serviceId ?? null,
       scheduledAt: parsedIso,
       notes: notes.trim() || null,
+      serviceLocation: resolvedMode,
+      customerAddress: needsAddress ? trimmedAddress : null,
     });
   };
 
@@ -215,6 +272,51 @@ export function AppointmentBookingModal({
                     />
                   ))}
                 </View>
+              </>
+            ) : null}
+
+            {effectiveMode === "both" ? (
+              <>
+                <Text style={[styles.label, { color: colors.foreground }]}>
+                  {t("appointments.booking.locationLabel")}
+                </Text>
+                <View style={styles.servicesWrap}>
+                  <ServiceChip
+                    label={t("appointments.booking.locationAtShop")}
+                    selected={serviceLocation === "at_shop"}
+                    onPress={() => setServiceLocation("at_shop")}
+                  />
+                  <ServiceChip
+                    label={t("appointments.booking.locationAtCustomer")}
+                    selected={serviceLocation === "at_customer"}
+                    onPress={() => setServiceLocation("at_customer")}
+                  />
+                </View>
+              </>
+            ) : null}
+
+            {needsAddress ? (
+              <>
+                <Text style={[styles.label, { color: colors.foreground }]}>
+                  {t("appointments.booking.address")}
+                </Text>
+                <TextInput
+                  value={customerAddress}
+                  onChangeText={setCustomerAddress}
+                  placeholder={t("appointments.booking.addressPlaceholder")}
+                  placeholderTextColor={colors.mutedForeground}
+                  multiline
+                  maxLength={500}
+                  style={[
+                    styles.input,
+                    styles.textarea,
+                    {
+                      color: colors.foreground,
+                      backgroundColor: colors.card,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                />
               </>
             ) : null}
 

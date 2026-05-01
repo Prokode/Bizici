@@ -3,6 +3,20 @@ import { Schema, model, models, type Model, type InferSchemaType, Types } from "
 export const SHOP_KINDS = ["products", "services", "hybrid"] as const;
 export type ShopKind = (typeof SHOP_KINDS)[number];
 
+// Where a service is performed. Set on the provider profile (default for the
+// whole shop) and may be overridden per-Service.
+export const SERVICE_LOCATIONS = ["at_shop", "at_customer", "both"] as const;
+export type ServiceLocation = (typeof SERVICE_LOCATIONS)[number];
+
+// How a product shop fulfils orders. "pickup_only" = customer must come,
+// "delivery_only" = shop only delivers, "both" = either.
+export const SHOP_FULFILLMENTS = [
+  "pickup_only",
+  "delivery_only",
+  "both",
+] as const;
+export type ShopFulfillment = (typeof SHOP_FULFILLMENTS)[number];
+
 const PointSchema = new Schema(
   {
     type: { type: String, enum: ["Point"], default: "Point", required: true },
@@ -34,6 +48,15 @@ const ServiceProviderSchema = new Schema(
     serviceRadiusKm: { type: Number, default: 10, min: 1, max: 100 },
     portfolioPhotos: { type: [String], default: [] },
     isVerified: { type: Boolean, default: false },
+    // Default execution location for the provider's services. May be
+    // overridden by an individual Service. Defaults to "at_shop" so
+    // existing providers behave as before (client comes to the shop).
+    serviceLocation: {
+      type: String,
+      enum: SERVICE_LOCATIONS,
+      default: "at_shop",
+      required: true,
+    },
     // Aggregates fed by AppointmentReview (client → provider direction only).
     // Denormalized so list/map/search responses can sort by reputation
     // without an extra aggregation pass.
@@ -61,6 +84,19 @@ const ShopSchema = new Schema(
       index: true,
     },
     serviceProvider: { type: ServiceProviderSchema, default: () => ({}) },
+    // For product shops (and the product side of a hybrid shop): how does
+    // the merchant fulfil orders. Defaults to "pickup_only" so existing
+    // shops keep behaving as before.
+    fulfillment: {
+      type: String,
+      enum: SHOP_FULFILLMENTS,
+      default: "pickup_only",
+      required: true,
+      index: true,
+    },
+    // Optional delivery radius in km. Only meaningful when fulfillment is
+    // "delivery_only" or "both". null = no advertised limit.
+    deliveryRadiusKm: { type: Number, default: null, min: 1, max: 100 },
     // Denormalized aggregates kept in sync by the reviews endpoints. Storing
     // them here lets list/map/search queries return ratings without an extra
     // aggregation pass on every shop card.

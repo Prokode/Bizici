@@ -28,6 +28,8 @@ import {
 } from "@/lib/publicApi";
 import { getOrCreateConversation } from "@/lib/chatApi";
 import { ReviewModal } from "@/components/ReviewModal";
+import { useTranslation } from "react-i18next";
+import { FulfillmentBadge } from "@/components/LocationBadge";
 
 type Props = {
   shop: PublicShop | null;
@@ -44,6 +46,7 @@ function formatPrice(cents: number): string {
 }
 
 export function ShopBottomSheet({ shop, onClose }: Props) {
+  const { t } = useTranslation();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -242,6 +245,14 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                     {data?.products?.length ?? shop.productCount} produits
                   </Text>
                 </View>
+                {shop.fulfillment ? (
+                  <FulfillmentBadge
+                    mode={shop.fulfillment}
+                    deliveryRadiusKm={shop.deliveryRadiusKm ?? null}
+                    colors={colors}
+                    t={t}
+                  />
+                ) : null}
                 {ratingCount > 0 && (
                   <View
                     style={[

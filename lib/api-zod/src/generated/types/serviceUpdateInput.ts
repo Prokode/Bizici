@@ -5,6 +5,7 @@
  * NearBuy Business API (MongoDB-backed)
  * OpenAPI spec version: 0.2.0
  */
+import type { ServiceLocationOverride } from "./serviceLocationOverride";
 import type { ServiceUpdateInputPricingType } from "./serviceUpdateInputPricingType";
 
 export interface ServiceUpdateInput {
@@ -24,4 +25,5 @@ export interface ServiceUpdateInput {
   photos?: string[];
   tags?: string[];
   isActive?: boolean;
+  serviceLocation?: ServiceLocationOverride;
 }

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.2.0
  */
 import type { ServiceProviderProfile } from "./serviceProviderProfile";
+import type { ShopFulfillment } from "./shopFulfillment";
 import type { ShopKind } from "./shopKind";
 
 export interface Shop {
@@ -37,6 +38,15 @@ shop was just created and the profile not yet filled in.
    * @minimum 0
    */
   ratingCount: number;
+  fulfillment: ShopFulfillment;
+  /**
+   * Optional delivery radius in km. Only meaningful when
+fulfillment is "delivery_only" or "both".
+
+   * @minimum 1
+   * @maximum 100
+   */
+  deliveryRadiusKm?: number | null;
   /** Distance from the search origin in kilometers. Only present
 on results returned by geo search endpoints.
  */

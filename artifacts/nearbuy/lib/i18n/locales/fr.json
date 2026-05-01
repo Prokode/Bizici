@@ -301,8 +301,15 @@
       "serviceNone": "Aucun service précis",
       "notes": "Précisions (optionnel)",
       "notesPlaceholder": "Indiquez tout ce qui peut aider…",
+      "locationLabel": "Où se déroule la prestation ?",
+      "locationAtShop": "Sur place",
+      "locationAtCustomer": "Chez moi",
+      "address": "Adresse complète",
+      "addressPlaceholder": "Numéro, rue, code postal, ville…",
       "submit": "Envoyer la demande",
       "errorInvalidDate": "Veuillez saisir une date et une heure futures.",
+      "errorPickLocation": "Choisissez où la prestation aura lieu.",
+      "errorAddressRequired": "Indiquez votre adresse pour une prestation à domicile.",
       "errorGeneric": "Impossible d'envoyer la demande. Réessayez."
     },
     "review": {
@@ -315,5 +322,20 @@
       "errorRating": "Choisissez une note entre 1 et 5 étoiles.",
       "errorGeneric": "Impossible d'envoyer la note. Réessayez."
     }
+  },
+  "serviceLocation": {
+    "badgeAtShop": "Sur place",
+    "badgeAtCustomer": "Vient chez vous",
+    "badgeBoth": "Sur place ou chez vous",
+    "filterAtCustomer": "Vient chez moi",
+    "appointmentAtShop": "Sur place chez le pro",
+    "appointmentAtCustomer": "À votre domicile"
+  },
+  "fulfillment": {
+    "badgePickup": "Retrait sur place",
+    "badgeDelivery": "Livraison à domicile",
+    "badgeDeliveryWithRadius": "Livraison ({{km}} km)",
+    "badgeBoth": "Retrait ou livraison",
+    "badgeBothWithRadius": "Retrait ou livraison ({{km}} km)"
   }
 }

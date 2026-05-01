@@ -13,11 +13,13 @@ import {
   getGetShopQueryKey,
   getListShopsQueryKey,
   type ShopUpdateInputKind,
+  type ShopFulfillment,
 } from "@workspace/api-client-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useTranslation } from "react-i18next";
 import { ShopKindSelector } from "@/components/ShopKindSelector";
+import { ShopFulfillmentSelector } from "@/components/ShopFulfillmentSelector";
 
 export default function EditShopScreen() {
   const colors = useColors();
@@ -36,6 +38,8 @@ export default function EditShopScreen() {
   const [marketName, setMarketName] = useState("");
   const [stallInfo, setStallInfo] = useState("");
   const [kind, setKind] = useState<ShopUpdateInputKind>("products");
+  const [fulfillment, setFulfillment] = useState<ShopFulfillment>("pickup_only");
+  const [deliveryRadiusStr, setDeliveryRadiusStr] = useState("");
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,6 +51,10 @@ export default function EditShopScreen() {
       setMarketName(shop.marketName ?? "");
       setStallInfo(shop.stallInfo ?? "");
       setKind(shop.kind ?? "products");
+      setFulfillment(shop.fulfillment ?? "pickup_only");
+      setDeliveryRadiusStr(
+        shop.deliveryRadiusKm != null ? String(shop.deliveryRadiusKm) : "",
+      );
       setLocation({ latitude: shop.latitude, longitude: shop.longitude });
     }
   }, [shop]);
@@ -64,6 +72,10 @@ export default function EditShopScreen() {
           latitude: location.latitude,
           longitude: location.longitude,
           kind,
+          fulfillment,
+          deliveryRadiusKm: deliveryRadiusStr.trim()
+            ? parseInt(deliveryRadiusStr, 10)
+            : null,
         },
       },
       {
@@ -89,6 +101,24 @@ export default function EditShopScreen() {
           <Input label={t("editShop.marketName")} value={marketName} onChangeText={setMarketName} />
           <Input label={t("editShop.stallInfo")} value={stallInfo} onChangeText={setStallInfo} />
           <ShopKindSelector value={kind} onChange={setKind} />
+          {kind !== "services" ? (
+            <>
+              <ShopFulfillmentSelector
+                value={fulfillment}
+                onChange={setFulfillment}
+                hint={t("fulfillment.shopHint")}
+              />
+              {fulfillment !== "pickup_only" ? (
+                <Input
+                  label={t("fulfillment.deliveryRadiusKm")}
+                  placeholder={t("fulfillment.deliveryRadiusPlaceholder")}
+                  value={deliveryRadiusStr}
+                  onChangeText={setDeliveryRadiusStr}
+                  keyboardType="number-pad"
+                />
+              ) : null}
+            </>
+          ) : null}
 
           {error && <Text style={{ color: colors.destructive, marginTop: 8 }}>{error}</Text>}
 

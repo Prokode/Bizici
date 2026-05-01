@@ -144,6 +144,29 @@ export function AppointmentCard({
         </Text>
       ) : null}
 
+      <View style={styles.locRow}>
+        <Feather
+          name={appointment.serviceLocation === "at_customer" ? "home" : "shopping-bag"}
+          size={13}
+          color={colors.mutedForeground}
+        />
+        <Text style={[styles.meta, { color: colors.mutedForeground, marginLeft: 6 }]}>
+          {appointment.serviceLocation === "at_customer"
+            ? t("serviceLocation.appointmentAtCustomer")
+            : t("serviceLocation.appointmentAtShop")}
+        </Text>
+      </View>
+
+      {appointment.serviceLocation === "at_customer" &&
+      appointment.customerAddress ? (
+        <Text
+          style={[styles.address, { color: colors.foreground }]}
+          numberOfLines={3}
+        >
+          {appointment.customerAddress}
+        </Text>
+      ) : null}
+
       {appointment.notes && variant === "card" ? (
         <Text
           style={[styles.notes, { color: colors.foreground }]}
@@ -287,6 +310,8 @@ const styles = StyleSheet.create({
   meta: { fontSize: 12, marginTop: 2 },
   notes: { fontSize: 13, marginTop: 6, lineHeight: 18 },
   reason: { fontSize: 12, fontStyle: "italic", marginTop: 4 },
+  locRow: { flexDirection: "row", alignItems: "center", marginTop: 6 },
+  address: { fontSize: 13, marginTop: 4, lineHeight: 18 },
   actionsRow: {
     flexDirection: "row",
     flexWrap: "wrap",

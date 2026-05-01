@@ -6,6 +6,8 @@
  * OpenAPI spec version: 0.2.0
  */
 import type { Category } from "./category";
+import type { ServiceLocation } from "./serviceLocation";
+import type { ServiceLocationOverride } from "./serviceLocationOverride";
 import type { ServicePricingType } from "./servicePricingType";
 
 export interface Service {
@@ -24,5 +26,11 @@ export interface Service {
   photos: string[];
   tags: string[];
   isActive: boolean;
+  serviceLocation: ServiceLocationOverride;
+  /** Resolved location for this service: the override when set, or
+the parent shop's `serviceProvider.serviceLocation` when the
+override is `inherit`.
+ */
+  effectiveServiceLocation: ServiceLocation;
   createdAt: Date;
 }
