@@ -314,7 +314,18 @@
     "errorSignUp": "Sign up failed",
     "errorGoogle": "Google sign-in failed",
     "errorVerify": "Verification failed",
-    "errorGeneric": "Something went wrong"
+    "errorGeneric": "Something went wrong",
+    "consentLabel": "I have read and accept BizIci's Terms of Use and Privacy Policy.",
+    "consentHint": "Double tap to accept or decline the terms.",
+    "termsLinkLabel": "Read the Terms of Use",
+    "privacyLinkLabel": "Read the Privacy Policy",
+    "termsRequiredTitle": "Acceptance required",
+    "termsRequiredBody": "You must accept the Terms of Use and the Privacy Policy before creating your account."
+  },
+  "legal": {
+    "lastUpdated": "Last updated",
+    "contactTitle": "Any questions?",
+    "contactBody": "For any request regarding your personal data, please write to"
   },
   "appointments": {
     "headerLink": "Appointments",

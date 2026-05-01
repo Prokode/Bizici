@@ -28,7 +28,14 @@
   },
   "footer": {
     "tagline": "Local shopping, right at hand.",
-    "deletion": "Request to delete my account"
+    "deletion": "Request to delete my account",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use"
+  },
+  "legal": {
+    "lastUpdated": "Last updated",
+    "contactTitle": "Any questions?",
+    "contactBody": "For any request regarding your personal data or these terms, please write to"
   },
   "deletion": {
     "title": "Account deletion request",

@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -40,6 +48,13 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  const requireTermsOrAlert = () => {
+    if (acceptedTerms) return true;
+    Alert.alert(t("auth.termsRequiredTitle"), t("auth.termsRequiredBody"));
+    return false;
+  };
 
   const goHome = useCallback(() => {
     const target =
@@ -51,6 +66,7 @@ export default function SignUpScreen() {
 
   const handleSubmit = async () => {
     setSubmitError(null);
+    if (!requireTermsOrAlert()) return;
     try {
       const { error } = await signUp.password({ emailAddress, password });
       if (error) {
@@ -86,6 +102,10 @@ export default function SignUpScreen() {
 
   const onGoogle = useCallback(async () => {
     setSubmitError(null);
+    if (!acceptedTerms) {
+      Alert.alert(t("auth.termsRequiredTitle"), t("auth.termsRequiredBody"));
+      return;
+    }
     try {
       const { createdSessionId, setActive } = await startSSOFlow({
         strategy: "oauth_google",
@@ -103,7 +123,7 @@ export default function SignUpScreen() {
     } catch (err: any) {
       setSubmitError(err?.message ?? t("auth.errorGoogle"));
     }
-  }, [goHome, startSSOFlow, t]);
+  }, [acceptedTerms, goHome, startSSOFlow, t]);
 
   const isVerifying =
     signUp.status === "missing_requirements" &&
@@ -257,11 +277,21 @@ export default function SignUpScreen() {
               </Text>
             )}
 
+            <ConsentCheckbox
+              accepted={acceptedTerms}
+              onToggle={() => setAcceptedTerms((v) => !v)}
+              colors={colors}
+              t={t}
+            />
+
             <Button
               title={t("auth.signUpButton")}
               size="lg"
               disabled={
-                !emailAddress || !password || fetchStatus === "fetching"
+                !emailAddress ||
+                !password ||
+                !acceptedTerms ||
+                fetchStatus === "fetching"
               }
               loading={fetchStatus === "fetching"}
               onPress={handleSubmit}
@@ -301,6 +331,98 @@ export default function SignUpScreen() {
   );
 }
 
+function ConsentCheckbox({
+  accepted,
+  onToggle,
+  colors,
+  t,
+}: {
+  accepted: boolean;
+  onToggle: () => void;
+  colors: ReturnType<typeof useColors>;
+  t: (key: string) => string;
+}) {
+  return (
+    <View style={{ marginTop: 12 }}>
+      <TouchableOpacity
+        onPress={onToggle}
+        style={[
+          styles.consentRow,
+          {
+            borderColor: accepted ? colors.primary : colors.border,
+            backgroundColor: accepted ? colors.primary + "11" : "transparent",
+          },
+        ]}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: accepted }}
+        accessibilityLabel={t("auth.consentLabel")}
+        accessibilityHint={t("auth.consentHint")}
+        testID="signup-consent-checkbox"
+      >
+        <View
+          style={[
+            styles.consentBox,
+            {
+              borderColor: accepted ? colors.primary : colors.mutedForeground,
+              backgroundColor: accepted ? colors.primary : "transparent",
+            },
+          ]}
+        >
+          {accepted ? <Feather name="check" size={14} color="#fff" /> : null}
+        </View>
+        <Text
+          style={[
+            styles.consentLabel,
+            {
+              color: colors.foreground,
+              fontFamily: "PlusJakartaSans_500Medium",
+            },
+          ]}
+        >
+          {t("auth.consentLabel")}
+        </Text>
+      </TouchableOpacity>
+      <View style={styles.linksRow}>
+        <Link href={"/legal/terms" as Href} asChild>
+          <Pressable accessibilityRole="link" testID="signup-link-terms">
+            <Text
+              style={[
+                styles.consentLink,
+                {
+                  color: colors.primary,
+                  fontFamily: "PlusJakartaSans_600SemiBold",
+                },
+              ]}
+            >
+              {t("auth.termsLinkLabel")}
+            </Text>
+          </Pressable>
+        </Link>
+        <Text
+          style={[styles.consentLinkSeparator, { color: colors.mutedForeground }]}
+        >
+          ·
+        </Text>
+        <Link href={"/legal/privacy" as Href} asChild>
+          <Pressable accessibilityRole="link" testID="signup-link-privacy">
+            <Text
+              style={[
+                styles.consentLink,
+                {
+                  color: colors.primary,
+                  fontFamily: "PlusJakartaSans_600SemiBold",
+                },
+              ]}
+            >
+              {t("auth.privacyLinkLabel")}
+            </Text>
+          </Pressable>
+        </Link>
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 24, flexGrow: 1 },
@@ -330,4 +452,31 @@ const styles = StyleSheet.create({
   footerText: { fontSize: 15 },
   link: { fontSize: 15 },
   error: { fontSize: 13, marginTop: -8, marginBottom: 8 },
+  consentRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  consentBox: {
+    width: 22,
+    height: 22,
+    borderRadius: 5,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 1,
+  },
+  consentLabel: { flex: 1, fontSize: 13, lineHeight: 18 },
+  linksRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 8,
+  },
+  consentLink: { fontSize: 13, textDecorationLine: "underline" },
+  consentLinkSeparator: { fontSize: 13 },
 });

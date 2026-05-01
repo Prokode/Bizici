@@ -8,6 +8,8 @@ import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/Home";
 import DeleteAccountPage from "@/pages/DeleteAccount";
 import DeleteAccountConfirmationPage from "@/pages/DeleteAccountConfirmation";
+import PrivacyPage from "@/pages/Privacy";
+import TermsPage from "@/pages/Terms";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +43,10 @@ function Router() {
         path="/supprimer-compte/confirmation"
         component={DeleteAccountConfirmationPage}
       />
+      <Route path="/confidentialite" component={PrivacyPage} />
+      <Route path="/privacy" component={PrivacyPage} />
+      <Route path="/conditions" component={TermsPage} />
+      <Route path="/terms" component={TermsPage} />
       <Route component={NotFound} />
     </Switch>
   );

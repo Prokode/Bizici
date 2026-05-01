@@ -17,6 +17,20 @@ export function SiteFooter() {
         </div>
         <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
           <Link
+            href="/confidentialite"
+            className="text-neutral-700 hover:text-[#F58220] underline-offset-4 hover:underline"
+            data-testid="footer-link-privacy"
+          >
+            {t("footer.privacy")}
+          </Link>
+          <Link
+            href="/conditions"
+            className="text-neutral-700 hover:text-[#F58220] underline-offset-4 hover:underline"
+            data-testid="footer-link-terms"
+          >
+            {t("footer.terms")}
+          </Link>
+          <Link
             href="/supprimer-compte"
             className="text-neutral-700 hover:text-[#F58220] underline-offset-4 hover:underline"
             data-testid="footer-link-delete-account"

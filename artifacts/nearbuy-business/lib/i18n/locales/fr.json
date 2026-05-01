@@ -314,7 +314,18 @@
     "errorSignUp": "Inscription impossible",
     "errorGoogle": "Connexion Google impossible",
     "errorVerify": "Vérification impossible",
-    "errorGeneric": "Une erreur est survenue"
+    "errorGeneric": "Une erreur est survenue",
+    "consentLabel": "J'ai lu et j'accepte les Conditions Générales d'Utilisation et la Politique de confidentialité de BizIci.",
+    "consentHint": "Appuyez deux fois pour accepter ou refuser les conditions.",
+    "termsLinkLabel": "Lire les CGU",
+    "privacyLinkLabel": "Lire la politique de confidentialité",
+    "termsRequiredTitle": "Acceptation requise",
+    "termsRequiredBody": "Vous devez accepter les Conditions Générales d'Utilisation et la Politique de confidentialité avant de créer votre compte."
+  },
+  "legal": {
+    "lastUpdated": "Dernière mise à jour",
+    "contactTitle": "Une question ?",
+    "contactBody": "Pour toute demande relative à vos données personnelles, écrivez-nous à"
   },
   "appointments": {
     "headerLink": "Rendez-vous",

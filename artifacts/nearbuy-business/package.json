@@ -63,6 +63,7 @@
   },
   "dependencies": {
     "@clerk/expo": "^3.2.4",
+    "@workspace/legal-content": "workspace:*",
     "expo-auth-session": "~7.0.10",
     "expo-camera": "~17.0.10",
     "expo-crypto": "~15.0.8",
