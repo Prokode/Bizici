@@ -10,7 +10,7 @@ export default function DeleteAccountConfirmationPage() {
       <header className="px-6 py-5 flex items-center justify-between border-b border-neutral-100">
         <Link href="/" className="flex items-center gap-3">
           <NearBuyLogo size={36} />
-          <span className="text-xl font-bold tracking-tight">NearBuy</span>
+          <span className="text-xl font-bold tracking-tight"><span style={{ color: "#1B2A5C" }}>Biz</span><span style={{ color: "#7FB927" }}>Ici</span></span>
         </Link>
       </header>
 
@@ -19,7 +19,7 @@ export default function DeleteAccountConfirmationPage() {
           className="max-w-xl mx-auto text-center"
           data-testid="delete-confirmation"
         >
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#F58220] to-[#7FB927]">
             <svg
               width="32"
               height="32"
@@ -45,16 +45,16 @@ export default function DeleteAccountConfirmationPage() {
           <p className="mt-3 text-sm text-neutral-500">
             {t("deletion.successContact")}{" "}
             <a
-              href="mailto:support@nearbuy.app"
-              className="text-orange-600 hover:underline"
+              href="mailto:support@bizici.app"
+              className="text-[#F58220] hover:underline"
             >
-              support@nearbuy.app
+              support@bizici.app
             </a>
             .
           </p>
           <Link
             href="/"
-            className="mt-8 inline-flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 text-base transition-colors"
+            className="mt-8 inline-flex items-center justify-center rounded-full bg-[#F58220] hover:bg-[#E07418] text-white font-semibold px-6 py-3 text-base transition-colors"
             data-testid="link-home"
           >
             {t("deletion.backHome")}

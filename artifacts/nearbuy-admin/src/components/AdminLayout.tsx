@@ -56,11 +56,16 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         <div className="px-5 py-5 border-b border-sidebar-border">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="size-8 rounded-md bg-sidebar-primary text-sidebar-primary-foreground flex items-center justify-center font-bold">
-                N
-              </div>
+              <img
+                src="/bizici-pin.png"
+                alt="BizIci"
+                className="size-9 object-contain"
+              />
               <div>
-                <div className="font-semibold leading-tight">NearBuy</div>
+                <div className="font-semibold leading-tight tracking-tight">
+                  <span className="text-white">Biz</span>
+                  <span style={{ color: "#7FB927" }}>Ici</span>
+                </div>
                 <div className="text-xs text-sidebar-foreground/70 leading-tight">
                   Admin
                 </div>

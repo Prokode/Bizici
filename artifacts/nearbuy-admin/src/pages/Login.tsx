@@ -77,9 +77,11 @@ export default function LoginPage() {
         <CardHeader>
           <div className="flex items-start justify-between gap-3 mb-2">
             <div className="flex items-center gap-3">
-              <div className="size-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg">
-                N
-              </div>
+              <img
+                src="/bizici-pin.png"
+                alt="BizIci"
+                className="size-10 rounded-lg object-contain"
+              />
               <div>
                 <CardTitle className="text-xl">{t("login.appName")}</CardTitle>
                 <p className="text-sm text-muted-foreground">

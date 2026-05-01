@@ -1,3 +1,6 @@
+/* BizIci splash — full-screen white backdrop with the brand pin landing,
+   storefront materialising, sparks bursting, and wordmark fading in. */
+
 .splash-root {
   position: fixed;
   inset: 0;
@@ -17,19 +20,39 @@
   pointer-events: none;
 }
 
-.splash-pin {
+/* --- Stage container ----------------------------------------------------- */
+
+.splash-stage {
   position: relative;
   width: 240px;
   height: 312px;
+  /* Stage 5: composition lifts/scales slightly once the rest has settled */
+  animation: splash-stage-settle 600ms cubic-bezier(0.33, 1, 0.68, 1) 1700ms
+    forwards;
+}
+
+@keyframes splash-stage-settle {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    transform: translateY(-6px) scale(0.96);
+  }
+}
+
+/* --- Stage 1: pin drops in ---------------------------------------------- */
+
+.splash-pin {
+  position: absolute;
+  inset: 0;
   transform: translateY(calc(-50vh - 312px));
   animation: splash-drop 700ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .splash-pin-svg {
-  position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
+  display: block;
 }
 
 @keyframes splash-drop {
@@ -44,36 +67,105 @@
   }
 }
 
-/* Bag is positioned to sit inside the pin's inner circle */
-.splash-bag {
+/* --- Stage 2: navy oval base appears under the pin ---------------------- */
+
+.splash-base {
+  transform-origin: 50px 120px;
+  transform: scaleX(0);
+  opacity: 0;
+  animation: splash-base-in 500ms cubic-bezier(0.33, 1, 0.68, 1) 700ms forwards;
+}
+
+@keyframes splash-base-in {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scaleX(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* --- Stage 3: storefront materialises inside the white window ----------- */
+
+.splash-store {
+  transform-origin: 50px 50px;
+  transform: scale(0.4);
+  opacity: 0;
+  animation: splash-store-in 600ms cubic-bezier(0.33, 1, 0.68, 1) 900ms forwards;
+}
+
+@keyframes splash-store-in {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* --- Stage 4: three green sparks burst out of the pin -------------------- */
+
+.splash-spark {
   position: absolute;
-  /* Pin viewBox is 100x130, rendered at 240x312. Inner circle is at (50, 48)
-     in viewBox space. In rendered px: (50/100)*240 = 120, (48/130)*312 ≈ 115.
-     Bag is 80x80, so offset by -40, -40. */
-  left: 80px;
-  top: 75px;
-  width: 80px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* Spin starts after the drop finishes */
-  animation: splash-spin 2200ms cubic-bezier(0.33, 1, 0.68, 1) 700ms forwards;
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background: #7fb927;
+  top: 60px;
+  left: 50%;
+  opacity: 0;
+  transform-origin: 0 50%;
+  animation: splash-spark-burst 600ms cubic-bezier(0.33, 1, 0.68, 1) 1300ms
+    forwards;
 }
 
-.splash-bag-svg {
-  width: 100%;
-  height: 100%;
+.splash-spark--1 {
+  --spark-angle: -110deg;
+  --spark-distance: 90px;
 }
 
-@keyframes splash-spin {
-  from {
-    transform: rotate(0deg);
+.splash-spark--2 {
+  --spark-angle: -75deg;
+  --spark-distance: 110px;
+  animation-delay: 1380ms;
+}
+
+.splash-spark--3 {
+  --spark-angle: -45deg;
+  --spark-distance: 95px;
+  animation-delay: 1460ms;
+}
+
+@keyframes splash-spark-burst {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--spark-angle)) translateX(0) scaleX(0.2);
   }
-  to {
-    transform: rotate(1080deg);
+  40% {
+    opacity: 1;
+    transform: rotate(var(--spark-angle))
+      translateX(calc(var(--spark-distance) * 0.55)) scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--spark-angle)) translateX(var(--spark-distance))
+      scaleX(0.6);
   }
 }
+
+/* --- Stage 6: wordmark fades in ----------------------------------------- */
 
 .splash-wordmark {
   display: flex;
@@ -81,50 +173,52 @@
   gap: 6px;
   font-family: "Inter", system-ui, sans-serif;
   font-weight: 700;
-  font-size: 22px;
+  font-size: 28px;
   letter-spacing: -0.01em;
   opacity: 0;
-  animation: splash-word-in 500ms ease-out 1100ms forwards;
+  transform: translateY(8px);
+  animation: splash-word-in 600ms ease-out 1900ms forwards;
 }
 
 @keyframes splash-word-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.splash-wordmark-near {
-  background: linear-gradient(135deg, #ff6b35, #ff3d7f);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.splash-wordmark-biz {
+  color: #1b2a5c;
 }
 
-.splash-wordmark-buy {
-  color: #1f2937;
+.splash-wordmark-ici {
+  color: #7fb927;
 }
 
 .splash-wordmark-admin {
-  margin-left: 8px;
+  margin-left: 10px;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 13px;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
   color: #94a3b8;
   align-self: center;
 }
 
+/* --- Reduced motion: skip everything but final state -------------------- */
+
 @media (prefers-reduced-motion: reduce) {
+  .splash-stage,
   .splash-pin,
-  .splash-bag,
+  .splash-base,
+  .splash-store,
+  .splash-spark,
   .splash-wordmark {
     animation: none;
     transform: none;
     opacity: 1;
+  }
+  .splash-spark {
+    opacity: 0; /* Sparks are decorative — hide entirely */
   }
 }

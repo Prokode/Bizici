@@ -10,21 +10,21 @@
   "hero": {
     "titleA": "Trouvez ce que vous cherchez,",
     "titleB": "à deux pas de chez vous.",
-    "subtitle": "NearBuy connecte les clients aux commerces de proximité — produits, stocks, prix et discussion en direct avec le vendeur.",
+    "subtitle": "BizIci connecte les clients aux commerces de proximité — produits, stocks, prix et discussion en direct avec le vendeur.",
     "ctaDownload": "Télécharger l'application",
     "ctaLearn": "En savoir plus"
   },
   "how": {
     "customerTitle": "Côté client",
-    "customerBody": "Téléchargez l'application NearBuy pour découvrir les commerces près de vous, demander un produit et discuter avec le vendeur.",
+    "customerBody": "Téléchargez l'application BizIci pour découvrir les commerces près de vous, demander un produit et discuter avec le vendeur.",
     "sellerTitle": "Côté vendeur",
-    "sellerBody": "L'application NearBuy Business vous permet de gérer votre stock, vos prix, et de répondre aux clients en temps réel.",
+    "sellerBody": "L'application BizIci Pro vous permet de gérer votre stock, vos prix, et de répondre aux clients en temps réel.",
     "trustTitle": "Confiance & proximité",
     "trustBody": "Pas d'intermédiaire. Vous parlez directement au commerçant à côté de chez vous, vous payez sur place."
   },
   "download": {
     "title": "Disponible bientôt",
-    "subtitle": "NearBuy arrive prochainement sur l'App Store et Google Play."
+    "subtitle": "BizIci arrive prochainement sur l'App Store et Google Play."
   },
   "footer": {
     "tagline": "Le commerce de proximité, à portée de main.",
@@ -32,7 +32,7 @@
   },
   "deletion": {
     "title": "Demande de suppression de compte",
-    "intro": "Vous pouvez demander la suppression de votre compte NearBuy (client) ou NearBuy Business (vendeur) en remplissant ce formulaire. Notre équipe traitera votre demande dans un délai de <strong>30 jours maximum</strong> et vous contactera à l'adresse e-mail indiquée pour confirmer la suppression.",
+    "intro": "Vous pouvez demander la suppression de votre compte BizIci (client) ou BizIci Pro (vendeur) en remplissant ce formulaire. Notre équipe traitera votre demande dans un délai de <strong>30 jours maximum</strong> et vous contactera à l'adresse e-mail indiquée pour confirmer la suppression.",
     "afterTitle": "Que se passe-t-il après la suppression ?",
     "after1": "Votre profil, vos messages et vos préférences sont définitivement supprimés.",
     "after2": "Si vous êtes vendeur, votre commerce et vos produits sont également retirés de l'application.",
@@ -40,11 +40,11 @@
     "after4": "L'opération est irréversible.",
     "fullName": "Nom complet",
     "email": "Adresse e-mail liée à votre compte",
-    "emailHint": "Utilisez la même adresse que celle de votre compte NearBuy.",
+    "emailHint": "Utilisez la même adresse que celle de votre compte BizIci.",
     "accountType": "Type de compte à supprimer",
-    "accountTypeCustomer": "Compte client (NearBuy)",
-    "accountTypeSeller": "Compte vendeur (NearBuy Business)",
-    "accountTypeBoth": "Les deux (j'utilise NearBuy comme client ET vendeur)",
+    "accountTypeCustomer": "Compte client (BizIci)",
+    "accountTypeSeller": "Compte vendeur (BizIci Pro)",
+    "accountTypeBoth": "Les deux (j'utilise BizIci comme client ET vendeur)",
     "reason": "Motif de la suppression",
     "reasonOptional": "(facultatif)",
     "confirm": "Je confirme avoir compris que la suppression est <strong>définitive</strong> et que je ne pourrai plus accéder à mon compte ni récupérer mes données.",

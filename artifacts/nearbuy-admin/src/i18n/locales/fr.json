@@ -49,13 +49,13 @@
     "submitting": "Connexion…",
     "invalidCredentials": "Identifiants invalides",
     "loginError": "Erreur de connexion",
-    "appName": "NearBuy Admin",
+    "appName": "BizIci Admin",
     "tagline": "Connexion à l'espace administrateur",
     "identifier": "Identifiant"
   },
   "dashboard": {
     "title": "Tableau de bord",
-    "description": "Vue d'ensemble de l'activité NearBuy",
+    "description": "Vue d'ensemble de l'activité BizIci",
     "loadError": "Impossible de charger les statistiques.",
     "stats": {
       "users": "Utilisateurs",
@@ -80,7 +80,7 @@
   },
   "users": {
     "title": "Utilisateurs",
-    "description": "Tous les comptes clients NearBuy",
+    "description": "Tous les comptes clients BizIci",
     "searchPlaceholder": "Rechercher (nom, email)…",
     "name": "Nom",
     "email": "Email",
@@ -101,7 +101,7 @@
   },
   "shops": {
     "title": "Boutiques",
-    "description": "Toutes les boutiques NearBuy",
+    "description": "Toutes les boutiques BizIci",
     "searchPlaceholder": "Rechercher (nom, marché)…",
     "name": "Nom",
     "seller": "Vendeur",

@@ -17,13 +17,13 @@ export default function HomePage() {
       <header className="px-6 py-5 flex items-center justify-between border-b border-neutral-100">
         <Link href="/" className="flex items-center gap-3">
           <NearBuyLogo size={36} />
-          <span className="text-xl font-bold tracking-tight">NearBuy</span>
+          <span className="text-xl font-bold tracking-tight"><span style={{ color: "#1B2A5C" }}>Biz</span><span style={{ color: "#7FB927" }}>Ici</span></span>
         </Link>
         <nav className="flex items-center gap-6 text-sm font-medium text-neutral-700">
-          <a href="#how" className="hover:text-orange-600 hidden sm:inline">
+          <a href="#how" className="hover:text-[#F58220] hidden sm:inline">
             {t("nav.how")}
           </a>
-          <a href="#download" className="hover:text-orange-600 hidden sm:inline">
+          <a href="#download" className="hover:text-[#F58220] hidden sm:inline">
             {t("nav.download")}
           </a>
           <LanguageSwitcher />
@@ -34,7 +34,7 @@ export default function HomePage() {
         <section className="px-6 pt-16 pb-20 md:pt-24 md:pb-28 max-w-5xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">
             {t("hero.titleA")}{" "}
-            <span className="bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#F58220] to-[#7FB927] bg-clip-text text-transparent">
               {t("hero.titleB")}
             </span>
           </h1>
@@ -44,7 +44,7 @@ export default function HomePage() {
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <a
               href="#download"
-              className="inline-flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 text-base transition-colors"
+              className="inline-flex items-center justify-center rounded-full bg-[#F58220] hover:bg-[#E07418] text-white font-semibold px-6 py-3 text-base transition-colors"
             >
               {t("hero.ctaDownload")}
             </a>

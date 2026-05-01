@@ -21,7 +21,7 @@ export function LanguageSwitcher() {
             className={
               "px-2.5 py-1 rounded text-xs font-semibold transition-colors " +
               (active
-                ? "bg-orange-500 text-white"
+                ? "bg-[#F58220] text-white"
                 : "text-gray-600 hover:text-gray-900")
             }
           >

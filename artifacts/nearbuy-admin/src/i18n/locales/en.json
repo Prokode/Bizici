@@ -49,13 +49,13 @@
     "submitting": "Signing in…",
     "invalidCredentials": "Invalid credentials",
     "loginError": "Login error",
-    "appName": "NearBuy Admin",
+    "appName": "BizIci Admin",
     "tagline": "Sign in to the admin console",
     "identifier": "Username"
   },
   "dashboard": {
     "title": "Dashboard",
-    "description": "Overview of NearBuy activity",
+    "description": "Overview of BizIci activity",
     "loadError": "Could not load statistics.",
     "stats": {
       "users": "Users",
@@ -80,7 +80,7 @@
   },
   "users": {
     "title": "Users",
-    "description": "All NearBuy customer accounts",
+    "description": "All BizIci customer accounts",
     "searchPlaceholder": "Search (name, email)…",
     "name": "Name",
     "email": "Email",
@@ -101,7 +101,7 @@
   },
   "shops": {
     "title": "Shops",
-    "description": "All NearBuy shops",
+    "description": "All BizIci shops",
     "searchPlaceholder": "Search (name, market)…",
     "name": "Name",
     "seller": "Seller",

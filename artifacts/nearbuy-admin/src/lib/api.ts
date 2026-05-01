@@ -1,5 +1,5 @@
 /**
- * Tiny typed wrapper around the NearBuy admin API. All endpoints require an
+ * Tiny typed wrapper around the BizIci admin API. All endpoints require an
  * admin Bearer token (except /admin/auth/login).
  */
 
