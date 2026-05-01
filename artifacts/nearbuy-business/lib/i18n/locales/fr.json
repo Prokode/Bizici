@@ -347,5 +347,47 @@
       "errorRating": "Choisissez une note entre 1 et 5 étoiles.",
       "errorGeneric": "Impossible d'envoyer la note. Réessayez."
     }
+  },
+  "kyc": {
+    "banner": {
+      "unsubmitted": {
+        "title": "Validez votre compte",
+        "subtitle": "Soumettez une pièce d'identité pour apparaître sur la carte des clients.",
+        "cta": "Soumettre ma pièce d'identité"
+      },
+      "pending": {
+        "title": "Pièce reçue, en cours de vérification",
+        "subtitle": "Notre équipe valide votre document sous 24 à 48 h."
+      },
+      "rejected": {
+        "title": "Vérification refusée",
+        "subtitle": "Soumettez à nouveau une pièce d'identité valide.",
+        "reason": "Motif : {{reason}}",
+        "cta": "Soumettre à nouveau"
+      }
+    },
+    "submit": {
+      "headerTitle": "Vérification d'identité",
+      "title": "Vérifiez votre identité",
+      "subtitle": "Pour protéger vos clients, nous vérifions l'identité de chaque vendeur. Votre boutique apparaîtra sur la carte une fois la pièce validée.",
+      "docTypeLabel": "Type de document",
+      "docType": {
+        "id_card": "Carte nationale d'identité",
+        "passport": "Passeport",
+        "driver_license": "Permis de conduire"
+      },
+      "frontLabel": "Recto du document",
+      "frontHint": "Touchez pour ajouter une photo nette du recto",
+      "backLabel": "Verso du document",
+      "backHint": "Touchez pour ajouter une photo nette du verso",
+      "privacy": "Vos documents sont chiffrés et utilisés uniquement pour la vérification.",
+      "submitCta": "Envoyer pour vérification",
+      "successTitle": "Document envoyé",
+      "successBody": "Notre équipe vérifie votre pièce sous 24 à 48 h.",
+      "errorTitle": "Envoi impossible",
+      "errorBody": "Vérifiez votre connexion et réessayez.",
+      "permTitle": "Autorisation requise",
+      "permBody": "Autorisez l'accès aux photos pour ajouter votre pièce."
+    }
   }
 }

@@ -10,6 +10,7 @@
     "broadcasts": "Demandes",
     "karma": "Karma",
     "reviews": "Avis",
+    "validations": "Validations KYC",
     "admins": "Administrateurs",
     "signOut": "Se déconnecter"
   },
@@ -18,6 +19,7 @@
     "save": "Enregistrer",
     "saving": "Enregistrement…",
     "cancel": "Annuler",
+    "close": "Fermer",
     "delete": "Supprimer",
     "deleting": "Suppression…",
     "edit": "Modifier",
@@ -264,5 +266,38 @@
   "notFound": {
     "title": "404 — Page introuvable",
     "description": "Avez-vous oublié d'ajouter la page au routeur ?"
+  },
+  "validations": {
+    "title": "Validations KYC",
+    "description": "Vérifiez les pièces d'identité soumises par les vendeurs avant qu'ils n'apparaissent sur la carte.",
+    "shop": "Boutique",
+    "seller": "Vendeur",
+    "docTypeHeader": "Type de pièce",
+    "docType": {
+      "id_card": "Carte d'identité",
+      "passport": "Passeport",
+      "driver_license": "Permis de conduire"
+    },
+    "submittedAt": "Soumis le",
+    "review": "Examiner",
+    "approve": "Approuver",
+    "reject": "Rejeter",
+    "confirmReject": "Confirmer le rejet",
+    "rejectReasonLabel": "Motif du rejet",
+    "rejectReasonPlaceholder": "Expliquez au vendeur ce qui doit être corrigé (visible côté vendeur).",
+    "previousRejection": "Rejet précédent",
+    "loading": "Chargement du document…",
+    "frontLabel": "Recto",
+    "backLabel": "Verso",
+    "approved": "Vendeur approuvé. La boutique apparaît désormais sur la carte.",
+    "rejected": "Pièce rejetée. Le vendeur recevra le motif.",
+    "approveFailed": "Impossible d'approuver",
+    "rejectFailed": "Impossible de rejeter",
+    "status": {
+      "pending": "En attente",
+      "approved": "Approuvés",
+      "rejected": "Rejetés",
+      "unsubmitted": "Non soumis"
+    }
   }
 }

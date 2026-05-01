@@ -58,6 +58,8 @@ router.get("/public/shops", async (req, res) => {
   }
 
   const shops = await Shop.find({
+    // Only KYC-approved shops are visible to customers on the map.
+    "kyc.status": "approved",
     location: {
       $nearSphere: {
         $geometry: { type: "Point", coordinates: [lng, lat] },
@@ -133,8 +135,10 @@ router.get("/public/search", async (req, res) => {
     return;
   }
 
-  // 1. Find shops in radius
+  // 1. Find shops in radius (KYC-approved only — non-validated shops are
+  //    invisible to customers in product search).
   const shopsInRadius = await Shop.find({
+    "kyc.status": "approved",
     location: {
       $nearSphere: {
         $geometry: { type: "Point", coordinates: [lng, lat] },
@@ -247,6 +251,7 @@ router.post("/public/visual-search", visualSearchBodyParser, async (req, res) =>
   }
 
   const shopsInRadius = await Shop.find({
+    "kyc.status": "approved",
     location: {
       $nearSphere: {
         $geometry: { type: "Point", coordinates: [lng, lat] },
@@ -364,6 +369,12 @@ router.get("/public/shops/:shopId", async (req, res) => {
     res.status(404).json({ error: "Shop not found" });
     return;
   }
+  // Hide non-approved shops from customer-facing detail too — otherwise a
+  // direct deep link could bypass the map filter.
+  if ((shop.kyc?.status ?? "unsubmitted") !== "approved") {
+    res.status(404).json({ error: "Shop not found" });
+    return;
+  }
 
   const products = await Product.find({
     shop: shop._id,
@@ -392,6 +403,18 @@ router.get("/public/shops/:shopId/reviews", async (req, res) => {
     res.status(400).json({ error: "invalid shopId" });
     return;
   }
+
+  const shop = await Shop.findOne({
+    _id: new Types.ObjectId(shopId),
+    "kyc.status": "approved",
+  })
+    .select("_id")
+    .lean();
+  if (!shop) {
+    res.status(404).json({ error: "shop not found" });
+    return;
+  }
+
   const limit = clamp(Number(req.query.limit ?? 20), 1, 50);
   const beforeRaw =
     typeof req.query.before === "string" ? req.query.before : undefined;

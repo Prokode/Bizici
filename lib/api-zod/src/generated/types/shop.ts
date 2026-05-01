@@ -8,6 +8,7 @@
 import type { ServiceProviderProfile } from "./serviceProviderProfile";
 import type { ShopFulfillment } from "./shopFulfillment";
 import type { ShopKind } from "./shopKind";
+import type { ShopKyc } from "./shopKyc";
 
 export interface Shop {
   id: string;
@@ -38,6 +39,7 @@ shop was just created and the profile not yet filled in.
    * @minimum 0
    */
   ratingCount: number;
+  kyc?: ShopKyc;
   fulfillment: ShopFulfillment;
   /**
    * Optional delivery radius in km. Only meaningful when

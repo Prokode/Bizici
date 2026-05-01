@@ -6,6 +6,7 @@
   "scripts": {
     "hello": "tsx ./src/hello.ts",
     "seed:demo-services": "tsx ./src/seed-demo-services.ts",
+    "seed:pending-kyc": "tsx ./src/seed-pending-kyc.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

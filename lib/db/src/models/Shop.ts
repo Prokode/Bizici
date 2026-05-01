@@ -66,6 +66,30 @@ const ServiceProviderSchema = new Schema(
   { _id: false, timestamps: false },
 );
 
+// Lifecycle status of the shop's KYC submission. Mirrored on KycDocument
+// so map/search queries can filter without joining the document collection.
+export const KYC_STATUSES = ["unsubmitted", "pending", "approved", "rejected"] as const;
+export type KycStatus = (typeof KYC_STATUSES)[number];
+
+// Embedded KYC summary on the shop. The actual ID images live in the separate
+// KycDocument collection to keep shop list queries lean.
+const ShopKycSchema = new Schema(
+  {
+    status: {
+      type: String,
+      enum: KYC_STATUSES,
+      default: "unsubmitted",
+      required: true,
+      index: true,
+    },
+    submittedAt: { type: Date, default: null },
+    reviewedAt: { type: Date, default: null },
+    reviewedBy: { type: Schema.Types.ObjectId, ref: "Admin", default: null },
+    rejectionReason: { type: String, default: null },
+  },
+  { _id: false, timestamps: false },
+);
+
 const ShopSchema = new Schema(
   {
     sellerId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
@@ -84,6 +108,9 @@ const ShopSchema = new Schema(
       index: true,
     },
     serviceProvider: { type: ServiceProviderSchema, default: () => ({}) },
+    // KYC validation summary. Shops are only visible in customer-facing
+    // search/map endpoints when kyc.status === "approved".
+    kyc: { type: ShopKycSchema, default: () => ({}) },
     // For product shops (and the product side of a hybrid shop): how does
     // the merchant fulfil orders. Defaults to "pickup_only" so existing
     // shops keep behaving as before.

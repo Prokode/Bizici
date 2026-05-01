@@ -10,6 +10,7 @@
     "broadcasts": "Requests",
     "karma": "Karma",
     "reviews": "Reviews",
+    "validations": "KYC validations",
     "admins": "Admins",
     "signOut": "Sign out"
   },
@@ -18,6 +19,7 @@
     "save": "Save",
     "saving": "Saving…",
     "cancel": "Cancel",
+    "close": "Close",
     "delete": "Delete",
     "deleting": "Deleting…",
     "edit": "Edit",
@@ -259,6 +261,39 @@
       "seller": "Seller",
       "sub_seller": "Sub-seller",
       "customer": "Customer"
+    }
+  },
+  "validations": {
+    "title": "KYC validations",
+    "description": "Review ID documents submitted by sellers before they appear on the map.",
+    "shop": "Shop",
+    "seller": "Seller",
+    "docTypeHeader": "Document type",
+    "docType": {
+      "id_card": "ID card",
+      "passport": "Passport",
+      "driver_license": "Driver's license"
+    },
+    "submittedAt": "Submitted",
+    "review": "Review",
+    "approve": "Approve",
+    "reject": "Reject",
+    "confirmReject": "Confirm rejection",
+    "rejectReasonLabel": "Rejection reason",
+    "rejectReasonPlaceholder": "Explain to the seller what needs to be fixed (visible to them).",
+    "previousRejection": "Previous rejection",
+    "loading": "Loading document…",
+    "frontLabel": "Front",
+    "backLabel": "Back",
+    "approved": "Seller approved. Their shop now appears on the map.",
+    "rejected": "Document rejected. The seller will see the reason.",
+    "approveFailed": "Could not approve",
+    "rejectFailed": "Could not reject",
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "unsubmitted": "Not submitted"
     }
   },
   "notFound": {

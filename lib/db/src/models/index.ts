@@ -8,7 +8,15 @@ export {
   type ServiceLocation,
   SHOP_FULFILLMENTS,
   type ShopFulfillment,
+  KYC_STATUSES,
+  type KycStatus,
 } from "./Shop";
+export {
+  KycDocument,
+  type KycDocumentDoc,
+  KYC_DOCUMENT_TYPES,
+  type KycDocumentType,
+} from "./KycDocument";
 export { ShopMember, type ShopMemberDoc } from "./ShopMember";
 export { ShopInvitation, type ShopInvitationDoc } from "./ShopInvitation";
 export { BroadcastRequest, type BroadcastRequestDoc } from "./BroadcastRequest";

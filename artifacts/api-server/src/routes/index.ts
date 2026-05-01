@@ -15,6 +15,7 @@ import conversationsRouter from "./conversations";
 import reviewsRouter from "./reviews";
 import appointmentsRouter from "./appointments";
 import adminRouter from "./admin";
+import kycRouter from "./kyc";
 
 const router: IRouter = Router();
 
@@ -23,6 +24,10 @@ const router: IRouter = Router();
 // reaches them (Express middleware semantics), even for paths owned by a
 // later router, which would otherwise reject our admin login as unauthorized.
 router.use(adminRouter);
+// KYC router carries both admin and seller endpoints. Mounted right after
+// adminRouter so its `/admin/kyc/*` paths are reached before any
+// `requireAuth`-mounted router would intercept them.
+router.use(kycRouter);
 router.use(healthRouter);
 router.use(publicRouter);
 router.use(servicesPublicRouter);

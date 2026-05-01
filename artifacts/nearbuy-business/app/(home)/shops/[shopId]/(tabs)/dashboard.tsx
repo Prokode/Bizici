@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { Card } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { KycBanner } from "@/components/KycBanner";
 
 type StatCardProps = {
   icon: React.ComponentProps<typeof Feather>["name"];
@@ -195,6 +196,8 @@ export default function DashboardScreen() {
       >
         {t("dashboard.subtitle")}
       </Text>
+
+      {shopId ? <KycBanner shopId={shopId as string} /> : null}
 
       <View style={styles.grid}>
         <StatCard

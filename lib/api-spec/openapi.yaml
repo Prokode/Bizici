@@ -286,6 +286,37 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ShopDashboard" }
 
+  /shops/{shopId}/kyc/status:
+    get:
+      operationId: getShopKycStatus
+      tags: [kyc]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+      responses:
+        "200":
+          description: KYC status for the shop
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/KycStatusResponse" }
+
+  /shops/{shopId}/kyc/submit:
+    post:
+      operationId: submitShopKyc
+      tags: [kyc]
+      parameters:
+        - $ref: "#/components/parameters/ShopId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/KycSubmitBody" }
+      responses:
+        "200":
+          description: KYC submitted, status set to pending
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/KycStatusResponse" }
+
   /shops/{shopId}/products:
     get:
       operationId: listProducts
@@ -1049,6 +1080,8 @@ components:
           type: integer
           minimum: 0
           description: Number of reviews used for the average.
+        kyc:
+          $ref: "#/components/schemas/ShopKyc"
         fulfillment:
           $ref: "#/components/schemas/ShopFulfillment"
         deliveryRadiusKm:
@@ -1076,6 +1109,55 @@ components:
         - ratingAvg
         - ratingCount
         - fulfillment
+
+    KycStatus:
+      type: string
+      enum: [unsubmitted, pending, approved, rejected]
+      description: |
+        unsubmitted = no document uploaded yet, pending = awaiting admin
+        review, approved = visible to customers, rejected = needs resubmit.
+
+    KycDocumentType:
+      type: string
+      enum: [id_card, passport, driver_license]
+
+    ShopKyc:
+      type: object
+      description: Embedded KYC status on a shop. Image data lives elsewhere.
+      properties:
+        status: { $ref: "#/components/schemas/KycStatus" }
+        submittedAt: { type: string, format: date-time, nullable: true }
+        reviewedAt: { type: string, format: date-time, nullable: true }
+        rejectionReason: { type: string, nullable: true }
+      required: [status]
+
+    KycStatusResponse:
+      type: object
+      properties:
+        status: { $ref: "#/components/schemas/KycStatus" }
+        documentType:
+          oneOf:
+            - { $ref: "#/components/schemas/KycDocumentType" }
+            - { type: "null" }
+        submittedAt: { type: string, format: date-time, nullable: true }
+        reviewedAt: { type: string, format: date-time, nullable: true }
+        rejectionReason: { type: string, nullable: true }
+      required: [status]
+
+    KycSubmitBody:
+      type: object
+      properties:
+        documentType: { $ref: "#/components/schemas/KycDocumentType" }
+        frontImageBase64:
+          type: string
+          description: |
+            Base64-encoded image (without the `data:` prefix). The server
+            stores the raw bytes in a separate KycDocument collection.
+        backImageBase64:
+          type: string
+          nullable: true
+          description: Optional back side (id_card / driver_license).
+      required: [documentType, frontImageBase64]
 
     ShopReview:
       type: object

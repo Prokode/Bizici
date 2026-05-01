@@ -68,6 +68,30 @@ authenticated owner endpoints.
 }
 
 /**
+ * unsubmitted = no document uploaded yet, pending = awaiting admin
+review, approved = visible to customers, rejected = needs resubmit.
+
+ */
+export type KycStatus = (typeof KycStatus)[keyof typeof KycStatus];
+
+export const KycStatus = {
+  unsubmitted: "unsubmitted",
+  pending: "pending",
+  approved: "approved",
+  rejected: "rejected",
+} as const;
+
+/**
+ * Embedded KYC status on a shop. Image data lives elsewhere.
+ */
+export interface ShopKyc {
+  status: KycStatus;
+  submittedAt?: string | null;
+  reviewedAt?: string | null;
+  rejectionReason?: string | null;
+}
+
+/**
  * How a product shop fulfils orders. `pickup_only` = customer must
 come, `delivery_only` = shop only delivers, `both` = either.
 
@@ -110,6 +134,7 @@ shop was just created and the profile not yet filled in.
    * @minimum 0
    */
   ratingCount: number;
+  kyc?: ShopKyc;
   fulfillment: ShopFulfillment;
   /**
    * Optional delivery radius in km. Only meaningful when
@@ -222,6 +247,33 @@ export interface CourseStop {
 
 export interface CoursePlan {
   stops: CourseStop[];
+}
+
+export type KycDocumentType =
+  (typeof KycDocumentType)[keyof typeof KycDocumentType];
+
+export const KycDocumentType = {
+  id_card: "id_card",
+  passport: "passport",
+  driver_license: "driver_license",
+} as const;
+
+export interface KycStatusResponse {
+  status: KycStatus;
+  documentType?: KycDocumentType | null;
+  submittedAt?: string | null;
+  reviewedAt?: string | null;
+  rejectionReason?: string | null;
+}
+
+export interface KycSubmitBody {
+  documentType: KycDocumentType;
+  /** Base64-encoded image (without the `data:` prefix). The server
+stores the raw bytes in a separate KycDocument collection.
+ */
+  frontImageBase64: string;
+  /** Optional back side (id_card / driver_license). */
+  backImageBase64?: string | null;
 }
 
 export interface ShopReview {

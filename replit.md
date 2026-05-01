@@ -41,6 +41,7 @@ The NearBuy suite is built as a pnpm monorepo, utilizing a shared Node.js/Expres
 - **Fulfillment & Execution Locations:** Configurable options for product fulfillment (pickup, delivery) and service execution locations (at shop, at customer, both), with corresponding search filters and booking considerations.
 - **Services Marketplace:** Supports service-based businesses with distinct service categories, customizable pricing models (fixed, hourly, quote), and detailed provider profiles.
 - **Shopping Run (Course):** Allows customers to create a list of product queries and find available items in nearby shops, guiding them through an optimized shopping route.
+- **KYC Validation:** Sellers/providers must submit an ID document (CNI, passport, or driver's license) on first login via a persistent banner in BizIci Pro. Admins review submissions in the admin web app's "Validations KYC" queue and approve or reject (with reason). Only shops with `kyc.status="approved"` appear in customer search/map results. Storage: `KycDocument` collection holds the base64 images; `Shop.kyc` embeds the status. Approve also flips `serviceProvider.isVerified=true` for service shops. Pre-existing shops without `kyc.status` are excluded from public discovery (intentional strict-by-default behavior). Seed helper: `pnpm --filter @workspace/scripts run seed:pending-kyc`.
 
 ## External Dependencies
 

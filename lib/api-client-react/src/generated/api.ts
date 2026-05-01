@@ -34,6 +34,8 @@ import type {
   GetConversation200,
   HealthStatus,
   InviteMemberInput,
+  KycStatusResponse,
+  KycSubmitBody,
   ListCategoriesParams,
   ListConversationMessages200,
   ListConversationMessagesParams,
@@ -1587,6 +1589,168 @@ export function useGetShopDashboard<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+export const getGetShopKycStatusUrl = (shopId: string) => {
+  return `/api/shops/${shopId}/kyc/status`;
+};
+
+export const getShopKycStatus = async (
+  shopId: string,
+  options?: RequestInit,
+): Promise<KycStatusResponse> => {
+  return customFetch<KycStatusResponse>(getGetShopKycStatusUrl(shopId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetShopKycStatusQueryKey = (shopId: string) => {
+  return [`/api/shops/${shopId}/kyc/status`] as const;
+};
+
+export const getGetShopKycStatusQueryOptions = <
+  TData = Awaited<ReturnType<typeof getShopKycStatus>>,
+  TError = ErrorType<unknown>,
+>(
+  shopId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getShopKycStatus>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetShopKycStatusQueryKey(shopId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getShopKycStatus>>
+  > = ({ signal }) => getShopKycStatus(shopId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!shopId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getShopKycStatus>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetShopKycStatusQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getShopKycStatus>>
+>;
+export type GetShopKycStatusQueryError = ErrorType<unknown>;
+
+export function useGetShopKycStatus<
+  TData = Awaited<ReturnType<typeof getShopKycStatus>>,
+  TError = ErrorType<unknown>,
+>(
+  shopId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getShopKycStatus>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetShopKycStatusQueryOptions(shopId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getSubmitShopKycUrl = (shopId: string) => {
+  return `/api/shops/${shopId}/kyc/submit`;
+};
+
+export const submitShopKyc = async (
+  shopId: string,
+  kycSubmitBody: KycSubmitBody,
+  options?: RequestInit,
+): Promise<KycStatusResponse> => {
+  return customFetch<KycStatusResponse>(getSubmitShopKycUrl(shopId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(kycSubmitBody),
+  });
+};
+
+export const getSubmitShopKycMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitShopKyc>>,
+    TError,
+    { shopId: string; data: BodyType<KycSubmitBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof submitShopKyc>>,
+  TError,
+  { shopId: string; data: BodyType<KycSubmitBody> },
+  TContext
+> => {
+  const mutationKey = ["submitShopKyc"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof submitShopKyc>>,
+    { shopId: string; data: BodyType<KycSubmitBody> }
+  > = (props) => {
+    const { shopId, data } = props ?? {};
+
+    return submitShopKyc(shopId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SubmitShopKycMutationResult = NonNullable<
+  Awaited<ReturnType<typeof submitShopKyc>>
+>;
+export type SubmitShopKycMutationBody = BodyType<KycSubmitBody>;
+export type SubmitShopKycMutationError = ErrorType<unknown>;
+
+export const useSubmitShopKyc = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitShopKyc>>,
+    TError,
+    { shopId: string; data: BodyType<KycSubmitBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof submitShopKyc>>,
+  TError,
+  { shopId: string; data: BodyType<KycSubmitBody> },
+  TContext
+> => {
+  return useMutation(getSubmitShopKycMutationOptions(options));
+};
 
 export const getListProductsUrl = (shopId: string) => {
   return `/api/shops/${shopId}/products`;

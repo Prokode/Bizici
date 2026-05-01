@@ -347,5 +347,47 @@
       "errorRating": "Pick a rating between 1 and 5 stars.",
       "errorGeneric": "Could not submit the rating. Try again."
     }
+  },
+  "kyc": {
+    "banner": {
+      "unsubmitted": {
+        "title": "Verify your account",
+        "subtitle": "Submit an ID document so your shop appears on the customer map.",
+        "cta": "Submit my ID"
+      },
+      "pending": {
+        "title": "Document received, under review",
+        "subtitle": "Our team reviews your document within 24-48 h."
+      },
+      "rejected": {
+        "title": "Verification rejected",
+        "subtitle": "Please submit a valid ID document again.",
+        "reason": "Reason: {{reason}}",
+        "cta": "Submit again"
+      }
+    },
+    "submit": {
+      "headerTitle": "Identity verification",
+      "title": "Verify your identity",
+      "subtitle": "To protect your customers, we verify the identity of every seller. Your shop will appear on the map once approved.",
+      "docTypeLabel": "Document type",
+      "docType": {
+        "id_card": "National ID card",
+        "passport": "Passport",
+        "driver_license": "Driver's license"
+      },
+      "frontLabel": "Front of document",
+      "frontHint": "Tap to add a clear photo of the front",
+      "backLabel": "Back of document",
+      "backHint": "Tap to add a clear photo of the back",
+      "privacy": "Your documents are encrypted and used only for verification.",
+      "submitCta": "Send for review",
+      "successTitle": "Document sent",
+      "successBody": "Our team will review your document within 24-48 h.",
+      "errorTitle": "Submission failed",
+      "errorBody": "Check your connection and try again.",
+      "permTitle": "Permission required",
+      "permBody": "Allow access to your photos to add your document."
+    }
   }
 }

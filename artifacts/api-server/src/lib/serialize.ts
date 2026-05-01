@@ -41,6 +41,25 @@ export function serializeShop(
       typeof s.deliveryRadiusKm === "number" ? s.deliveryRadiusKm : null,
     distanceKm:
       typeof opts.distanceKm === "number" ? opts.distanceKm : undefined,
+    kyc: serializeShopKyc(s.kyc),
+  };
+}
+
+export function serializeShopKyc(k: any) {
+  const status = (k?.status ?? "unsubmitted") as
+    | "unsubmitted"
+    | "pending"
+    | "approved"
+    | "rejected";
+  return {
+    status,
+    submittedAt: k?.submittedAt
+      ? (k.submittedAt instanceof Date ? k.submittedAt : new Date(k.submittedAt)).toISOString()
+      : null,
+    reviewedAt: k?.reviewedAt
+      ? (k.reviewedAt instanceof Date ? k.reviewedAt : new Date(k.reviewedAt)).toISOString()
+      : null,
+    rejectionReason: k?.rejectionReason ?? null,
   };
 }
 

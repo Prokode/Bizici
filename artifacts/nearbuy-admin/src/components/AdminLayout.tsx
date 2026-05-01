@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard,
   Users,
@@ -13,9 +14,11 @@ import {
   Megaphone,
   Sparkles,
   Star,
+  ShieldCheck,
   LogOut,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { cn } from "@/lib/utils";
@@ -38,6 +41,7 @@ const NAV: NavItem[] = [
   { href: "/broadcasts", labelKey: "nav.broadcasts", icon: Megaphone },
   { href: "/karma", labelKey: "nav.karma", icon: Sparkles },
   { href: "/reviews", labelKey: "nav.reviews", icon: Star },
+  { href: "/validations", labelKey: "nav.validations", icon: ShieldCheck },
   { href: "/admins", labelKey: "nav.admins", icon: Shield, superOnly: true },
 ];
 
@@ -49,6 +53,15 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   const items = NAV.filter(
     (item) => !item.superOnly || admin?.role === "super_admin",
   );
+
+  const pendingKyc = useQuery({
+    queryKey: ["admin-kyc-pending-count"],
+    queryFn: () =>
+      api.get<{ count: number }>(`/api/admin/kyc/pending-count`),
+    refetchInterval: 60_000,
+    enabled: !!admin,
+  });
+  const pendingCount = pendingKyc.data?.count ?? 0;
 
   return (
     <div className="min-h-screen flex bg-background text-foreground">
@@ -94,7 +107,15 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                   )}
                 >
                   <Icon className="size-4" />
-                  {label}
+                  <span className="flex-1">{label}</span>
+                  {item.href === "/validations" && pendingCount > 0 ? (
+                    <span
+                      data-testid="badge-pending-kyc"
+                      className="inline-flex items-center justify-center rounded-full bg-[#F58220] text-white text-[11px] font-semibold leading-none min-w-[20px] h-5 px-1.5"
+                    >
+                      {pendingCount}
+                    </span>
+                  ) : null}
                 </a>
               </Link>
             );

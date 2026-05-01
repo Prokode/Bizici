@@ -102,6 +102,21 @@ export const GetMeResponse = zod.object({
           .number()
           .min(getMeResponseShopsItemShopRatingCountMin)
           .describe("Number of reviews used for the average."),
+        kyc: zod
+          .object({
+            status: zod
+              .enum(["unsubmitted", "pending", "approved", "rejected"])
+              .describe(
+                "unsubmitted = no document uploaded yet, pending = awaiting admin\nreview, approved = visible to customers, rejected = needs resubmit.\n",
+              ),
+            submittedAt: zod.coerce.date().nullish(),
+            reviewedAt: zod.coerce.date().nullish(),
+            rejectionReason: zod.string().nullish(),
+          })
+          .optional()
+          .describe(
+            "Embedded KYC status on a shop. Image data lives elsewhere.",
+          ),
         fulfillment: zod
           .enum(["pickup_only", "delivery_only", "both"])
           .describe(
@@ -366,6 +381,19 @@ export const ListShopsResponseItem = zod.object({
       .number()
       .min(listShopsResponseShopRatingCountMin)
       .describe("Number of reviews used for the average."),
+    kyc: zod
+      .object({
+        status: zod
+          .enum(["unsubmitted", "pending", "approved", "rejected"])
+          .describe(
+            "unsubmitted = no document uploaded yet, pending = awaiting admin\nreview, approved = visible to customers, rejected = needs resubmit.\n",
+          ),
+        submittedAt: zod.coerce.date().nullish(),
+        reviewedAt: zod.coerce.date().nullish(),
+        rejectionReason: zod.string().nullish(),
+      })
+      .optional()
+      .describe("Embedded KYC status on a shop. Image data lives elsewhere."),
     fulfillment: zod
       .enum(["pickup_only", "delivery_only", "both"])
       .describe(
@@ -494,6 +522,19 @@ export const CreateShopResponse = zod.object({
     .number()
     .min(createShopResponseRatingCountMin)
     .describe("Number of reviews used for the average."),
+  kyc: zod
+    .object({
+      status: zod
+        .enum(["unsubmitted", "pending", "approved", "rejected"])
+        .describe(
+          "unsubmitted = no document uploaded yet, pending = awaiting admin\nreview, approved = visible to customers, rejected = needs resubmit.\n",
+        ),
+      submittedAt: zod.coerce.date().nullish(),
+      reviewedAt: zod.coerce.date().nullish(),
+      rejectionReason: zod.string().nullish(),
+    })
+    .optional()
+    .describe("Embedded KYC status on a shop. Image data lives elsewhere."),
   fulfillment: zod
     .enum(["pickup_only", "delivery_only", "both"])
     .describe(
@@ -598,6 +639,19 @@ export const GetShopResponse = zod.object({
     .number()
     .min(getShopResponseRatingCountMin)
     .describe("Number of reviews used for the average."),
+  kyc: zod
+    .object({
+      status: zod
+        .enum(["unsubmitted", "pending", "approved", "rejected"])
+        .describe(
+          "unsubmitted = no document uploaded yet, pending = awaiting admin\nreview, approved = visible to customers, rejected = needs resubmit.\n",
+        ),
+      submittedAt: zod.coerce.date().nullish(),
+      reviewedAt: zod.coerce.date().nullish(),
+      rejectionReason: zod.string().nullish(),
+    })
+    .optional()
+    .describe("Embedded KYC status on a shop. Image data lives elsewhere."),
   fulfillment: zod
     .enum(["pickup_only", "delivery_only", "both"])
     .describe(
@@ -724,6 +778,19 @@ export const UpdateShopResponse = zod.object({
     .number()
     .min(updateShopResponseRatingCountMin)
     .describe("Number of reviews used for the average."),
+  kyc: zod
+    .object({
+      status: zod
+        .enum(["unsubmitted", "pending", "approved", "rejected"])
+        .describe(
+          "unsubmitted = no document uploaded yet, pending = awaiting admin\nreview, approved = visible to customers, rejected = needs resubmit.\n",
+        ),
+      submittedAt: zod.coerce.date().nullish(),
+      reviewedAt: zod.coerce.date().nullish(),
+      rejectionReason: zod.string().nullish(),
+    })
+    .optional()
+    .describe("Embedded KYC status on a shop. Image data lives elsewhere."),
   fulfillment: zod
     .enum(["pickup_only", "delivery_only", "both"])
     .describe(
@@ -832,6 +899,19 @@ export const SetShopOpenResponse = zod.object({
     .number()
     .min(setShopOpenResponseRatingCountMin)
     .describe("Number of reviews used for the average."),
+  kyc: zod
+    .object({
+      status: zod
+        .enum(["unsubmitted", "pending", "approved", "rejected"])
+        .describe(
+          "unsubmitted = no document uploaded yet, pending = awaiting admin\nreview, approved = visible to customers, rejected = needs resubmit.\n",
+        ),
+      submittedAt: zod.coerce.date().nullish(),
+      reviewedAt: zod.coerce.date().nullish(),
+      rejectionReason: zod.string().nullish(),
+    })
+    .optional()
+    .describe("Embedded KYC status on a shop. Image data lives elsewhere."),
   fulfillment: zod
     .enum(["pickup_only", "delivery_only", "both"])
     .describe(
@@ -888,6 +968,55 @@ export const GetShopDashboardResponse = zod.object({
   unreadCount: zod.number(),
   messages7d: zod.number(),
   lastMessageAt: zod.string().nullish(),
+});
+
+export const GetShopKycStatusParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const GetShopKycStatusResponse = zod.object({
+  status: zod
+    .enum(["unsubmitted", "pending", "approved", "rejected"])
+    .describe(
+      "unsubmitted = no document uploaded yet, pending = awaiting admin\nreview, approved = visible to customers, rejected = needs resubmit.\n",
+    ),
+  documentType: zod
+    .union([zod.enum(["id_card", "passport", "driver_license"]), zod.null()])
+    .optional(),
+  submittedAt: zod.coerce.date().nullish(),
+  reviewedAt: zod.coerce.date().nullish(),
+  rejectionReason: zod.string().nullish(),
+});
+
+export const SubmitShopKycParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const SubmitShopKycBody = zod.object({
+  documentType: zod.enum(["id_card", "passport", "driver_license"]),
+  frontImageBase64: zod
+    .string()
+    .describe(
+      "Base64-encoded image (without the `data:` prefix). The server\nstores the raw bytes in a separate KycDocument collection.\n",
+    ),
+  backImageBase64: zod
+    .string()
+    .nullish()
+    .describe("Optional back side (id_card \/ driver_license)."),
+});
+
+export const SubmitShopKycResponse = zod.object({
+  status: zod
+    .enum(["unsubmitted", "pending", "approved", "rejected"])
+    .describe(
+      "unsubmitted = no document uploaded yet, pending = awaiting admin\nreview, approved = visible to customers, rejected = needs resubmit.\n",
+    ),
+  documentType: zod
+    .union([zod.enum(["id_card", "passport", "driver_license"]), zod.null()])
+    .optional(),
+  submittedAt: zod.coerce.date().nullish(),
+  reviewedAt: zod.coerce.date().nullish(),
+  rejectionReason: zod.string().nullish(),
 });
 
 export const ListProductsParams = zod.object({
@@ -1907,6 +2036,19 @@ export const SearchServicesResponseItem = zod.object({
       .number()
       .min(searchServicesResponseShopRatingCountMin)
       .describe("Number of reviews used for the average."),
+    kyc: zod
+      .object({
+        status: zod
+          .enum(["unsubmitted", "pending", "approved", "rejected"])
+          .describe(
+            "unsubmitted = no document uploaded yet, pending = awaiting admin\nreview, approved = visible to customers, rejected = needs resubmit.\n",
+          ),
+        submittedAt: zod.coerce.date().nullish(),
+        reviewedAt: zod.coerce.date().nullish(),
+        rejectionReason: zod.string().nullish(),
+      })
+      .optional()
+      .describe("Embedded KYC status on a shop. Image data lives elsewhere."),
     fulfillment: zod
       .enum(["pickup_only", "delivery_only", "both"])
       .describe(
@@ -2226,6 +2368,19 @@ export const AcceptInvitationResponse = zod.object({
       .number()
       .min(acceptInvitationResponseShopRatingCountMin)
       .describe("Number of reviews used for the average."),
+    kyc: zod
+      .object({
+        status: zod
+          .enum(["unsubmitted", "pending", "approved", "rejected"])
+          .describe(
+            "unsubmitted = no document uploaded yet, pending = awaiting admin\nreview, approved = visible to customers, rejected = needs resubmit.\n",
+          ),
+        submittedAt: zod.coerce.date().nullish(),
+        reviewedAt: zod.coerce.date().nullish(),
+        rejectionReason: zod.string().nullish(),
+      })
+      .optional()
+      .describe("Embedded KYC status on a shop. Image data lives elsewhere."),
     fulfillment: zod
       .enum(["pickup_only", "delivery_only", "both"])
       .describe(

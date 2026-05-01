@@ -56,7 +56,11 @@ router.get("/services/search", async (req, res) => {
         distanceField: "distanceMeters",
         maxDistance: radiusKm * 1000,
         spherical: true,
-        query: { kind: { $in: ["services", "hybrid"] } },
+        // Only KYC-approved service providers appear in customer search.
+        query: {
+          kind: { $in: ["services", "hybrid"] },
+          "kyc.status": "approved",
+        },
       },
     },
     { $limit: 200 },
@@ -133,6 +137,7 @@ router.get("/services/providers/:shopId", async (req, res) => {
   const shop = await Shop.findOne({
     _id: new Types.ObjectId(req.params.shopId as string),
     kind: { $in: ["services", "hybrid"] },
+    "kyc.status": "approved",
   }).lean();
   if (!shop) {
     res.status(404).json({ error: "Provider not found" });

@@ -25,6 +25,10 @@ export default function ShopLayout() {
         options={{ headerShown: true, presentation: "modal", title: shop?.name ?? t("editShop.screenTitle") }}
       />
       <Stack.Screen name="chat/[conversationId]" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="kyc-submit"
+        options={{ headerShown: true, presentation: "modal", title: t("kyc.submit.headerTitle") }}
+      />
     </Stack>
   );
 }
