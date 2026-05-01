@@ -14,6 +14,8 @@ const SPLASH_FLAG_KEY = "nearbuy_admin_splash_played";
 
 function shouldPlaySplash(): boolean {
   if (typeof window === "undefined") return false;
+  // `?splash=force` query param forces the splash to play (useful for QA/preview).
+  if (window.location.search.includes("splash=force")) return true;
   try {
     return window.sessionStorage.getItem(SPLASH_FLAG_KEY) !== "1";
   } catch {

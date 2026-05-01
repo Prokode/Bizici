@@ -20,9 +20,13 @@
 
 /* --- Wordmark anchored at top:18% (matches mobile layout) --------------- */
 
+/* Position the wordmark so it sits just above where the pin lands after it
+   has shrunk to 0.5× and lifted by 100 px (its visible top is roughly
+   `viewportCenter - 164 px`). `max(12px, …)` keeps the wordmark on-screen
+   on very short viewports such as the workspace iframe preview. */
 .bsplash__wordmark {
   position: absolute;
-  top: 18%;
+  top: max(12px, calc(50% - 268px));
   left: 0;
   right: 0;
   display: flex;
@@ -42,7 +46,9 @@
 
 .bsplash__brand {
   font-family: "Inter", system-ui, sans-serif;
-  font-size: 56px;
+  /* Shrinks gracefully on tiny viewports so the wordmark never overlaps the
+     final pin position. Caps at 56 px to match the mobile reference. */
+  font-size: clamp(40px, 8vh, 56px);
   font-weight: 800;
   letter-spacing: -1px;
   line-height: 1;
@@ -59,7 +65,7 @@
 .bsplash__tagline {
   margin-top: 8px;
   font-family: "Inter", system-ui, sans-serif;
-  font-size: 15px;
+  font-size: clamp(13px, 2.5vh, 15px);
   font-weight: 500;
 }
 
