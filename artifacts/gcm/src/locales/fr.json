@@ -1,0 +1,118 @@
+{
+  "app": {
+    "name": "GCM",
+    "tagline": "Game Center Manager"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "postes": "Postes",
+    "ventes": "Vente en cours",
+    "consoles": "Consoles",
+    "cartes": "Cartes",
+    "tarifs": "Tarifs",
+    "users": "Utilisateurs",
+    "locaux": "Locaux",
+    "rapports": "Rapports",
+    "licence": "Licence",
+    "settings": "Paramètres",
+    "section_catalog": "Catalogue",
+    "section_admin": "Administration"
+  },
+  "topbar": {
+    "search": "Rechercher poste, client, ticket...",
+    "online": "EN LIGNE · {{count}} actifs",
+    "switch_dark": "Mode sombre",
+    "switch_light": "Mode clair",
+    "language": "Langue"
+  },
+  "sidebar": {
+    "active_local": "Local actif",
+    "license_pro": "Licence Pro",
+    "license_expires": "Expire dans {{days}} jours",
+    "renew": "RENOUVELER",
+    "role_admin": "Administrateur"
+  },
+  "dashboard": {
+    "eyebrow": "Vendredi 09 mai · Vue temps réel",
+    "revenue_today": "Recette du jour",
+    "vs_yesterday": "{{value}} vs hier",
+    "goal_today": "Objectif jour · {{amount}}",
+    "remaining": "{{amount}} restants",
+    "new_session": "Nouvelle session",
+    "today": "Aujourd'hui",
+    "occupancy": "Occupation",
+    "posts_count": "{{used}} / {{total}} postes",
+    "live": "LIVE",
+    "kpi_occupied": "Postes occupés",
+    "kpi_sessions": "Sessions actives",
+    "kpi_clients": "Clients uniques",
+    "kpi_basket": "Panier moyen",
+    "kpi_since_hour": "+{{n}} depuis 1h",
+    "ticker": {
+      "session_started": "{{poste}} · {{client}} a démarré {{game}}",
+      "cashed": "+{{amount}} encaissés sur {{poste}}",
+      "extended": "{{poste}} · {{client}} session prolongée +30 min",
+      "alert": "{{poste}} nécessite une intervention"
+    },
+    "chart": {
+      "eyebrow": "Recette horaire",
+      "title": "Aujourd'hui vs Moyenne 7j",
+      "today": "Aujourd'hui",
+      "avg7": "Moy. 7j"
+    },
+    "activity": {
+      "eyebrow": "Activité",
+      "title": "Flux temps réel",
+      "per_hour": "+12 / 1h",
+      "session": "Session démarrée · {{poste}}",
+      "cashed": "Encaissement {{amount}} · {{poste}}",
+      "extended": "Prolongation +30 min · {{poste}}",
+      "new_client": "Nouveau client enregistré",
+      "maintenance": "Maintenance {{poste}} signalée",
+      "system": "Système",
+      "ago_minutes": "il y a {{n}} min"
+    },
+    "top_games": {
+      "eyebrow": "Top jeux",
+      "title": "Cette semaine",
+      "see_all": "Tout voir"
+    },
+    "top_clients": {
+      "eyebrow": "Top clients",
+      "title": "Mai 2026",
+      "see_all": "Tout voir",
+      "sessions_this_month": "{{n}} sessions ce mois"
+    }
+  },
+  "postes": {
+    "eyebrow_count": "Catalogue · {{n}} postes",
+    "title": "Postes de jeu",
+    "occupancy": "Occupation",
+    "filter": "Filtrer",
+    "new": "Nouveau",
+    "available": "Disponible",
+    "tap_start": "Toucher pour démarrer",
+    "out_of_service": "Hors service",
+    "tech_assigned": "Tech assigné",
+    "people": "{{n}} personnes",
+    "reserved_at": "Réservé {{time}}",
+    "status": {
+      "occupe": "OCCUPÉ",
+      "libre": "LIBRE",
+      "maintenance": "MAINTENANCE",
+      "reserve": "RÉSERVÉ"
+    },
+    "modal": {
+      "session_live": "Session live",
+      "ping": "Ping {{ms}}ms",
+      "start": "Début",
+      "duration": "Durée",
+      "total_to_cash": "Total à encaisser",
+      "rate": "Tarif PC · {{amount}} / heure",
+      "pause": "Pause",
+      "add_30": "+30min",
+      "reboot": "Reboot",
+      "close_and_cash": "CLÔTURER & ENCAISSER"
+    }
+  }
+}
