@@ -131,8 +131,8 @@ function PosteCard({ p, onClick }: { p: Poste; onClick: () => void }) {
 function Modal({ poste, onClose }: { poste: Poste; onClose: () => void }) {
   const s = STATUS[poste.status];
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}>
-      <div className="w-full max-w-md rounded-xl border overflow-hidden" style={{ background: "var(--gcm-bg-2)", borderColor: "var(--gcm-border-strong)", boxShadow: "0 0 60px rgba(255,46,196,0.25)" }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6" style={{ background: "var(--gcm-modal-backdrop)", backdropFilter: "blur(4px)" }}>
+      <div className="w-full max-w-md rounded-xl border overflow-hidden" style={{ background: "var(--gcm-bg-2)", borderColor: "var(--gcm-border-strong)", boxShadow: "0 20px 60px rgba(15,23,42,0.25)" }}>
         <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: "var(--gcm-border)" }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-md flex items-center justify-center gcm-glow-magenta" style={{ background: "var(--gcm-panel-2)", color: "var(--gcm-magenta)" }}>
@@ -195,7 +195,7 @@ function Modal({ poste, onClose }: { poste: Poste; onClose: () => void }) {
             </button>
           </div>
 
-          <button className="w-full py-3 rounded-md font-bold gcm-glow-neon flex items-center justify-center gap-2" style={{ background: "var(--gcm-neon)", color: "#000" }}>
+          <button className="w-full py-3 rounded-md font-bold gcm-glow-neon flex items-center justify-center gap-2 text-white" style={{ background: "var(--gcm-neon)" }}>
             <Coins className="w-4 h-4" /> CLÔTURER & ENCAISSER
           </button>
         </div>
@@ -223,7 +223,7 @@ export function Postes() {
           <button className="px-3 py-2 rounded-md border text-sm flex items-center gap-2" style={{ borderColor: "var(--gcm-border-strong)", color: "var(--gcm-text-dim)", background: "var(--gcm-panel)" }}>
             <Filter className="w-4 h-4" /> Filtrer
           </button>
-          <button className="px-3 py-2 rounded-md text-sm font-semibold gcm-glow-neon flex items-center gap-2" style={{ background: "var(--gcm-neon)", color: "#000" }}>
+          <button className="px-3 py-2 rounded-md text-sm font-semibold gcm-glow-neon flex items-center gap-2 text-white" style={{ background: "var(--gcm-neon)" }}>
             <Plus className="w-4 h-4" /> Nouveau poste
           </button>
         </>

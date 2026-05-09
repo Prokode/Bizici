@@ -7,7 +7,7 @@ import {
 
 function Stat({ label, value, delta, up, icon: Icon, accent }: any) {
   return (
-    <div className="relative rounded-lg p-5 border overflow-hidden" style={{ background: "var(--gcm-panel)", borderColor: "var(--gcm-border)" }}>
+    <div className="relative rounded-lg p-5 border overflow-hidden gcm-card-shadow" style={{ background: "var(--gcm-panel)", borderColor: "var(--gcm-border)" }}>
       <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }} />
       <div className="flex items-start justify-between">
         <div>
@@ -57,7 +57,7 @@ export function Dashboard() {
           <button className="px-3 py-2 rounded-md border text-sm flex items-center gap-2" style={{ borderColor: "var(--gcm-border-strong)", color: "var(--gcm-text-dim)", background: "var(--gcm-panel)" }}>
             <Calendar className="w-4 h-4" /> Aujourd'hui
           </button>
-          <button className="px-3 py-2 rounded-md text-sm font-semibold gcm-glow-neon flex items-center gap-2" style={{ background: "var(--gcm-neon)", color: "#000" }}>
+          <button className="px-3 py-2 rounded-md text-sm font-semibold gcm-glow-neon flex items-center gap-2 text-white" style={{ background: "var(--gcm-neon)" }}>
             Nouvelle session <ArrowUpRight className="w-4 h-4" />
           </button>
         </>
@@ -75,7 +75,7 @@ export function Dashboard() {
 
       <div className="grid grid-cols-3 gap-4 mt-4">
         {/* Chart */}
-        <div className="col-span-2 rounded-lg border p-5" style={{ background: "var(--gcm-panel)", borderColor: "var(--gcm-border)" }}>
+        <div className="col-span-2 rounded-lg border p-5 gcm-card-shadow" style={{ background: "var(--gcm-panel)", borderColor: "var(--gcm-border)" }}>
           <div className="flex items-center justify-between mb-4">
             <div>
               <div className="text-[11px] uppercase tracking-widest" style={{ color: "var(--gcm-text-muted)" }}>Recette horaire</div>
@@ -101,7 +101,7 @@ export function Dashboard() {
         </div>
 
         {/* Top jeux */}
-        <div className="rounded-lg border p-5" style={{ background: "var(--gcm-panel)", borderColor: "var(--gcm-border)" }}>
+        <div className="rounded-lg border p-5 gcm-card-shadow" style={{ background: "var(--gcm-panel)", borderColor: "var(--gcm-border)" }}>
           <div className="flex items-center justify-between mb-4">
             <div className="gcm-display text-sm font-semibold">Top jeux</div>
             <Gamepad2 className="w-4 h-4" style={{ color: "var(--gcm-text-muted)" }} />
@@ -130,7 +130,7 @@ export function Dashboard() {
       </div>
 
       {/* Sessions table */}
-      <div className="rounded-lg border mt-4 overflow-hidden" style={{ background: "var(--gcm-panel)", borderColor: "var(--gcm-border)" }}>
+      <div className="rounded-lg border mt-4 overflow-hidden gcm-card-shadow" style={{ background: "var(--gcm-panel)", borderColor: "var(--gcm-border)" }}>
         <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "var(--gcm-border)" }}>
           <div>
             <div className="gcm-display text-sm font-semibold">Sessions en cours</div>
