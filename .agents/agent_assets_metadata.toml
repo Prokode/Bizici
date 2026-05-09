@@ -119,3 +119,9 @@ id = "32eXdaw9YoUNITaTbnvkm"
 uri = "file://attached_assets/bizici_logo_v4_storefront.png"
 type = "image"
 title = "4 — Vitrine illustrée"
+
+[[outputs]]
+id = "5FZBEu77aikap2Z9Il7g2"
+uri = "file://exports/gcm.tar.gz"
+type = "unspecified"
+title = "GCM source code (tar.gz)"
