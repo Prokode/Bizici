@@ -1,0 +1,29 @@
+$ node --enable-source-maps ./dist/index.mjs                                                                                                                         
+[12:15:07.272] ERROR (268): MongoDB connection failed                                                                                                                
+    err: {                                                                                                                                                           
+      "type": "Error",                                                                                                                                               
+      "message": "MONGODB_URI must be set",                                                                                                                          
+      "stack":                                                                                                                                                       
+          Error: MONGODB_URI must be set                                                                                                                             
+              at connectMongo (C:\Users\user\Documents\projects\bizici\Bizici\lib\db\src\connect.ts:7:27)                                                            
+              at <anonymous> (C:\Users\user\Documents\projects\bizici\Bizici\artifacts\api-server\src\app.ts:57:1)                                                   
+              at ModuleJob.run (node:internal/modules/esm/module_job:303:25)                                                                                         
+              at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:663:26)                                                                     
+              at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:99:5)                                                                         
+    }                                                                                                                                                                
+C:\Users\user\Documents\projects\bizici\Bizici\artifacts\api-server\src\index.ts:7                                                                                   
+  throw new Error(                                                                                                                                                   
+        ^                                                                                                                                                            
+                                                                                                                                                                     
+                                                                                                                                                                     
+Error: PORT environment variable is required but was not provided.                                                                                                   
+    at <anonymous> (C:\Users\user\Documents\projects\bizici\Bizici\artifacts\api-server\src\index.ts:7:9)                                                            
+    at ModuleJob.run (node:internal/modules/esm/module_job:303:25)                                                                                                   
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:663:26)                                                                               
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:99:5)                                                                                   
+                                                                                                                                                                     
+Node.js v24.0.0                                                                                                                                                      
+[ELIFECYCLE] Command failed with exit code 1.                                                                                                                        
+C:\Users\user\Documents\projects\bizici\Bizici\artifacts\api-server:                                                                                                 
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @workspace/api-server@0.0.0 dev: `cross-env NODE_ENV=development pnpm run build && cross-env NODE_ENV=development pnpm run start`
+Exit status 1                                                                                                                                                        

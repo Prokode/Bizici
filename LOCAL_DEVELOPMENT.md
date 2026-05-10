@@ -23,7 +23,10 @@ pnpm install
 
 ### Backend / web apps — `.env` at the repo root
 
+The API server auto-loads `<repo-root>/.env` at startup (via Node's `--env-file-if-exists`). Requires Node 22.7+.
+
 ```bash
+PORT=8080
 MONGODB_URI=mongodb+srv://USER:PASSWORD@cluster.mongodb.net/nearbuy
 SESSION_SECRET=any-long-random-string
 
