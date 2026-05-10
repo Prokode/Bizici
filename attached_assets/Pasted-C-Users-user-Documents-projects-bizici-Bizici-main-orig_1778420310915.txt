@@ -1,0 +1,56 @@
+C:\Users\user\Documents\projects\bizici\Bizici (main -> origin)
+λ git log -1 --oneline
+843a1ec (HEAD -> main, origin/main, origin/HEAD) Make AI features available without upfront configuration
+
+C:\Users\user\Documents\projects\bizici\Bizici (main -> origin)
+λ type .env
+PORT=8080
+MONGODB_URI=mongodb+srv://tamekloes_db_user:NearBuy2026Mongo@nearbuy.iznvpdp.mongodb.net/?appName=nearbuy
+SESSION_SECRET=29f8aac115e9b01628dd9c16a7e8829a99833bedc0975fb5a457bc9101683848dc0d3a346fffa441177952a40280c241
+CLERK_SECRET_KEY=sk_test_4zNQ43xy7BVx5sTFNKPzcjBwKOcg3mK7HOqTwtOYHQ
+CLERK_PUBLISHABLE_KEY=pk_test_dHJ1c3R5LXN1bmZpc2gtNDAuY2xlcmsuYWNjb3VudHMuZGV2JA
+C:\Users\user\Documents\projects\bizici\Bizici (main -> origin)
+λ pnpm --filter @workspace/api-server run dev
+$ cross-env NODE_ENV=development pnpm run build && cross-env NODE_ENV=development pnpm run start
+$ node ./build.mjs
+
+  dist\index.mjs                       6.2mb
+  dist\pino-worker.mjs               153.5kb
+  dist\pino-file.mjs                 142.1kb
+  dist\pino-pretty.mjs               114.6kb
+  dist\thread-stream-worker.mjs        7.3kb
+  dist\index.mjs.map                  12.6mb
+  dist\pino-worker.mjs.map           256.9kb
+  dist\pino-file.mjs.map             229.1kb
+  dist\pino-pretty.mjs.map           203.9kb
+  dist\thread-stream-worker.mjs.map   12.0kb
+
+Done in 1751ms
+$ node --enable-source-maps ./dist/index.mjs
+[13:38:10.114] ERROR (3204): MongoDB connection failed
+    err: {
+      "type": "Error",
+      "message": "MONGODB_URI must be set",
+      "stack":
+          Error: MONGODB_URI must be set
+              at connectMongo (C:\Users\user\Documents\projects\bizici\Bizici\lib\db\src\connect.ts:7:27)
+              at <anonymous> (C:\Users\user\Documents\projects\bizici\Bizici\artifacts\api-server\src\app.ts:57:1)
+              at ModuleJob.run (node:internal/modules/esm/module_job:303:25)
+              at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:663:26)
+              at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:99:5)
+    }
+C:\Users\user\Documents\projects\bizici\Bizici\artifacts\api-server\src\index.ts:7
+  throw new Error(
+        ^
+
+
+Error: PORT environment variable is required but was not provided.
+    at <anonymous> (C:\Users\user\Documents\projects\bizici\Bizici\artifacts\api-server\src\index.ts:7:9)
+    at ModuleJob.run (node:internal/modules/esm/module_job:303:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:663:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:99:5)
+
+Node.js v24.0.0
+[ELIFECYCLE] Command failed with exit code 1.
+C:\Users\user\Documents\projects\bizici\Bizici\artifacts\api-server:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @workspace/api-server@0.0.0 dev: `cross-env NODE_ENV=development pnpm run build && cross-env NODE_ENV=development pnpm run start` Exit status 1
