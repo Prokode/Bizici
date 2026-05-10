@@ -14,7 +14,7 @@ function toObjectIds(ids: unknown): Types.ObjectId[] {
 export const productsController = {
   listForShop: async (req: Request, res: Response) => {
     const products = await Product.find({
-      shop: new Types.ObjectId(req.params.shopId),
+      shop: new Types.ObjectId(String(req.params.shopId)),
       deletedAt: null,
     })
       .populate("categories")
@@ -63,7 +63,7 @@ export const productsController = {
     }
 
     const created = await Product.create({
-      shop: new Types.ObjectId(req.params.shopId),
+      shop: new Types.ObjectId(String(req.params.shopId)),
       seller: shopDoc.sellerId,
       name: String(body.name),
       brand: body.brand ?? null,
@@ -91,7 +91,7 @@ export const productsController = {
   },
 
   update: async (req: Request, res: Response) => {
-    if (!Types.ObjectId.isValid(req.params.id)) {
+    if (!Types.ObjectId.isValid(String(req.params.id))) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
@@ -125,8 +125,8 @@ export const productsController = {
 
     const product = await Product.findOneAndUpdate(
       {
-        _id: new Types.ObjectId(req.params.id),
-        shop: new Types.ObjectId(req.params.shopId),
+        _id: new Types.ObjectId(String(req.params.id)),
+        shop: new Types.ObjectId(String(req.params.shopId)),
         deletedAt: null,
       },
       update,
@@ -142,14 +142,14 @@ export const productsController = {
   },
 
   remove: async (req: Request, res: Response) => {
-    if (!Types.ObjectId.isValid(req.params.id)) {
+    if (!Types.ObjectId.isValid(String(req.params.id))) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
     const r = await Product.updateOne(
       {
-        _id: new Types.ObjectId(req.params.id),
-        shop: new Types.ObjectId(req.params.shopId),
+        _id: new Types.ObjectId(String(req.params.id)),
+        shop: new Types.ObjectId(String(req.params.shopId)),
         deletedAt: null,
       },
       { $set: { deletedAt: new Date() } },

@@ -58,7 +58,7 @@ export const requestsController = {
   },
 
   markFound: async (req: Request, res: Response) => {
-    const updated = await setStatus(req.params.shopId, req.params.id, "found");
+    const updated = await setStatus(String(req.params.shopId), String(req.params.id), "found");
     if (!updated) {
       res.status(404).json({ error: "Request not found or out of range" });
       return;
@@ -67,7 +67,7 @@ export const requestsController = {
   },
 
   markExpired: async (req: Request, res: Response) => {
-    const updated = await setStatus(req.params.shopId, req.params.id, "expired");
+    const updated = await setStatus(String(req.params.shopId), String(req.params.id), "expired");
     if (!updated) {
       res.status(404).json({ error: "Request not found or out of range" });
       return;

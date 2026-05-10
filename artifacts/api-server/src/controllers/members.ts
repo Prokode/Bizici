@@ -6,7 +6,7 @@ import { serializeInvitation } from "../lib/serialize";
 
 export const membersController = {
   list: async (req: Request, res: Response) => {
-    const shopObjectId = new Types.ObjectId(req.params.shopId);
+    const shopObjectId = new Types.ObjectId(String(req.params.shopId));
     const memberships = await ShopMember.find({ shopId: shopObjectId })
       .populate("userId")
       .lean();
@@ -49,7 +49,7 @@ export const membersController = {
     const existingUser = await User.findOne({ email }).lean();
     if (existingUser) {
       const already = await ShopMember.findOne({
-        shopId: new Types.ObjectId(req.params.shopId),
+        shopId: new Types.ObjectId(String(req.params.shopId)),
         userId: existingUser._id,
       }).lean();
       if (already) {
@@ -61,7 +61,7 @@ export const membersController = {
     }
 
     const existing = await ShopInvitation.findOne({
-      shopId: new Types.ObjectId(req.params.shopId),
+      shopId: new Types.ObjectId(String(req.params.shopId)),
       email,
       acceptedAt: null,
     }).lean();
@@ -72,7 +72,7 @@ export const membersController = {
 
     const token = crypto.randomBytes(24).toString("hex");
     const inv = await ShopInvitation.create({
-      shopId: new Types.ObjectId(req.params.shopId),
+      shopId: new Types.ObjectId(String(req.params.shopId)),
       email,
       role: "sub_seller",
       token,
@@ -83,7 +83,7 @@ export const membersController = {
   },
 
   removeMember: async (req: Request, res: Response) => {
-    if (!Types.ObjectId.isValid(req.params.userId)) {
+    if (!Types.ObjectId.isValid(String(req.params.userId))) {
       res.status(400).json({ error: "Invalid userId" });
       return;
     }
@@ -92,21 +92,21 @@ export const membersController = {
       return;
     }
     const r = await ShopMember.deleteOne({
-      shopId: new Types.ObjectId(req.params.shopId),
-      userId: new Types.ObjectId(req.params.userId),
+      shopId: new Types.ObjectId(String(req.params.shopId)),
+      userId: new Types.ObjectId(String(req.params.userId)),
       role: "sub_seller",
     });
     res.json({ success: r.deletedCount > 0 });
   },
 
   removeInvitation: async (req: Request, res: Response) => {
-    if (!Types.ObjectId.isValid(req.params.invitationId)) {
+    if (!Types.ObjectId.isValid(String(req.params.invitationId))) {
       res.status(400).json({ error: "Invalid invitationId" });
       return;
     }
     const r = await ShopInvitation.deleteOne({
-      _id: new Types.ObjectId(req.params.invitationId),
-      shopId: new Types.ObjectId(req.params.shopId),
+      _id: new Types.ObjectId(String(req.params.invitationId)),
+      shopId: new Types.ObjectId(String(req.params.shopId)),
       acceptedAt: null,
     });
     res.json({ success: r.deletedCount > 0 });
