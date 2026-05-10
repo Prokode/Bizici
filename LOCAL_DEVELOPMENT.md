@@ -69,10 +69,10 @@ Each app runs in its own terminal:
 # Backend API (default port 8080)
 pnpm --filter @workspace/api-server run dev
 
-# Marketing / public site
+# Marketing / public site (defaults to http://localhost:5174)
 pnpm --filter @workspace/nearbuy-site run dev
 
-# Admin panel
+# Admin panel (defaults to http://localhost:5173)
 pnpm --filter @workspace/nearbuy-admin run dev
 
 # BizIci — customer mobile app (Expo)
