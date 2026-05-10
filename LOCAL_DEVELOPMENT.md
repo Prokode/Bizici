@@ -76,11 +76,13 @@ pnpm --filter @workspace/nearbuy-site run dev
 pnpm --filter @workspace/nearbuy-admin run dev
 
 # BizIci — customer mobile app (Expo)
-pnpm --filter @workspace/nearbuy run dev
+pnpm --filter @workspace/nearbuy run dev:local
 
 # BizIci Pro — seller mobile app (Expo)
-pnpm --filter @workspace/nearbuy-business run dev
+pnpm --filter @workspace/nearbuy-business run dev:local
 ```
+
+> The plain `dev` script for the Expo apps uses Replit-specific shell variables (`$REPLIT_EXPO_DEV_DOMAIN`, etc.) and will not work on Windows / macOS / Linux. Use `dev:local` for local development — it just runs `expo start` and reads the app's own `.env` file.
 
 ### Open them
 
