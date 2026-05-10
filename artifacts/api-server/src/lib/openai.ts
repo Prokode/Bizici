@@ -1,15 +1,25 @@
 import OpenAI from "openai";
 
-const baseURL = process.env["AI_INTEGRATIONS_OPENAI_BASE_URL"];
-const apiKey = process.env["AI_INTEGRATIONS_OPENAI_API_KEY"];
+let _client: OpenAI | null = null;
 
-if (!baseURL || !apiKey) {
-  throw new Error(
-    "AI_INTEGRATIONS_OPENAI_BASE_URL and AI_INTEGRATIONS_OPENAI_API_KEY must be set",
-  );
+function getClient(): OpenAI {
+  if (_client) return _client;
+  const baseURL = process.env["AI_INTEGRATIONS_OPENAI_BASE_URL"];
+  const apiKey = process.env["AI_INTEGRATIONS_OPENAI_API_KEY"];
+  if (!baseURL || !apiKey) {
+    throw new Error(
+      "AI_INTEGRATIONS_OPENAI_BASE_URL and AI_INTEGRATIONS_OPENAI_API_KEY must be set to use AI features",
+    );
+  }
+  _client = new OpenAI({ baseURL, apiKey });
+  return _client;
 }
 
-export const openai = new OpenAI({ baseURL, apiKey });
+export const openai = new Proxy({} as OpenAI, {
+  get(_target, prop) {
+    return Reflect.get(getClient(), prop);
+  },
+});
 
 export type ProductPhotoSuggestion = {
   name: string;
@@ -23,7 +33,7 @@ export async function analyzeProductPhoto(
 ): Promise<ProductPhotoSuggestion> {
   const cleaned = imageBase64.replace(/^data:image\/\w+;base64,/, "");
 
-  const completion = await openai.chat.completions.create({
+  const completion = await getClient().chat.completions.create({
     model: "gpt-4o",
     max_tokens: 500,
     messages: [

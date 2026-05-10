@@ -30,9 +30,14 @@ SESSION_SECRET=any-long-random-string
 CLERK_SECRET_KEY=sk_test_xxx
 CLERK_PUBLISHABLE_KEY=pk_test_xxx
 
-# Optional
-OPENAI_API_KEY=sk-xxx
+# Optional — only needed for AI photo analysis in BizIci Pro.
+# On Replit these are injected automatically by the AI Integrations service.
+# Locally, point them at OpenAI directly (or any OpenAI-compatible endpoint):
+AI_INTEGRATIONS_OPENAI_BASE_URL=https://api.openai.com/v1
+AI_INTEGRATIONS_OPENAI_API_KEY=sk-xxx
 ```
+
+> The server now boots without these vars; AI endpoints will return an error only when actually called. Skip them if you don't need photo analysis.
 
 ### Mobile apps — one `.env` per Expo app
 
