@@ -31,6 +31,11 @@ export const ONBOARDING_SEEN_KEY = "nearbuy.onboarding.seen";
 
 const { width: SCREEN_W } = Dimensions.get("window");
 
+type FeatureBullet = {
+  icon: keyof typeof Feather.glyphMap;
+  labelKey: string;
+};
+
 type Slide = {
   key: string;
   titleKey: string;
@@ -38,6 +43,7 @@ type Slide = {
   visual: "logo" | "icon";
   iconName?: keyof typeof Feather.glyphMap;
   gradient: [string, string];
+  bullets?: FeatureBullet[];
 };
 
 const slides: Slide[] = [
@@ -49,20 +55,69 @@ const slides: Slide[] = [
     gradient: ["#F58220", "#E26A0A"],
   },
   {
-    key: "inventory",
+    key: "setup",
     titleKey: "onboarding.slide2Title",
     descriptionKey: "onboarding.slide2Body",
     visual: "icon",
-    iconName: "package",
+    iconName: "shield",
     gradient: ["#1B2A5C", "#3A4F8A"],
+    bullets: [
+      { icon: "map-pin", labelKey: "onboarding.slide2Bullet1" },
+      { icon: "clock", labelKey: "onboarding.slide2Bullet2" },
+      { icon: "check-circle", labelKey: "onboarding.slide2Bullet3" },
+    ],
   },
   {
-    key: "nearby",
+    key: "inventory",
     titleKey: "onboarding.slide3Title",
     descriptionKey: "onboarding.slide3Body",
     visual: "icon",
-    iconName: "map-pin",
+    iconName: "camera",
     gradient: ["#7FB927", "#5C9618"],
+    bullets: [
+      { icon: "image", labelKey: "onboarding.slide3Bullet1" },
+      { icon: "tag", labelKey: "onboarding.slide3Bullet2" },
+      { icon: "package", labelKey: "onboarding.slide3Bullet3" },
+    ],
+  },
+  {
+    key: "services",
+    titleKey: "onboarding.slide4Title",
+    descriptionKey: "onboarding.slide4Body",
+    visual: "icon",
+    iconName: "calendar",
+    gradient: ["#F58220", "#C8520A"],
+    bullets: [
+      { icon: "list", labelKey: "onboarding.slide4Bullet1" },
+      { icon: "clock", labelKey: "onboarding.slide4Bullet2" },
+      { icon: "check-square", labelKey: "onboarding.slide4Bullet3" },
+    ],
+  },
+  {
+    key: "chat",
+    titleKey: "onboarding.slide5Title",
+    descriptionKey: "onboarding.slide5Body",
+    visual: "icon",
+    iconName: "message-circle",
+    gradient: ["#1B2A5C", "#2E4280"],
+    bullets: [
+      { icon: "send", labelKey: "onboarding.slide5Bullet1" },
+      { icon: "bell", labelKey: "onboarding.slide5Bullet2" },
+      { icon: "users", labelKey: "onboarding.slide5Bullet3" },
+    ],
+  },
+  {
+    key: "discovery",
+    titleKey: "onboarding.slide6Title",
+    descriptionKey: "onboarding.slide6Body",
+    visual: "icon",
+    iconName: "trending-up",
+    gradient: ["#7FB927", "#3F8013"],
+    bullets: [
+      { icon: "map", labelKey: "onboarding.slide6Bullet1" },
+      { icon: "star", labelKey: "onboarding.slide6Bullet2" },
+      { icon: "award", labelKey: "onboarding.slide6Bullet3" },
+    ],
   },
 ];
 
@@ -86,16 +141,25 @@ function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
     const scale = interpolate(
       scrollX.value,
       inputRange,
-      [0.8, 1, 0.8],
+      [0.7, 1, 0.7],
       Extrapolation.CLAMP,
     );
     const opacity = interpolate(
       scrollX.value,
       inputRange,
-      [0.5, 1, 0.5],
+      [0.3, 1, 0.3],
       Extrapolation.CLAMP,
     );
-    return { transform: [{ scale }], opacity };
+    const rotate = interpolate(
+      scrollX.value,
+      inputRange,
+      [-15, 0, 15],
+      Extrapolation.CLAMP,
+    );
+    return {
+      transform: [{ scale }, { rotate: `${rotate}deg` }],
+      opacity,
+    };
   });
 
   const titleStyle = useAnimatedStyle(() => {
@@ -130,6 +194,22 @@ function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
     return { opacity, transform: [{ translateY: ty }] };
   });
 
+  const bulletsStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      scrollX.value,
+      inputRange,
+      [0, 1, 0],
+      Extrapolation.CLAMP,
+    );
+    const ty = interpolate(
+      scrollX.value,
+      inputRange,
+      [80, 0, 80],
+      Extrapolation.CLAMP,
+    );
+    return { opacity, transform: [{ translateY: ty }] };
+  });
+
   return (
     <View style={[styles.slide, { width: SCREEN_W }]}>
       <Animated.View style={[styles.visualWrap, visualStyle]}>
@@ -148,12 +228,13 @@ function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
           >
             <Feather
               name={slide.iconName ?? "circle"}
-              size={80}
+              size={72}
               color="#ffffff"
             />
           </LinearGradient>
         )}
       </Animated.View>
+
       <Animated.Text
         style={[styles.title, { color: colors.foreground }, titleStyle]}
       >
@@ -168,6 +249,38 @@ function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
       >
         {t(slide.descriptionKey)}
       </Animated.Text>
+
+      {slide.bullets ? (
+        <Animated.View style={[styles.bullets, bulletsStyle]}>
+          {slide.bullets.map((b) => (
+            <View
+              key={b.labelKey}
+              style={[
+                styles.bulletRow,
+                {
+                  backgroundColor: colors.muted,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
+              <View
+                style={[
+                  styles.bulletIcon,
+                  { backgroundColor: slide.gradient[0] + "22" },
+                ]}
+              >
+                <Feather name={b.icon} size={18} color={slide.gradient[0]} />
+              </View>
+              <Text
+                style={[styles.bulletText, { color: colors.foreground }]}
+                numberOfLines={2}
+              >
+                {t(b.labelKey)}
+              </Text>
+            </View>
+          ))}
+        </Animated.View>
+      ) : null}
     </View>
   );
 }
@@ -203,6 +316,31 @@ function Dot({ i, scrollX, color }: DotProps) {
     <Animated.View
       style={[styles.dot, { backgroundColor: color }, style]}
     />
+  );
+}
+
+type ProgressBarProps = {
+  scrollX: SharedValue<number>;
+  total: number;
+  color: string;
+  trackColor: string;
+};
+
+function ProgressBar({ scrollX, total, color, trackColor }: ProgressBarProps) {
+  const style = useAnimatedStyle(() => {
+    const max = (total - 1) * SCREEN_W;
+    const ratio = max > 0 ? Math.min(1, Math.max(0, scrollX.value / max)) : 0;
+    // Always show at least one slide's worth of progress filled.
+    const minPct = 1 / total;
+    const pct = Math.max(minPct, ratio * (1 - minPct) + minPct);
+    return { width: `${pct * 100}%` };
+  });
+  return (
+    <View style={[styles.progressTrack, { backgroundColor: trackColor }]}>
+      <Animated.View
+        style={[styles.progressFill, { backgroundColor: color }, style]}
+      />
+    </View>
   );
 }
 
@@ -251,6 +389,17 @@ export default function OnboardingScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
+        <View style={styles.progressWrap}>
+          <ProgressBar
+            scrollX={scrollX}
+            total={slides.length}
+            color={colors.primary}
+            trackColor={colors.border}
+          />
+          <Text style={[styles.progressLabel, { color: colors.mutedForeground }]}>
+            {`${index + 1} / ${slides.length}`}
+          </Text>
+        </View>
         <Pressable onPress={finish} hitSlop={12}>
           <Text style={[styles.skip, { color: colors.mutedForeground }]}>
             {t("onboarding.skip")}
@@ -301,9 +450,32 @@ const styles = StyleSheet.create({
   },
   topBar: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    alignItems: "center",
     paddingHorizontal: 20,
     paddingBottom: 8,
+    gap: 12,
+  },
+  progressWrap: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  progressTrack: {
+    flex: 1,
+    height: 4,
+    borderRadius: 2,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    borderRadius: 2,
+  },
+  progressLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    minWidth: 36,
+    textAlign: "right",
   },
   skip: {
     fontSize: 15,
@@ -312,44 +484,73 @@ const styles = StyleSheet.create({
   slide: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     paddingHorizontal: 32,
+    paddingTop: 24,
   },
   visualWrap: {
-    height: 240,
-    width: 240,
+    height: 200,
+    width: 200,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 36,
+    marginBottom: 28,
   },
   logo: {
-    height: 220,
-    width: 220,
+    height: 200,
+    width: 200,
   },
   iconCircle: {
-    height: 180,
-    width: 180,
-    borderRadius: 90,
+    height: 160,
+    width: 160,
+    borderRadius: 80,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#F58220",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 18,
-    elevation: 6,
+    shadowColor: "#1B2A5C",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 8,
   },
   title: {
     fontSize: 26,
     fontWeight: "800",
     textAlign: "center",
-    marginBottom: 14,
+    marginBottom: 12,
     letterSpacing: -0.5,
   },
   description: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 15,
+    lineHeight: 22,
     textAlign: "center",
-    maxWidth: 320,
+    maxWidth: 340,
+    marginBottom: 24,
+  },
+  bullets: {
+    width: "100%",
+    maxWidth: 360,
+    gap: 10,
+  },
+  bulletRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: 12,
+  },
+  bulletIcon: {
+    height: 36,
+    width: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bulletText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: "600",
+    lineHeight: 18,
   },
   footer: {
     paddingHorizontal: 24,
@@ -359,7 +560,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 20,
     gap: 8,
   },
   dot: {
