@@ -22,12 +22,8 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
-import {
-  fetchVisualSearch,
-  fetchShopDetail,
-  type VisualMatch,
-  type PublicShop,
-} from "@/lib/publicApi";
+import { fetchVisualSearch, type VisualMatch } from "@/lib/api/visualSearch";
+import { fetchShopDetail, type PublicShop } from "@/lib/api/shops";
 import { ShopBottomSheet } from "@/components/ShopBottomSheet";
 
 const FALLBACK = { lat: 48.8566, lng: 2.3522 };

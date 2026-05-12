@@ -18,7 +18,7 @@ import { useColors } from "@/hooks/useColors";
 import {
   createAppointment,
   type Appointment,
-} from "@/lib/appointmentsApi";
+} from "@/lib/api/appointments";
 
 type ServiceLocationMode = "at_shop" | "at_customer" | "both";
 

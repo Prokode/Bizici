@@ -25,17 +25,17 @@ import {
   markRead,
   sendMessage,
   type ChatMessage,
-} from "@/lib/chatApi";
+} from "@/lib/api/conversations";
 import {
   cancelAppointment,
   completeAppointment,
   listAppointments,
   type Appointment,
-} from "@/lib/appointmentsApi";
+} from "@/lib/api/appointments";
 import { AppointmentCard } from "@/components/AppointmentCard";
 import { AppointmentBookingModal } from "@/components/AppointmentBookingModal";
 import { AppointmentReviewModal } from "@/components/AppointmentReviewModal";
-import { fetchProviderDetail } from "@/lib/publicApi";
+import { fetchProviderDetail } from "@/lib/api/providers";
 
 function formatTime(iso: string): string {
   try {

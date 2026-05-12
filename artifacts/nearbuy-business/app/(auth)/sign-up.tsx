@@ -19,7 +19,7 @@ import * as WebBrowser from "expo-web-browser";
 import * as AuthSession from "expo-auth-session";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { LEGAL_VERSION } from "@workspace/legal-content";
-import { recordConsent, type ConsentSource } from "@/lib/consentApi";
+import { recordConsent, type ConsentSource } from "@/lib/api/consent";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { Formik } from "formik";

@@ -19,7 +19,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
-import type { CoursePlan } from "@/lib/courseApi";
+import type { CoursePlan } from "@/lib/api/course";
 
 type Cached = {
   plan: CoursePlan;

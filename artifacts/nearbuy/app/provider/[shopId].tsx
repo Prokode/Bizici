@@ -21,7 +21,7 @@ import {
   fetchProviderDetail,
   type PublicProviderDetail,
   type PublicService,
-} from "@/lib/publicApi";
+} from "@/lib/api/providers";
 import { AppointmentBookingModal } from "@/components/AppointmentBookingModal";
 import { LocationBadge } from "@/components/LocationBadge";
 

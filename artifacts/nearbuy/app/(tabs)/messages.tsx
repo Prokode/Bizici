@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
-import { listConversations, type ConversationSummary } from "@/lib/chatApi";
+import { listConversations, type ConversationSummary } from "@/lib/api/conversations";
 
 function useFormatRelative() {
   const { t, i18n } = useTranslation();

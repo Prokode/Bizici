@@ -25,8 +25,8 @@ import {
   fetchShopReviews,
   type PublicShop,
   type PublicShopReview,
-} from "@/lib/publicApi";
-import { getOrCreateConversation } from "@/lib/chatApi";
+} from "@/lib/api/shops";
+import { getOrCreateConversation } from "@/lib/api/conversations";
 import { ReviewModal } from "@/components/ReviewModal";
 import { useTranslation } from "react-i18next";
 import { FulfillmentBadge } from "@/components/LocationBadge";

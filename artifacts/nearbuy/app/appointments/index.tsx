@@ -17,7 +17,7 @@ import { useAuth } from "@clerk/expo";
 
 import { useColors } from "@/hooks/useColors";
 import { AppointmentCard } from "@/components/AppointmentCard";
-import { listAppointments, type Appointment } from "@/lib/appointmentsApi";
+import { listAppointments, type Appointment } from "@/lib/api/appointments";
 
 /**
  * Standalone "Mes rendez-vous" list. Shows everything the customer is

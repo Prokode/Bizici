@@ -1,8 +1,8 @@
 /**
- * Tiny typed wrapper around the auth-required chat endpoints of the
- * NearBuy api-server. Uses `customFetch` from the shared api-client package
- * so it inherits the base URL + Clerk Bearer-token getter that's already
- * registered in the root layout.
+ * Typed wrapper around the auth-required chat endpoints of the NearBuy
+ * api-server (`/api/conversations` + nested `/messages`). Uses `customFetch`
+ * so it inherits the base URL + Clerk Bearer-token getter registered in the
+ * root layout.
  */
 import { customFetch } from "@workspace/api-client-react";
 
@@ -36,7 +36,9 @@ export async function listConversations(): Promise<ConversationSummary[]> {
   return data.conversations;
 }
 
-export async function getConversation(id: string): Promise<ConversationSummary> {
+export async function getConversation(
+  id: string,
+): Promise<ConversationSummary> {
   const data = await customFetch<{ conversation: ConversationSummary }>(
     `/api/conversations/${encodeURIComponent(id)}`,
     { method: "GET" },

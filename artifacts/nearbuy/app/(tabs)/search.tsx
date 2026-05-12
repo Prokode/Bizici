@@ -21,11 +21,8 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
-import {
-  fetchSearch,
-  type PublicSearchHit,
-  type PublicShop,
-} from "@/lib/publicApi";
+import { fetchSearch, type PublicSearchHit } from "@/lib/api/search";
+import { type PublicShop } from "@/lib/api/shops";
 import { ShopBottomSheet } from "@/components/ShopBottomSheet";
 import {
   useListCategories,

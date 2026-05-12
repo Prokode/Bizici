@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { useColors } from "@/hooks/useColors";
-import { listConversations } from "@/lib/chatApi";
+import { listConversations } from "@/lib/api/conversations";
 
 export default function TabsLayout() {
   const colors = useColors();

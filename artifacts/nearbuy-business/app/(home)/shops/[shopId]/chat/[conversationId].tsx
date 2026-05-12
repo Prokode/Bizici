@@ -24,14 +24,14 @@ import {
   markRead,
   sendMessage,
   type ChatMessage,
-} from "@/lib/chatApi";
+} from "@/lib/api/conversations";
 import {
   acceptAppointment,
   cancelAppointment,
   declineAppointment,
   listAppointments,
   type Appointment,
-} from "@/lib/appointmentsApi";
+} from "@/lib/api/appointments";
 import { AppointmentCard } from "@/components/AppointmentCard";
 import { AppointmentReviewModal } from "@/components/AppointmentReviewModal";
 import { useTranslation } from "react-i18next";

@@ -4,7 +4,7 @@ import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
-import type { PublicShop } from "@/lib/publicApi";
+import type { PublicShop } from "@/lib/api/shops";
 import { LocationBadge } from "@/components/LocationBadge";
 
 type Props = {

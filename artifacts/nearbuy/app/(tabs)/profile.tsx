@@ -18,7 +18,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
-import { fetchMyKarma, type KarmaEvent } from "@/lib/publicApi";
+import { fetchMyKarma, type KarmaEvent } from "@/lib/api/karma";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ONBOARDING_SEEN_KEY } from "@/app/onboarding";
 

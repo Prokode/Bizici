@@ -14,7 +14,7 @@ import { Feather } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
 import { useColors } from "@/hooks/useColors";
-import { listConversations, type ConversationSummary } from "@/lib/chatApi";
+import { listConversations, type ConversationSummary } from "@/lib/api/conversations";
 
 function useFormatRelative() {
   const { t, i18n } = useTranslation();

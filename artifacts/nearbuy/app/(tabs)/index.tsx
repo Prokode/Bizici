@@ -18,7 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { useColors } from "@/hooks/useColors";
-import { fetchNearbyShops, type PublicShop } from "@/lib/publicApi";
+import { fetchNearbyShops, type PublicShop } from "@/lib/api/shops";
 import { ShopMarker } from "@/components/ShopMarker";
 import { ShopBottomSheet } from "@/components/ShopBottomSheet";
 import { ProviderMarker } from "@/components/ProviderMarker";

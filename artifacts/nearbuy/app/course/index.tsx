@@ -30,10 +30,10 @@ import {
   clearBasket,
   fetchBasket,
   removeBasketItem,
-  startCourse,
   type Basket,
   type BasketItem,
-} from "@/lib/courseApi";
+} from "@/lib/api/basket";
+import { startCourse } from "@/lib/api/course";
 
 export default function CourseBasketScreen() {
   const colors = useColors();

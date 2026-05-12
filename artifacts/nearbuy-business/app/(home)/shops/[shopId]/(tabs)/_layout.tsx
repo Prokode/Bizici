@@ -11,7 +11,7 @@ import React from "react";
 import { Platform, StyleSheet, View, useColorScheme } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
-import { listConversations } from "@/lib/chatApi";
+import { listConversations } from "@/lib/api/conversations";
 
 function useShopUnread(shopId: string | undefined) {
   const query = useQuery({

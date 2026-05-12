@@ -1,6 +1,6 @@
 /**
- * Typed wrapper around /api/me/appointments. Mirrors lib/chatApi.ts in shape
- * so the screens can use the same useQuery / useMutation patterns.
+ * Typed wrapper around /api/me/appointments. Mirrors lib/api/conversations.ts
+ * in shape so screens can use the same useQuery / useMutation patterns.
  */
 import { customFetch } from "@workspace/api-client-react";
 

@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter, type Href } from "expo-router";
 import { useAuth } from "@clerk/expo";
 
 import { useColors } from "@/hooks/useColors";
-import { getOrCreateConversation } from "@/lib/chatApi";
+import { getOrCreateConversation } from "@/lib/api/conversations";
 
 /**
  * Resolver screen used after a deep-link from sign-in.

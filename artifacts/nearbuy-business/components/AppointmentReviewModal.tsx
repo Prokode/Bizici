@@ -18,7 +18,7 @@ import {
   listAppointmentReviews,
   submitAppointmentReview,
   type AppointmentReview,
-} from "@/lib/appointmentsApi";
+} from "@/lib/api/appointments";
 
 type Props = {
   visible: boolean;
