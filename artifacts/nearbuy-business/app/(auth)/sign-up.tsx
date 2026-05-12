@@ -22,6 +22,8 @@ import { LEGAL_VERSION } from "@workspace/legal-content";
 import { recordConsent, type ConsentSource } from "@/lib/consentApi";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
+import { Formik } from "formik";
+ import * as yup from 'yup';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -49,6 +51,8 @@ export default function SignUpScreen() {
   const [code, setCode] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+   const [showPassword, setShowPassword] = useState(false);
 
   const requireTermsOrAlert = () => {
     if (acceptedTerms) return true;
@@ -224,50 +228,93 @@ export default function SignUpScreen() {
               <View style={[styles.divider, { backgroundColor: colors.border }]} />
             </View>
 
-            <Input
-              label={t("auth.email")}
-              placeholder={t("auth.emailPlaceholder")}
-              value={emailAddress}
-              onChangeText={setEmailAddress}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-            {errors?.fields?.emailAddress && (
-              <Text style={[styles.error, { color: colors.destructive }]}>{errors.fields.emailAddress.message}</Text>
-            )}
+            <Formik
+                 initialValues={ 
+                   { 
+                    email: '', 
+                    password: ''
+                 }} 
+               validationSchema={
+                   yup.object().shape({ 
+                       email: yup
+                           .string()
+                           .required(`${ t('common.requiredfield') }`)
+                           .email(`${ t('emailnotvalid') }`),
+                       password: yup
+                           .string()
+                           .required(`${t('common.requiredfield')}`)
+                   })
+               }
+                   onSubmit={async (values) => { 
 
-            <Input
-              label={t("auth.password")}
-              placeholder={t("auth.passwordPlaceholderSignUp")}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-            {errors?.fields?.password && (
-              <Text style={[styles.error, { color: colors.destructive }]}>{errors.fields.password.message}</Text>
-            )}
-            {submitError && <Text style={[styles.error, { color: colors.destructive }]}>{submitError}</Text>}
+                      setSubmitError(null);
+                      if (!requireTermsOrAlert()) return;
+                      try {
+                        const { error } = 
+                        await signUp.password({ emailAddress: values.email, 
+                          password: values.password });
+                        if (error) {
+                          setSubmitError(error.errors?.[0]?.longMessage ?? error.message ?? t("auth.errorSignUp"));
+                          return;
+                        }
+                        await signUp.verifications.sendEmailCode();
+                      } catch (err: any) {
+                        setSubmitError(err?.message ?? t("auth.errorGeneric"));
+                      }
+                     
+                   }}
+               >
+               {({ handleChange, handleBlur, handleSubmit, values, touched, errors, isValid }) => (
+                <>
+                      <Input
+                          value={values.email}
+                          onChangeText={handleChange('email')}
+                          onBlur={handleBlur('email')}
+                          placeholder="you@example.com" 
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                      />
 
-            <ConsentCheckbox
-              accepted={acceptedTerms}
-              onToggle={() => setAcceptedTerms((v) => !v)}
-              colors={colors}
-              t={t}
-            />
+                      {errors.email && errors.email && (
+                        <Text style={[styles.error, { color: colors.destructive }]}>
+                          {errors.email.toString()}</Text>
+                      )}
 
-            <Button
-              title={t("auth.signUpButton")}
-              size="lg"
-              disabled={
-                !emailAddress ||
-                !password ||
-                !acceptedTerms ||
-                fetchStatus === "fetching"
-              }
-              loading={fetchStatus === "fetching"}
-              onPress={handleSubmit}
-              style={{ marginTop: 12 }}
-            />
+                      <Input
+                        value={values.password}
+                        onChangeText={handleChange('password')}
+                        onBlur={handleBlur('password')}
+                        label={t("auth.password")}
+                        placeholder={"*******"}
+                        secureTextEntry={!showPassword}
+                        autoCapitalize="none" 
+                      />
+
+                      {  touched.password && errors.password && (
+                        <Text style={[styles.error, { color: colors.destructive }]}>{errors.password.toString()}</Text>
+                      )}
+
+                      {submitError && <Text style={[styles.error, { color: colors.destructive }]}>{submitError}</Text>}
+
+                      <ConsentCheckbox
+                        accepted={acceptedTerms}
+                        onToggle={() => setAcceptedTerms((v) => !v)}
+                        colors={colors}
+                        t={t}
+                      />
+
+                      <Button
+                        title={t("auth.signUpButton")}
+                        size="lg"
+                        disabled={ !isValid }
+                        loading={fetchStatus === "fetching"}
+                        onPress={handleSubmit}
+                        style={{ marginTop: 12 }}
+                      />
+                      </>
+                      )}
+            </Formik>
 
             <View nativeID="clerk-captcha" />
           </Card>

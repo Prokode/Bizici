@@ -38,29 +38,29 @@ export default function ShopListScreen() {
         activeOpacity={0.8}
         onPress={() => {
           Haptics.selectionAsync();
-          router.push(`/(home)/shops/${shop.id}`);
+          router.push(`/(home)/shops/${shop?.id}`);
         }}
       >
         <Card style={styles.shopCard}>
           <View style={styles.shopHeader}>
             <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
               <Text style={[styles.avatarText, { color: colors.primaryForeground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-                {shop.name.charAt(0).toUpperCase()}
+                {shop?.name.charAt(0).toUpperCase()}
               </Text>
             </View>
             <View style={styles.shopInfo}>
               <Text style={[styles.shopName, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-                {shop.name}
+                {shop?.name}
               </Text>
               <Text style={[styles.shopMeta, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_500Medium" }]}>
-                {shop.marketName || t("shopList.noMarketName")}
+                {shop?.marketName || t("shopList.noMarketName")}
               </Text>
             </View>
             <View style={styles.badges}>
               <Badge variant={item.role === "seller" ? "default" : "secondary"}>
                 {item.role === "seller" ? t("shopList.seller") : t("shopList.helper")}
               </Badge>
-              {shop.isOpen ? (
+              {shop?.isOpen ? (
                 <Badge variant="success" style={{ marginTop: 4 }}>{t("shopList.open")}</Badge>
               ) : (
                 <Badge variant="destructive" style={{ marginTop: 4 }}>{t("shopList.closed")}</Badge>
@@ -87,9 +87,9 @@ export default function ShopListScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <FlatList
+      {(shops || []).length > 0 ? <FlatList
         data={shops || []}
-        keyExtractor={(item) => item.shop.id}
+        keyExtractor={(item) => item?.shop?.id}
         renderItem={renderItem}
         contentContainerStyle={[
           styles.content,
@@ -127,7 +127,10 @@ export default function ShopListScreen() {
           </View>
         }
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
-      />
+      /> : (
+        <View style={styles.emptyContainer}>
+          <Feather name="shopping-bag" size={48} color={colors.mutedForeground} style={{ marginBottom: 16 }} />
+        </View> )}
 
       {(shops?.length ?? 0) > 0 && (
         <TouchableOpacity

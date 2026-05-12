@@ -28,7 +28,8 @@
     "justNow": "à l'instant",
     "minAgo": "il y a {{count}} min",
     "hAgo": "il y a {{count}} h",
-    "dAgo": "il y a {{count}} j"
+    "dAgo": "il y a {{count}} j",
+    "requiredfield": "Ce champ est requis"
   },
   "dashboard": {
     "title": "Tableau de bord",

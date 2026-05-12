@@ -28,7 +28,8 @@
     "justNow": "just now",
     "minAgo": "{{count}}m ago",
     "hAgo": "{{count}}h ago",
-    "dAgo": "{{count}}d ago"
+    "dAgo": "{{count}}d ago",
+    "requiredfield": "This field is required"
   },
   "dashboard": {
     "title": "Dashboard",
