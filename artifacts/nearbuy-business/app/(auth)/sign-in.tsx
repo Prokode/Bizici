@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { StyleSheet, Text, View, Platform } from "react-native";
+import { Pressable, StyleSheet, Text, View, Platform } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
@@ -173,6 +173,23 @@ export default function SignInScreen() {
             onPress={handleSubmit}
             style={{ marginTop: 12 }}
           />
+
+          <Pressable
+            onPress={() => router.push("/(auth)/forgot-password" as Href)}
+            style={{ marginTop: 12, alignSelf: "center" }}
+          >
+            <Text
+              style={[
+                styles.link,
+                {
+                  color: colors.primary,
+                  fontFamily: "PlusJakartaSans_600SemiBold",
+                },
+              ]}
+            >
+              {t("auth.forgotLink")}
+            </Text>
+          </Pressable>
         </Card>
 
         <View style={styles.footer}>
