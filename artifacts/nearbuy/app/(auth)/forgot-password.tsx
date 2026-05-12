@@ -37,34 +37,29 @@ export default function ForgotPasswordScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const requestCode = useCallback(async () => {
+    if (submitting) return;
     setError(null);
     setSubmitting(true);
     try {
+      // Anti-enumeration: do NOT surface API errors from create/sendCode.
+      // Clerk only mails an existing account, but we always advance to the
+      // verify stage with a neutral message so attackers can't probe which
+      // emails are registered. Real errors will surface on code verification.
       const created = await signIn.create({ identifier: emailAddress.trim() });
-      if (created.error) {
-        setError(
-          created.error.message ??
-            t("auth.errorForgotRequest"),
-        );
-        return;
-      }
-      const sent = await signIn.resetPasswordEmailCode.sendCode();
-      if (sent.error) {
-        setError(
-          sent.error.message ??
-            t("auth.errorForgotRequest"),
-        );
-        return;
+      if (!created.error) {
+        await signIn.resetPasswordEmailCode.sendCode();
       }
       setStage("verify");
-    } catch (err: any) {
-      setError(err?.message ?? t("auth.errorForgotRequest"));
+    } catch {
+      // Swallow — verify-stage validation is the real gate.
+      setStage("verify");
     } finally {
       setSubmitting(false);
     }
-  }, [signIn, emailAddress, t]);
+  }, [signIn, emailAddress, submitting]);
 
   const resetPassword = useCallback(async () => {
+    if (submitting) return;
     setError(null);
     setSubmitting(true);
     try {

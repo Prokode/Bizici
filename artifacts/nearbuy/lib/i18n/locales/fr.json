@@ -204,7 +204,7 @@
     "forgotLink": "Mot de passe oublié ?",
     "forgotTitle": "Réinitialiser le mot de passe",
     "forgotSubtitle": "Entrez votre e-mail et nous vous enverrons un code à 6 chiffres.",
-    "forgotVerifySubtitle": "Saisissez le code envoyé à {{email}} et choisissez un nouveau mot de passe.",
+    "forgotVerifySubtitle": "Si un compte existe pour {{email}}, nous venons d'envoyer un code à 6 chiffres. Saisissez-le et choisissez un nouveau mot de passe.",
     "forgotSendCode": "Envoyer le code",
     "forgotResetButton": "Réinitialiser le mot de passe",
     "forgotChangeEmail": "Modifier l'e-mail",

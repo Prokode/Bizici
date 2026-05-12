@@ -204,7 +204,7 @@
     "forgotLink": "Forgot password?",
     "forgotTitle": "Reset password",
     "forgotSubtitle": "Enter your email and we'll send you a 6-digit code.",
-    "forgotVerifySubtitle": "Enter the code we sent to {{email}} and pick a new password.",
+    "forgotVerifySubtitle": "If an account exists for {{email}}, we just sent a 6-digit code. Enter it and pick a new password.",
     "forgotSendCode": "Send code",
     "forgotResetButton": "Reset password",
     "forgotChangeEmail": "Change email",
