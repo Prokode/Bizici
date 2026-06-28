@@ -53,7 +53,13 @@
     "loginError": "Erreur de connexion",
     "appName": "BizIci Admin",
     "tagline": "Connexion à l'espace administrateur",
-    "identifier": "Identifiant"
+    "identifier": "Identifiant",
+    "brandHeadline": "Gérez votre marketplace local",
+    "brandSubline": "Suivez l'activité, validez les vendeurs et assurez le bon fonctionnement de la communauté BizIci.",
+    "brandPoint1": "Statistiques de la plateforme en temps réel",
+    "brandPoint2": "Revue et approbation des documents KYC",
+    "brandPoint3": "Modération des utilisateurs, boutiques et contenus",
+    "allRightsReserved": "Tous droits réservés"
   },
   "dashboard": {
     "title": "Tableau de bord",

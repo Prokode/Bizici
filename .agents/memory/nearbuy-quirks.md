@@ -25,10 +25,11 @@ in-progress Formik refactor in `nearbuy-business` sign-up.
 (`pnpm --filter @workspace/<app> run typecheck 2>&1 | rg <YourFile>`); do not
 assume a full clean run, and don't fix these unrelated errors unless asked.
 
-## nearbuy-site screenshots get stuck on the animated splash
-All routes mount `AnimatedSplash` on cold load, and each screenshot is a fresh
-page context, so app-preview screenshots repeatedly capture the splash
-mid-animation instead of the page.
-**How to apply:** Append `?splash=skip` to the path when screenshotting
-nearbuy-site (mirrors the existing `?splash=force`). Both are gated in
-`App.tsx` `shouldPlaySplash()`.
+## Splash blocks screenshots in both web apps
+Both nearbuy-site and nearbuy-admin play AnimatedSplash on cold load, blocking
+screenshots.
+**How to apply:**
+- `nearbuy-site`: append `?splash=skip` to any path (gated in `App.tsx` `shouldPlaySplash()`).
+- `nearbuy-admin`: the Login page is at `/login`, not `/`. Splash is only on Login.
+  Screenshot with `/login?splash=skip`. Navigating to `/?splash=skip` redirects
+  to `/login` but drops the query param, so the splash plays anyway.

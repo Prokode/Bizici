@@ -45,6 +45,15 @@ const NAV: NavItem[] = [
   { href: "/admins", labelKey: "nav.admins", icon: Shield, superOnly: true },
 ];
 
+function getInitials(name: string | undefined | null): string {
+  if (!name) return "?";
+  return name
+    .split(/[\s_.-]+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 export function AdminLayout({ children }: { children: ReactNode }) {
   const { admin, logout } = useAuth();
   const [location] = useLocation();
@@ -63,23 +72,41 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   });
   const pendingCount = pendingKyc.data?.count ?? 0;
 
+  const roleLabel = admin?.isRoot
+    ? t("admins.rootBadge")
+    : admin?.role === "super_admin"
+      ? t("admins.roles.super_admin")
+      : admin?.role === "admin"
+        ? t("admins.roles.admin")
+        : t("admins.roles.moderator");
+
   return (
     <div className="min-h-screen flex bg-background text-foreground">
-      <aside className="w-64 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border">
+      <aside
+        className="w-64 shrink-0 flex flex-col border-r border-sidebar-border"
+        style={{
+          background: "linear-gradient(180deg, hsl(225 55% 23%) 0%, hsl(225 58% 18%) 100%)",
+          color: "hsl(220 20% 92%)",
+        }}
+      >
+        {/* Logo */}
         <div className="px-5 py-5 border-b border-sidebar-border">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <img
-                src={`${import.meta.env.BASE_URL}bizici-pin.png`}
-                alt="BizIci"
-                className="size-9 object-contain"
-              />
+            <div className="flex items-center gap-2.5">
+              <div className="size-9 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: "rgba(255,255,255,0.08)" }}>
+                <img
+                  src={`${import.meta.env.BASE_URL}bizici-pin.png`}
+                  alt="BizIci"
+                  className="size-6 object-contain"
+                />
+              </div>
               <div>
-                <div className="font-semibold leading-tight tracking-tight">
+                <div className="font-bold text-sm leading-tight tracking-tight">
                   <span className="text-white">Biz</span>
                   <span style={{ color: "#7FB927" }}>Ici</span>
                 </div>
-                <div className="text-xs text-sidebar-foreground/70 leading-tight">
+                <div className="text-[11px] text-white/50 leading-tight mt-px">
                   Admin
                 </div>
               </div>
@@ -88,7 +115,8 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
           {items.map((item) => {
             const Icon = item.icon;
             const label = t(item.labelKey);
@@ -100,18 +128,21 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                 <a
                   data-testid={`nav-${item.href.replace(/\//g, "") || "home"}`}
                   className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm hover-elevate active-elevate-2 border border-transparent",
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                    "border border-transparent",
                     active
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-accent-border"
-                      : "text-sidebar-foreground/85",
+                      ? "bg-white/10 text-white border-white/10"
+                      : "text-white/70 hover:bg-white/6 hover:text-white/90",
                   )}
+                  style={active ? { borderLeft: "3px solid #F58220", paddingLeft: "calc(0.75rem - 2px)" } : {}}
                 >
-                  <Icon className="size-4" />
+                  <Icon className={cn("size-4 shrink-0", active ? "text-[#F58220]" : "")} />
                   <span className="flex-1">{label}</span>
                   {item.href === "/validations" && pendingCount > 0 ? (
                     <span
                       data-testid="badge-pending-kyc"
-                      className="inline-flex items-center justify-center rounded-full bg-[#F58220] text-white text-[11px] font-semibold leading-none min-w-[20px] h-5 px-1.5"
+                      className="inline-flex items-center justify-center rounded-full text-white text-[10px] font-bold leading-none min-w-[18px] h-[18px] px-1"
+                      style={{ background: "#F58220" }}
                     >
                       {pendingCount}
                     </span>
@@ -122,28 +153,29 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        <div className="px-3 py-4 border-t border-sidebar-border space-y-2">
-          <div className="px-2 text-xs">
-            <div className="font-medium text-sidebar-foreground">
-              {admin?.username}
+        {/* User */}
+        <div className="px-3 py-4 border-t border-white/10 space-y-3">
+          <div className="flex items-center gap-2.5 px-1">
+            <div
+              className="size-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white"
+              style={{ background: "#F58220" }}
+            >
+              {getInitials(admin?.username)}
             </div>
-            <div className="text-sidebar-foreground/60">
-              {admin?.isRoot
-                ? t("admins.rootBadge")
-                : admin?.role === "super_admin"
-                  ? t("admins.roles.super_admin")
-                  : admin?.role === "admin"
-                    ? t("admins.roles.admin")
-                    : t("admins.roles.moderator")}
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-white truncate">
+                {admin?.username}
+              </div>
+              <div className="text-[11px] text-white/50 truncate">{roleLabel}</div>
             </div>
           </div>
           <Button
-            variant="outline"
-            className="w-full justify-start text-sidebar-foreground border-sidebar-border bg-transparent"
+            variant="ghost"
+            className="w-full justify-start text-white/70 hover:text-white hover:bg-white/8 border-0"
             onClick={logout}
             data-testid="button-logout"
           >
-            <LogOut className="size-4" />
+            <LogOut className="size-4 mr-2" />
             {t("nav.signOut")}
           </Button>
         </div>

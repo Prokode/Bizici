@@ -1,1 +1,1 @@
-- [NearBuy environment quirks](nearbuy-quirks.md) — grep masks identifiers as "ln" (use read to confirm); pushed code carries pre-existing typecheck errors unrelated to your edits; screenshot nearbuy-site with `?splash=skip`.
+- [NearBuy environment quirks](nearbuy-quirks.md) — grep masks identifiers as "ln"; pre-existing typecheck errors in Expo apps; screenshot with splash=skip (admin: use /login?splash=skip, site: any path).

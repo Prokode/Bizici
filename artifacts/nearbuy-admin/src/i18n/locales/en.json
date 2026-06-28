@@ -53,7 +53,13 @@
     "loginError": "Login error",
     "appName": "BizIci Admin",
     "tagline": "Sign in to the admin console",
-    "identifier": "Username"
+    "identifier": "Username",
+    "brandHeadline": "Manage your local marketplace",
+    "brandSubline": "Monitor activity, validate sellers, and keep the BizIci community running smoothly.",
+    "brandPoint1": "Real-time platform statistics",
+    "brandPoint2": "KYC document review & approval",
+    "brandPoint3": "User, shop and content moderation",
+    "allRightsReserved": "All rights reserved"
   },
   "dashboard": {
     "title": "Dashboard",
