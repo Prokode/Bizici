@@ -41,7 +41,10 @@ export default function SignInScreen() {
   const handleSubmit = async () => {
     setSubmitError(null);
     try {
-      const { error } = await signIn.password({ emailAddress, password });
+      console.log("Attempting sign-in for:", emailAddress);
+      console.log("Password:", password ? password: "(empty)");
+      const { error } = await signIn.password({ emailAddress: emailAddress,
+         password: password });
       if (error) {
         setSubmitError(error.errors?.[0]?.longMessage ?? error.message ?? t("auth.errorSignIn"));
         return;

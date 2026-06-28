@@ -4,6 +4,7 @@
  */
 
 const TOKEN_KEY = "nb_admin_token";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
 
 export function getToken(): string | null {
   try {
@@ -39,7 +40,8 @@ async function request<T>(
   const token = getToken();
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const res = await fetch(path, { ...init, headers });
+  const url = API_BASE_URL + path;
+  const res = await fetch(url, { ...init, headers });
   if (res.status === 401) {
     setToken(null);
     if (typeof window !== "undefined" && !path.endsWith("/admin/auth/login")) {

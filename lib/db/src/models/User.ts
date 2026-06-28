@@ -1,4 +1,5 @@
 import { Schema, model, models, type Model, type InferSchemaType } from "mongoose";
+import { Country } from "./Country";
 
 /**
  * Origin of the consent acceptance — which signup pathway the user came
@@ -46,6 +47,17 @@ const UserSchema = new Schema(
      * (those should be re-prompted next time they upgrade the legal version).
      */
     consent: { type: ConsentSchema, default: null },
+    country: {
+            type: Schema.ObjectId,
+            ref: 'Country',
+            required: [false, 'country field required']
+    },
+    city: {
+            type: Schema.ObjectId,
+            ref: 'City',
+            required: false
+    },
+    phone: { type: String, required: false }
   },
   { timestamps: true },
 );

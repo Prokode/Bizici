@@ -465,6 +465,6 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 8,
   },
-  consentLink: { fontSize: 13, textDecorationLine: "underline" },
+  consentLink: { fontSize: 9, textDecorationLine: "underline" },
   consentLinkSeparator: { fontSize: 13 },
 });

@@ -83,7 +83,8 @@ export default function CategoriesPage() {
       header: t("categories.category"),
       cell: (c) => (
         <div className="flex items-center gap-2">
-          {c.icon ? <span className="text-xl">{c.icon}</span> : null}
+          {c.icon ? 
+          <span className="text-xl">{c.icon}</span> : null}
           <span className="font-medium">{c.name}</span>
         </div>
       ),

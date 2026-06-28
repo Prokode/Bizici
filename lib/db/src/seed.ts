@@ -1,4 +1,9 @@
+const fs = require('fs');
+
 import { Category } from "./models/Category";
+import { Country } from "./models/Country";
+
+const countries = JSON.parse(fs.readFileSync(`${__dirname}/../_data/countries.json`, 'utf-8'));
 
 const DEFAULT_PRODUCT_CATEGORIES: Array<{
   name: string;
@@ -54,4 +59,13 @@ export async function seedDefaultCategories(): Promise<void> {
       DEFAULT_SERVICE_CATEGORIES.map((c) => ({ ...c, kind: "service" })),
     );
   }
+}
+
+export async function seedCountries(): Promise<void> {
+  // Load countries when not in DB
+  const countryCount = await Country.countDocuments();
+  if (countryCount === 0) {
+    await Country.create(countries);
+  }
+ 
 }

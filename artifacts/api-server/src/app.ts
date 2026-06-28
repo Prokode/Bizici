@@ -10,6 +10,7 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 import { connectMongo, seedDefaultCategories, seedDemoShops } from "@workspace/db";
 import { bootstrapRootAdmin } from "./lib/adminAuth";
+import { seedCountries } from "../../../lib/db/src/seed";
 
 const app: Express = express();
 
@@ -57,12 +58,21 @@ app.use("/api", router);
 connectMongo()
   .then(async () => {
     logger.info("MongoDB connected");
+    
     try {
       await seedDefaultCategories();
       logger.info("Default categories ensured");
     } catch (err) {
       logger.error({ err }, "Failed to seed categories");
     }
+
+    try {
+      await seedCountries();
+      logger.info("Countries ensured");
+    } catch (err) {
+      logger.error({ err }, "Failed to seed countries");
+    }
+
     try {
       const { inserted } = await seedDemoShops();
       if (inserted > 0) {
