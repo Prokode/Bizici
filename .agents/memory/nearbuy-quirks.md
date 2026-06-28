@@ -24,3 +24,11 @@ in-progress Formik refactor in `nearbuy-business` sign-up.
 **How to apply:** After editing, scope typecheck to your own files
 (`pnpm --filter @workspace/<app> run typecheck 2>&1 | rg <YourFile>`); do not
 assume a full clean run, and don't fix these unrelated errors unless asked.
+
+## nearbuy-site screenshots get stuck on the animated splash
+All routes mount `AnimatedSplash` on cold load, and each screenshot is a fresh
+page context, so app-preview screenshots repeatedly capture the splash
+mid-animation instead of the page.
+**How to apply:** Append `?splash=skip` to the path when screenshotting
+nearbuy-site (mirrors the existing `?splash=force`). Both are gated in
+`App.tsx` `shouldPlaySplash()`.

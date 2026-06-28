@@ -3,16 +3,65 @@
     "language": "Language",
     "languageFr": "FR",
     "languageEn": "EN",
+    "features": "Features",
     "how": "How it works",
     "download": "Download",
     "back": "Back to home"
   },
   "hero": {
+    "badge": "Local shopping, reinvented",
     "titleA": "Find what you're looking for,",
     "titleB": "right next door.",
     "subtitle": "BizIci connects customers with neighborhood shops — products, stock, prices, and live chat with the shopkeeper.",
     "ctaDownload": "Download the app",
-    "ctaLearn": "Learn more"
+    "ctaLearn": "Learn more",
+    "trust1": "No commission",
+    "trust2": "100% local",
+    "trust3": "Pay in store"
+  },
+  "feat": {
+    "title": "Everything you need to shop local",
+    "subtitle": "One app to discover, chat and book with the shops around you.",
+    "searchTitle": "Visual search",
+    "searchBody": "Snap a photo of a product and find it instantly in nearby shops.",
+    "mapTitle": "Real-time map",
+    "mapBody": "See the shops around you and what they have in stock, right now.",
+    "chatTitle": "Direct chat",
+    "chatBody": "Chat live with the shopkeeper, ask your questions, reserve an item.",
+    "bookTitle": "Appointments & services",
+    "bookBody": "Book a service in seconds, straight from the app."
+  },
+  "showcase": {
+    "title": "Talk to the shopkeeper, not a bot",
+    "body": "A question about a product, availability, or opening hours? Chat directly with the shop and book without calling.",
+    "b1": "Real-time replies from the shopkeeper",
+    "b2": "Reserve a product or appointment inside the chat",
+    "b3": "No middleman, no commission"
+  },
+  "twosided": {
+    "title": "Two apps, one neighborhood",
+    "subtitle": "Whether you're buying or selling, BizIci brings locals and shops closer.",
+    "customerTitle": "For customers",
+    "customerBody": "Discover, request, chat and buy from the shops near you — effortlessly.",
+    "customerCta": "Download BizIci",
+    "sellerTitle": "For shopkeepers",
+    "sellerBody": "Manage your stock, prices and customers, and grow your local visibility with BizIci Pro.",
+    "sellerCta": "Become a partner shop"
+  },
+  "mock": {
+    "searchPlaceholder": "Search around me",
+    "open": "View",
+    "distance": "200 m away",
+    "online": "Online",
+    "shopName": "Léa's Bakery",
+    "msgOut": "Do you have tradition baguettes?",
+    "msgIn": "Hi! Yes, I have two left 🥖",
+    "inStock": "In stock",
+    "typeMessage": "Type a message…"
+  },
+  "finalCta": {
+    "title": "Your neighborhood is waiting.",
+    "subtitle": "Join BizIci and rediscover the joy of shopping local."
   },
   "how": {
     "customerTitle": "For customers",
@@ -24,7 +73,12 @@
   },
   "download": {
     "title": "Coming soon",
-    "subtitle": "BizIci is launching soon on the App Store and Google Play."
+    "subtitle": "BizIci is launching soon on the App Store and Google Play.",
+    "badgeSoonOn": "Soon on",
+    "appStore": "the App Store",
+    "googlePlay": "Google Play",
+    "soon": "Soon",
+    "notify": "Launching soon — stay tuned."
   },
   "footer": {
     "tagline": "Local shopping, right at hand.",

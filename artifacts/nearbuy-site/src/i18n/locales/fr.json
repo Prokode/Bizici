@@ -3,16 +3,65 @@
     "language": "Langue",
     "languageFr": "FR",
     "languageEn": "EN",
+    "features": "Fonctionnalités",
     "how": "Comment ça marche",
     "download": "Télécharger",
     "back": "Retour à l'accueil"
   },
   "hero": {
+    "badge": "Le commerce de proximité, réinventé",
     "titleA": "Trouvez ce que vous cherchez,",
     "titleB": "à deux pas de chez vous.",
     "subtitle": "BizIci connecte les clients aux commerces de proximité — produits, stocks, prix et discussion en direct avec le vendeur.",
     "ctaDownload": "Télécharger l'application",
-    "ctaLearn": "En savoir plus"
+    "ctaLearn": "En savoir plus",
+    "trust1": "Sans commission",
+    "trust2": "100 % local",
+    "trust3": "Paiement sur place"
+  },
+  "feat": {
+    "title": "Tout ce qu'il faut pour acheter local",
+    "subtitle": "Une seule app pour découvrir, discuter et réserver chez les commerçants autour de vous.",
+    "searchTitle": "Recherche visuelle",
+    "searchBody": "Prenez en photo un produit et retrouvez-le instantanément dans les boutiques proches.",
+    "mapTitle": "Carte en temps réel",
+    "mapBody": "Visualisez les commerces autour de vous et ce qu'ils ont en stock, à l'instant.",
+    "chatTitle": "Chat direct",
+    "chatBody": "Discutez en direct avec le commerçant, posez vos questions, réservez un article.",
+    "bookTitle": "Rendez-vous & services",
+    "bookBody": "Réservez un service en quelques secondes, directement depuis l'application."
+  },
+  "showcase": {
+    "title": "Parlez au commerçant, pas à un robot",
+    "body": "Une question sur un produit, une dispo, un horaire ? Échangez en direct avec la boutique et réservez sans appeler.",
+    "b1": "Réponses en temps réel du commerçant",
+    "b2": "Réservez un produit ou un rendez-vous dans la discussion",
+    "b3": "Aucun intermédiaire, aucune commission"
+  },
+  "twosided": {
+    "title": "Deux apps, un même quartier",
+    "subtitle": "Que vous achetiez ou que vous vendiez, BizIci rapproche les habitants et les commerces.",
+    "customerTitle": "Pour les clients",
+    "customerBody": "Découvrez, demandez, discutez et achetez auprès des commerces près de chez vous — en toute simplicité.",
+    "customerCta": "Télécharger BizIci",
+    "sellerTitle": "Pour les commerçants",
+    "sellerBody": "Gérez votre stock, vos prix et vos clients, et gagnez en visibilité locale avec BizIci Pro.",
+    "sellerCta": "Devenir commerçant partenaire"
+  },
+  "mock": {
+    "searchPlaceholder": "Rechercher autour de moi",
+    "open": "Voir",
+    "distance": "à 200 m",
+    "online": "En ligne",
+    "shopName": "Boulangerie Léa",
+    "msgOut": "Vous avez des baguettes tradition ?",
+    "msgIn": "Bonjour ! Oui, il m'en reste deux 🥖",
+    "inStock": "En stock",
+    "typeMessage": "Écrivez un message…"
+  },
+  "finalCta": {
+    "title": "Votre quartier n'attend que vous.",
+    "subtitle": "Rejoignez BizIci et redécouvrez le plaisir d'acheter local."
   },
   "how": {
     "customerTitle": "Côté client",
@@ -24,7 +73,12 @@
   },
   "download": {
     "title": "Disponible bientôt",
-    "subtitle": "BizIci arrive prochainement sur l'App Store et Google Play."
+    "subtitle": "BizIci arrive prochainement sur l'App Store et Google Play.",
+    "badgeSoonOn": "Bientôt sur",
+    "appStore": "l'App Store",
+    "googlePlay": "Google Play",
+    "soon": "Bientôt",
+    "notify": "Lancement imminent — restez à l'écoute."
   },
   "footer": {
     "tagline": "Le commerce de proximité, à portée de main.",

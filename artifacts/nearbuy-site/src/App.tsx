@@ -17,6 +17,8 @@ const SPLASH_FLAG_KEY = "bizici_site_splash_played";
 
 function shouldPlaySplash(): boolean {
   if (typeof window === "undefined") return false;
+  // `?splash=skip` query param skips the splash (useful for QA/preview).
+  if (window.location.search.includes("splash=skip")) return false;
   // `?splash=force` query param forces the splash to play (useful for QA/preview).
   if (window.location.search.includes("splash=force")) return true;
   try {
