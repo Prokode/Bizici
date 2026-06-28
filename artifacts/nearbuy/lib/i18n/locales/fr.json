@@ -27,7 +27,11 @@
     "justNow": "à l'instant",
     "minAgo": "il y a {{count}} min",
     "hAgo": "il y a {{count}} h",
-    "dAgo": "il y a {{count}} j"
+    "dAgo": "il y a {{count}} j",
+    "selectPlaceholder": "Sélectionner…",
+    "search": "Rechercher",
+    "done": "Terminé",
+    "noResults": "Aucun résultat"
   },
   "shop": {
     "openNow": "Ouvert",

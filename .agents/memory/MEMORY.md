@@ -1,0 +1,1 @@
+- [NearBuy environment quirks](nearbuy-quirks.md) — grep masks identifiers as "ln" (use read to confirm); pushed code carries pre-existing typecheck errors unrelated to your edits.

@@ -29,7 +29,11 @@
     "minAgo": "{{count}}m ago",
     "hAgo": "{{count}}h ago",
     "dAgo": "{{count}}d ago",
-    "requiredfield": "This field is required"
+    "requiredfield": "This field is required",
+    "selectPlaceholder": "Select…",
+    "search": "Search",
+    "done": "Done",
+    "noResults": "No results"
   },
   "dashboard": {
     "title": "Dashboard",

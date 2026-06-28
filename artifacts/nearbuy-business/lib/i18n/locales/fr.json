@@ -29,7 +29,11 @@
     "minAgo": "il y a {{count}} min",
     "hAgo": "il y a {{count}} h",
     "dAgo": "il y a {{count}} j",
-    "requiredfield": "Ce champ est requis"
+    "requiredfield": "Ce champ est requis",
+    "selectPlaceholder": "Sélectionner…",
+    "search": "Rechercher",
+    "done": "Terminé",
+    "noResults": "Aucun résultat"
   },
   "dashboard": {
     "title": "Tableau de bord",

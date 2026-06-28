@@ -27,7 +27,11 @@
     "justNow": "just now",
     "minAgo": "{{count}}m ago",
     "hAgo": "{{count}}h ago",
-    "dAgo": "{{count}}d ago"
+    "dAgo": "{{count}}d ago",
+    "selectPlaceholder": "Select…",
+    "search": "Search",
+    "done": "Done",
+    "noResults": "No results"
   },
   "shop": {
     "openNow": "Open",
