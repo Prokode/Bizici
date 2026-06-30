@@ -365,5 +365,14 @@
     "badgeDeliveryWithRadius": "Delivery ({{km}} km)",
     "badgeBoth": "Pickup or delivery",
     "badgeBothWithRadius": "Pickup or delivery ({{km}} km)"
+  },
+  "country": {
+    "label": "Country",
+    "placeholder": "Select a country",
+    "searchPlaceholder": "Search a country"
+  },
+  "phone": {
+    "label": "Phone",
+    "placeholder": "Phone number"
   }
 }

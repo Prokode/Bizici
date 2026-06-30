@@ -21,6 +21,7 @@ export * from "./chatConversationShop";
 export * from "./chatMessage";
 export * from "./chatMessageCreateInput";
 export * from "./chatRole";
+export * from "./country";
 export * from "./coursePlan";
 export * from "./courseStartInput";
 export * from "./courseStop";

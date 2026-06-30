@@ -31,6 +31,7 @@ export {
   CATEGORY_KINDS,
   type CategoryKind,
 } from "./Category";
+export { Country, type CountryDoc } from "./Country";
 export { Product, type ProductDoc } from "./Product";
 export {
   Service,

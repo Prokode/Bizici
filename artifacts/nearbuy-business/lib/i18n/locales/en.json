@@ -446,5 +446,14 @@
       "permTitle": "Permission required",
       "permBody": "Allow access to your photos to add your document."
     }
+  },
+  "country": {
+    "label": "Country",
+    "placeholder": "Select a country",
+    "searchPlaceholder": "Search a country"
+  },
+  "phone": {
+    "label": "Phone",
+    "placeholder": "Phone number"
   }
 }

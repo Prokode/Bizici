@@ -791,6 +791,19 @@ paths:
                 type: array
                 items: { $ref: "#/components/schemas/Category" }
 
+  /countries:
+    get:
+      operationId: listCountries
+      tags: [countries]
+      responses:
+        "200":
+          description: All countries with flags and calling codes, sorted by name.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Country" }
+
   /conversations:
     get:
       operationId: listConversations
@@ -1267,6 +1280,18 @@ components:
             Whether this category applies to products or services.
             Existing categories default to "product".
       required: [id, name, slug, kind]
+
+    Country:
+      type: object
+      properties:
+        cca2: { type: string, description: "ISO 3166-1 alpha-2 code, e.g. FR" }
+        cca3: { type: string, description: "ISO 3166-1 alpha-3 code, e.g. FRA" }
+        name: { type: string, description: "Common English name" }
+        nameFr: { type: string, description: "Common French name" }
+        callingCode: { type: string, description: "International dialing prefix, e.g. +33" }
+        flagPng: { type: string, description: "Small PNG flag URL" }
+        flagEmoji: { type: string, description: "Unicode flag emoji" }
+      required: [cca2, cca3, name, nameFr, callingCode, flagPng, flagEmoji]
 
     Dimension:
       type: object

@@ -384,6 +384,23 @@ Existing categories default to "product".
   kind: CategoryKind;
 }
 
+export interface Country {
+  /** ISO 3166-1 alpha-2 code, e.g. FR */
+  cca2: string;
+  /** ISO 3166-1 alpha-3 code, e.g. FRA */
+  cca3: string;
+  /** Common English name */
+  name: string;
+  /** Common French name */
+  nameFr: string;
+  /** International dialing prefix, e.g. +33 */
+  callingCode: string;
+  /** Small PNG flag URL */
+  flagPng: string;
+  /** Unicode flag emoji */
+  flagEmoji: string;
+}
+
 export interface Dimension {
   /** @minimum 0 */
   height: number;

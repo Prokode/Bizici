@@ -446,5 +446,14 @@
       "permTitle": "Autorisation requise",
       "permBody": "Autorisez l'accès aux photos pour ajouter votre pièce."
     }
+  },
+  "country": {
+    "label": "Pays",
+    "placeholder": "Sélectionner un pays",
+    "searchPlaceholder": "Rechercher un pays"
+  },
+  "phone": {
+    "label": "Téléphone",
+    "placeholder": "Numéro de téléphone"
   }
 }

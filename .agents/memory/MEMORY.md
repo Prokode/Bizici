@@ -1,1 +1,1 @@
-- [NearBuy environment quirks](nearbuy-quirks.md) — grep masks identifiers as "ln"; pre-existing typecheck errors in Expo apps; screenshot with splash=skip (admin: use /login?splash=skip, site: any path).
+- [Mobile code duplication](mobile-code-duplication.md) — no shared RN lib; copy components verbatim into both Expo apps + add i18n keys in all 4 locale files.

@@ -365,5 +365,14 @@
     "badgeDeliveryWithRadius": "Livraison ({{km}} km)",
     "badgeBoth": "Retrait ou livraison",
     "badgeBothWithRadius": "Retrait ou livraison ({{km}} km)"
+  },
+  "country": {
+    "label": "Pays",
+    "placeholder": "Sélectionner un pays",
+    "searchPlaceholder": "Rechercher un pays"
+  },
+  "phone": {
+    "label": "Téléphone",
+    "placeholder": "Numéro de téléphone"
   }
 }

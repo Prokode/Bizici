@@ -2425,6 +2425,17 @@ export const ListCategoriesResponseItem = zod.object({
 });
 export const ListCategoriesResponse = zod.array(ListCategoriesResponseItem);
 
+export const ListCountriesResponseItem = zod.object({
+  cca2: zod.string().describe("ISO 3166-1 alpha-2 code, e.g. FR"),
+  cca3: zod.string().describe("ISO 3166-1 alpha-3 code, e.g. FRA"),
+  name: zod.string().describe("Common English name"),
+  nameFr: zod.string().describe("Common French name"),
+  callingCode: zod.string().describe("International dialing prefix, e.g. +33"),
+  flagPng: zod.string().describe("Small PNG flag URL"),
+  flagEmoji: zod.string().describe("Unicode flag emoji"),
+});
+export const ListCountriesResponse = zod.array(ListCountriesResponseItem);
+
 export const listConversationsResponseConversationsItemUnreadCountMin = 0;
 
 export const ListConversationsResponse = zod.object({
