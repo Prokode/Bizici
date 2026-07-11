@@ -1,0 +1,28 @@
+C:\Users\user\Documents\projects\bizici\Bizici (main -> origin)
+λ set NODE_OPTIONS=--dns-result-order=ipv4first
+
+C:\Users\user\Documents\projects\bizici\Bizici (main -> origin)
+λ pnpm --filter @workspace/nearbuy-business run dev:local
+$ expo start
+env: load .env
+env: export EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY EXPO_PUBLIC_API_URL
+Starting project at C:\Users\user\Documents\projects\bizici\Bizici\artifacts\nearbuy-business
+React Compiler enabled
+Starting Metro Bundler
+TypeError: fetch failed
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:14976:13
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at fetchWithCredentials (C:\Users\user\Documents\projects\bizici\Bizici\node_modules\.pnpm\@expo+cli@54.0.24_expo-rout_a5b3c719bb5ccdac93692d80fc3c093b\node_modules\@expo\cli\src\api\rest\client.ts:98:24)
+    at cachedFetch (C:\Users\user\Documents\projects\bizici\Bizici\node_modules\.pnpm\@expo+cli@54.0.24_expo-rout_a5b3c719bb5ccdac93692d80fc3c093b\node_modules\@expo\cli\src\api\rest\cache\wrapFetchWithCache.ts:26:24)
+    at getVersionsAsync (C:\Users\user\Documents\projects\bizici\Bizici\node_modules\.pnpm\@expo+cli@54.0.24_expo-rout_a5b3c719bb5ccdac93692d80fc3c093b\node_modules\@expo\cli\src\api\getVersions.ts:52:19)
+    at getRemoteVersionsForSdkAsync (C:\Users\user\Documents\projects\bizici\Bizici\node_modules\.pnpm\@expo+cli@54.0.24_expo-rout_a5b3c719bb5ccdac93692d80fc3c093b\node_modules\@expo\cli\src\start\doctor\dependencies\getVersionedPackages.ts:82:29)
+    at getCombinedKnownVersionsAsync (C:\Users\user\Documents\projects\bizici\Bizici\node_modules\.pnpm\@expo+cli@54.0.24_expo-rout_a5b3c719bb5ccdac93692d80fc3c093b\node_modules\@expo\cli\src\start\doctor\dependencies\getVersionedPackages.ts:61:7)
+    at getVersionedDependenciesAsync (C:\Users\user\Documents\projects\bizici\Bizici\node_modules\.pnpm\@expo+cli@54.0.24_expo-rout_a5b3c719bb5ccdac93692d80fc3c093b\node_modules\@expo\cli\src\start\doctor\dependencies\validateDependenciesVersions.ts:100:33)
+    at validateDependenciesVersionsAsync (C:\Users\user\Documents\projects\bizici\Bizici\node_modules\.pnpm\@expo+cli@54.0.24_expo-rout_a5b3c719bb5ccdac93692d80fc3c093b\node_modules\@expo\cli\src\start\doctor\dependencies\validateDependenciesVersions.ts:49:25)
+    at startAsync (C:\Users\user\Documents\projects\bizici\Bizici\node_modules\.pnpm\@expo+cli@54.0.24_expo-rout_a5b3c719bb5ccdac93692d80fc3c093b\node_modules\@expo\cli\src\start\startAsync.ts:110:5)
+C:\Users\user\Documents\projects\bizici\Bizici\artifacts\nearbuy-business:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @workspace/nearbuy-business@0.0.0 dev:local: `expo start`
+Exit status 1
+
+C:\Users\user\Documents\projects\bizici\Bizici (main -> origin)
