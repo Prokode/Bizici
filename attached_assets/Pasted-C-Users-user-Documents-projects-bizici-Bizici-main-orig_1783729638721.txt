@@ -1,0 +1,27 @@
+C:\Users\user\Documents\projects\bizici\Bizici (main -> origin)
+λ pnpm --filter @workspace/nearbuy-business run dev:local
+$ expo start
+env: load .env
+env: export EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY EXPO_PUBLIC_API_URL
+Starting project at C:\Users\user\Documents\projects\bizici\Bizici\artifacts\nearbuy-business
+React Compiler enabled
+Starting Metro Bundler
+Failed to construct transformer:  Error: Failed to start watch mode.
+    at Timeout._onTimeout (C:\Users\user\Documents\projects\bizici\Bizici\node_modules\.pnpm\metro-file-map@0.83.3\node_modules\metro-file-map\src\Watcher.js:161:24)
+    at listOnTimeout (node:internal/timers:585:17)
+    at processTimers (node:internal/timers:521:7)
+TypeError: Body is unusable: Body has already been read
+TypeError: Body is unusable: Body has already been read
+    at consumeBody (node:internal/deps/undici/undici:5854:15)
+    at _Response.json (node:internal/deps/undici/undici:5807:18)
+    at getNativeModuleVersionsAsync (C:\Users\user\Documents\projects\bizici\Bizici\node_modules\.pnpm\@expo+cli@54.0.24_expo-rout_a5b3c719bb5ccdac93692d80fc3c093b\node_modules\@expo\cli\src\api\getNativeModuleVersions.ts:47:31)
+    at getVersionedNativeModulesAsync (C:\Users\user\Documents\projects\bizici\Bizici\node_modules\.pnpm\@expo+cli@54.0.24_expo-rout_a5b3c719bb5ccdac93692d80fc3c093b\node_modules\@expo\cli\src\start\doctor\dependencies\bundledNativeModules.ts:33:14)
+    at getCombinedKnownVersionsAsync (C:\Users\user\Documents\projects\bizici\Bizici\node_modules\.pnpm\@expo+cli@54.0.24_expo-rout_a5b3c719bb5ccdac93692d80fc3c093b\node_modules\@expo\cli\src\start\doctor\dependencies\getVersionedPackages.ts:58:7)
+    at getVersionedDependenciesAsync (C:\Users\user\Documents\projects\bizici\Bizici\node_modules\.pnpm\@expo+cli@54.0.24_expo-rout_a5b3c719bb5ccdac93692d80fc3c093b\node_modules\@expo\cli\src\start\doctor\dependencies\validateDependenciesVersions.ts:100:33)
+    at validateDependenciesVersionsAsync (C:\Users\user\Documents\projects\bizici\Bizici\node_modules\.pnpm\@expo+cli@54.0.24_expo-rout_a5b3c719bb5ccdac93692d80fc3c093b\node_modules\@expo\cli\src\start\doctor\dependencies\validateDependenciesVersions.ts:49:25)
+    at startAsync (C:\Users\user\Documents\projects\bizici\Bizici\node_modules\.pnpm\@expo+cli@54.0.24_expo-rout_a5b3c719bb5ccdac93692d80fc3c093b\node_modules\@expo\cli\src\start\startAsync.ts:110:5)
+C:\Users\user\Documents\projects\bizici\Bizici\artifacts\nearbuy-business:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @workspace/nearbuy-business@0.0.0 dev:local: `expo start`
+Exit status 1
+
+C:\Users\user\Documents\projects\bizici\Bizici (main -> origin)
