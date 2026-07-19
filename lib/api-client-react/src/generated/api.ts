@@ -24,6 +24,7 @@ import type {
   Category,
   ChatConversationCreateInput,
   ChatMessageCreateInput,
+  City,
   Country,
   CoursePlan,
   CourseStartInput,
@@ -38,6 +39,7 @@ import type {
   KycStatusResponse,
   KycSubmitBody,
   ListCategoriesParams,
+  ListCitiesParams,
   ListConversationMessages200,
   ListConversationMessagesParams,
   ListConversations200,
@@ -51,6 +53,7 @@ import type {
   ProductUpdateInput,
   PushTokenInput,
   QrPayload,
+  ResolveCityInput,
   SearchServicesParams,
   Service,
   ServiceCreateInput,
@@ -3929,6 +3932,173 @@ export function useListCountries<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+export const getListCitiesUrl = (params: ListCitiesParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/cities?${stringifiedParams}`
+    : `/api/cities`;
+};
+
+export const listCities = async (
+  params: ListCitiesParams,
+  options?: RequestInit,
+): Promise<City[]> => {
+  return customFetch<City[]>(getListCitiesUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListCitiesQueryKey = (params?: ListCitiesParams) => {
+  return [`/api/cities`, ...(params ? [params] : [])] as const;
+};
+
+export const getListCitiesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listCities>>,
+  TError = ErrorType<unknown>,
+>(
+  params: ListCitiesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listCities>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListCitiesQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listCities>>> = ({
+    signal,
+  }) => listCities(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listCities>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListCitiesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listCities>>
+>;
+export type ListCitiesQueryError = ErrorType<unknown>;
+
+export function useListCities<
+  TData = Awaited<ReturnType<typeof listCities>>,
+  TError = ErrorType<unknown>,
+>(
+  params: ListCitiesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listCities>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListCitiesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getResolveCityUrl = () => {
+  return `/api/cities/resolve`;
+};
+
+export const resolveCity = async (
+  resolveCityInput: ResolveCityInput,
+  options?: RequestInit,
+): Promise<City> => {
+  return customFetch<City>(getResolveCityUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(resolveCityInput),
+  });
+};
+
+export const getResolveCityMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof resolveCity>>,
+    TError,
+    { data: BodyType<ResolveCityInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof resolveCity>>,
+  TError,
+  { data: BodyType<ResolveCityInput> },
+  TContext
+> => {
+  const mutationKey = ["resolveCity"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof resolveCity>>,
+    { data: BodyType<ResolveCityInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return resolveCity(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ResolveCityMutationResult = NonNullable<
+  Awaited<ReturnType<typeof resolveCity>>
+>;
+export type ResolveCityMutationBody = BodyType<ResolveCityInput>;
+export type ResolveCityMutationError = ErrorType<void>;
+
+export const useResolveCity = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof resolveCity>>,
+    TError,
+    { data: BodyType<ResolveCityInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof resolveCity>>,
+  TError,
+  { data: BodyType<ResolveCityInput> },
+  TContext
+> => {
+  return useMutation(getResolveCityMutationOptions(options));
+};
 
 export const getListConversationsUrl = () => {
   return `/api/conversations`;

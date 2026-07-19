@@ -455,5 +455,13 @@
   "phone": {
     "label": "Téléphone",
     "placeholder": "Numéro de téléphone"
+  },
+  "city": {
+    "label": "Ville",
+    "placeholder": "Sélectionner une ville",
+    "searchPlaceholder": "Rechercher ou saisir votre ville",
+    "selectCountryFirst": "Sélectionnez d’abord un pays",
+    "typeToSearch": "Tapez au moins 2 lettres",
+    "addCity": "Ajouter « {{name}} »"
   }
 }

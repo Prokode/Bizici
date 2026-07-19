@@ -2436,6 +2436,49 @@ export const ListCountriesResponseItem = zod.object({
 });
 export const ListCountriesResponse = zod.array(ListCountriesResponseItem);
 
+export const listCitiesQueryCountryMin = 2;
+export const listCitiesQueryCountryMax = 2;
+
+export const ListCitiesQueryParams = zod.object({
+  country: zod.coerce
+    .string()
+    .min(listCitiesQueryCountryMin)
+    .max(listCitiesQueryCountryMax)
+    .describe("ISO 3166-1 alpha-2 country code, e.g. FR"),
+  q: zod.coerce
+    .string()
+    .optional()
+    .describe("Optional search prefix (accent\/case-insensitive)"),
+});
+
+export const ListCitiesResponseItem = zod.object({
+  id: zod.string(),
+  name: zod.string().describe("Display name, e.g. Paris"),
+  countryCode: zod.string().describe("ISO 3166-1 alpha-2, e.g. FR"),
+});
+export const ListCitiesResponse = zod.array(ListCitiesResponseItem);
+
+export const resolveCityBodyCountryMin = 2;
+export const resolveCityBodyCountryMax = 2;
+
+export const resolveCityBodyNameMin = 2;
+export const resolveCityBodyNameMax = 64;
+
+export const ResolveCityBody = zod.object({
+  country: zod
+    .string()
+    .min(resolveCityBodyCountryMin)
+    .max(resolveCityBodyCountryMax)
+    .describe("ISO 3166-1 alpha-2"),
+  name: zod.string().min(resolveCityBodyNameMin).max(resolveCityBodyNameMax),
+});
+
+export const ResolveCityResponse = zod.object({
+  id: zod.string(),
+  name: zod.string().describe("Display name, e.g. Paris"),
+  countryCode: zod.string().describe("ISO 3166-1 alpha-2, e.g. FR"),
+});
+
 export const listConversationsResponseConversationsItemUnreadCountMin = 0;
 
 export const ListConversationsResponse = zod.object({

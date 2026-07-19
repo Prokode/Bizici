@@ -32,6 +32,7 @@ export {
   type CategoryKind,
 } from "./Category";
 export { Country, type CountryDoc } from "./Country";
+export { City, type CityDoc } from "./City";
 export { Product, type ProductDoc } from "./Product";
 export {
   Service,

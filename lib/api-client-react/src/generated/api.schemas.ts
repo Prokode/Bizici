@@ -401,6 +401,28 @@ export interface Country {
   flagEmoji: string;
 }
 
+export interface City {
+  id: string;
+  /** Display name, e.g. Paris */
+  name: string;
+  /** ISO 3166-1 alpha-2, e.g. FR */
+  countryCode: string;
+}
+
+export interface ResolveCityInput {
+  /**
+   * ISO 3166-1 alpha-2
+   * @minLength 2
+   * @maxLength 2
+   */
+  country: string;
+  /**
+   * @minLength 2
+   * @maxLength 64
+   */
+  name: string;
+}
+
 export interface Dimension {
   /** @minimum 0 */
   height: number;
@@ -915,6 +937,19 @@ export const ListCategoriesKind = {
   product: "product",
   service: "service",
 } as const;
+
+export type ListCitiesParams = {
+  /**
+   * ISO 3166-1 alpha-2 country code, e.g. FR
+   * @minLength 2
+   * @maxLength 2
+   */
+  country: string;
+  /**
+   * Optional search prefix (accent/case-insensitive)
+   */
+  q?: string;
+};
 
 export type ListConversations200 = {
   conversations: ChatConversation[];

@@ -804,6 +804,48 @@ paths:
                 type: array
                 items: { $ref: "#/components/schemas/Country" }
 
+  /cities:
+    get:
+      operationId: listCities
+      tags: [cities]
+      parameters:
+        - name: country
+          in: query
+          required: true
+          schema: { type: string, minLength: 2, maxLength: 2 }
+          description: ISO 3166-1 alpha-2 country code, e.g. FR
+        - name: q
+          in: query
+          required: false
+          schema: { type: string }
+          description: Optional search prefix (accent/case-insensitive)
+      responses:
+        "200":
+          description: Cities of the given country matching the query, sorted by name.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/City" }
+
+  /cities/resolve:
+    post:
+      operationId: resolveCity
+      tags: [cities]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ResolveCityInput" }
+      responses:
+        "200":
+          description: The existing or newly created normalized city.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/City" }
+        "400":
+          description: Invalid country code or city name.
+
   /conversations:
     get:
       operationId: listConversations
@@ -1292,6 +1334,21 @@ components:
         flagPng: { type: string, description: "Small PNG flag URL" }
         flagEmoji: { type: string, description: "Unicode flag emoji" }
       required: [cca2, cca3, name, nameFr, callingCode, flagPng, flagEmoji]
+
+    City:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string, description: "Display name, e.g. Paris" }
+        countryCode: { type: string, description: "ISO 3166-1 alpha-2, e.g. FR" }
+      required: [id, name, countryCode]
+
+    ResolveCityInput:
+      type: object
+      properties:
+        country: { type: string, minLength: 2, maxLength: 2, description: "ISO 3166-1 alpha-2" }
+        name: { type: string, minLength: 2, maxLength: 64 }
+      required: [country, name]
 
     Dimension:
       type: object
