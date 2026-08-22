@@ -44,6 +44,7 @@ import {
   readPendingSignupLocation,
   subscribeToPendingSignupLocation,
 } from "@/lib/pendingSignupLocation";
+import { syncPendingSignupLocation } from "@/lib/pendingSignupLocationCore";
 
 function AuthTokenBridge() {
   const { getToken } = useAuth();
@@ -73,33 +74,19 @@ function PendingSignupLocationBridge() {
     if (!isLoaded || !isSignedIn || !userId) return;
     let cancelled = false;
 
-    void (async () => {
-      const pending = await readPendingSignupLocation(userId);
-      if (!pending) return;
-
-      for (let attempt = 0; attempt < 5 && !cancelled; attempt += 1) {
-        try {
-          const token = await getToken();
-          if (!token) throw new Error("Missing session token");
-          await updateMyLocation(pending, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          await clearPendingSignupLocation(userId);
-          if (!cancelled) {
-            await queryClient.invalidateQueries({
-              queryKey: getGetMeQueryKey(),
-            });
-          }
-          return;
-        } catch {
-          if (attempt < 4 && !cancelled) {
-            await new Promise((resolve) =>
-              setTimeout(resolve, 1000 * 2 ** attempt),
-            );
-          }
-        }
-      }
-    })();
+    void syncPendingSignupLocation({
+      userId,
+      readPending: readPendingSignupLocation,
+      clearPending: clearPendingSignupLocation,
+      getToken,
+      updateLocation: (pending, token) =>
+        updateMyLocation(pending, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      invalidateMe: () =>
+        queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() }),
+      isCancelled: () => cancelled,
+    });
 
     return () => {
       cancelled = true;

@@ -1,43 +1,20 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  createPendingSignupLocationStore,
+  type PendingSignupLocation,
+} from "./pendingSignupLocationCore";
 
-export type PendingSignupLocation = {
-  countryCode: string;
-  cityId: string;
-};
+export type { PendingSignupLocation } from "./pendingSignupLocationCore";
 
-const KEY_PREFIX = "nearbuy-business.pending-signup-location.v1";
-const listeners = new Set<() => void>();
+const store = createPendingSignupLocationStore(
+  AsyncStorage,
+  "nearbuy-business.pending-signup-location.v1",
+);
 
-function keyForUser(userId: string) {
-  return `${KEY_PREFIX}:${userId}`;
-}
-
-export async function savePendingSignupLocation(
+export const savePendingSignupLocation = (
   userId: string,
   location: PendingSignupLocation,
-) {
-  await AsyncStorage.setItem(keyForUser(userId), JSON.stringify(location));
-  listeners.forEach((listener) => listener());
-}
-
-export function subscribeToPendingSignupLocation(listener: () => void) {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
-}
-
-export async function readPendingSignupLocation(userId: string) {
-  const value = await AsyncStorage.getItem(keyForUser(userId));
-  if (!value) return null;
-  try {
-    return JSON.parse(value) as PendingSignupLocation;
-  } catch {
-    await AsyncStorage.removeItem(keyForUser(userId));
-    return null;
-  }
-}
-
-export async function clearPendingSignupLocation(userId: string) {
-  await AsyncStorage.removeItem(keyForUser(userId));
-}
+) => store.save(userId, location);
+export const subscribeToPendingSignupLocation = store.subscribe;
+export const readPendingSignupLocation = store.read;
+export const clearPendingSignupLocation = store.clear;
