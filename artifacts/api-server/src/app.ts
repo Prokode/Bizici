@@ -8,9 +8,14 @@ import {
 } from "./middlewares/clerkProxyMiddleware";
 import router from "./routes";
 import { logger } from "./lib/logger";
-import { connectMongo, seedDefaultCategories, seedDemoShops } from "@workspace/db";
+import {
+  connectMongo,
+  seedDefaultCategories,
+  seedDemoShops,
+} from "@workspace/db";
 import { bootstrapRootAdmin } from "./lib/adminAuth";
 import { seedCountries } from "../../../lib/db/src/seed";
+import { isOriginAllowed, parseAllowedOrigins } from "./lib/cors";
 
 const app: Express = express();
 
@@ -43,7 +48,15 @@ app.use(
 
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
-app.use(cors({ credentials: true, origin: true }));
+const allowedOrigins = parseAllowedOrigins(process.env.CORS_ALLOWED_ORIGINS);
+app.use(
+  cors({
+    credentials: true,
+    origin(origin, callback) {
+      callback(null, isOriginAllowed(origin, allowedOrigins));
+    },
+  }),
+);
 // Default JSON / urlencoded body parser limit (Express's built-in default
 // of 100kb is fine for every endpoint EXCEPT the visual-search route, which
 // installs its own 10MB-limited parser locally so the wider attack surface
@@ -55,40 +68,36 @@ app.use(clerkMiddleware());
 
 app.use("/api", router);
 
-connectMongo()
-  .then(async () => {
-    logger.info("MongoDB connected");
-    
-    try {
-      await seedDefaultCategories();
-      logger.info("Default categories ensured");
-    } catch (err) {
-      logger.error({ err }, "Failed to seed categories");
-    }
+export const appReady = connectMongo().then(async () => {
+  logger.info("MongoDB connected");
 
-    try {
-      await seedCountries();
-      logger.info("Countries ensured");
-    } catch (err) {
-      logger.error({ err }, "Failed to seed countries");
-    }
+  try {
+    await seedDefaultCategories();
+    logger.info("Default categories ensured");
+  } catch (err) {
+    logger.error({ err }, "Failed to seed categories");
+  }
 
-    try {
-      const { inserted } = await seedDemoShops();
-      if (inserted > 0) {
-        logger.info({ inserted }, "Demo shops seeded");
-      }
-    } catch (err) {
-      logger.error({ err }, "Failed to seed demo shops");
+  try {
+    await seedCountries();
+    logger.info("Countries ensured");
+  } catch (err) {
+    logger.error({ err }, "Failed to seed countries");
+  }
+
+  try {
+    const { inserted } = await seedDemoShops();
+    if (inserted > 0) {
+      logger.info({ inserted }, "Demo shops seeded");
     }
-    try {
-      await bootstrapRootAdmin();
-    } catch (err) {
-      logger.error({ err }, "Failed to bootstrap root admin");
-    }
-  })
-  .catch((err) => {
-    logger.error({ err }, "MongoDB connection failed");
-  });
+  } catch (err) {
+    logger.error({ err }, "Failed to seed demo shops");
+  }
+  try {
+    await bootstrapRootAdmin();
+  } catch (err) {
+    logger.error({ err }, "Failed to bootstrap root admin");
+  }
+});
 
 export default app;

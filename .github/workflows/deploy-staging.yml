@@ -1,0 +1,187 @@
+name: Deploy staging
+
+on:
+  push:
+    branches:
+      - test
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bizici-staging
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "22"
+  PNPM_VERSION: "10.26.1"
+  STAGING_API_URL: https://api-bizici.run.place
+
+jobs:
+  validate-and-build:
+    name: Validate and build release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable pinned pnpm version
+        run: |
+          corepack enable
+          corepack prepare "pnpm@${PNPM_VERSION}" --activate
+          pnpm --version
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run typechecks
+        run: pnpm run typecheck
+
+      - name: Run regression tests
+        run: pnpm run test:regressions
+
+      - name: Build API
+        env:
+          NODE_ENV: production
+        run: pnpm --filter @workspace/api-server run build
+
+      - name: Build admin for its staging domain
+        env:
+          NODE_ENV: production
+          BASE_PATH: /
+          VITE_API_BASE_URL: ${{ env.STAGING_API_URL }}
+        run: pnpm --filter @workspace/nearbuy-admin run build
+
+      - name: Build site for its staging domain
+        env:
+          NODE_ENV: production
+          BASE_PATH: /
+        run: pnpm --filter @workspace/nearbuy-site run build
+
+      - name: Package release
+        id: package
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          release_name="bizici-${GITHUB_SHA}"
+          release_dir="${RUNNER_TEMP}/${release_name}"
+          output_dir="${RUNNER_TEMP}/release-output"
+
+          mkdir -p \
+            "${release_dir}/api" \
+            "${release_dir}/admin" \
+            "${release_dir}/site" \
+            "${release_dir}/_data" \
+            "${output_dir}"
+
+          cp -a artifacts/api-server/dist/. "${release_dir}/api/"
+          cp artifacts/api-server/_data/countries.json "${release_dir}/_data/"
+          cp -a artifacts/nearbuy-admin/dist/public/. "${release_dir}/admin/"
+          cp -a artifacts/nearbuy-site/dist/public/. "${release_dir}/site/"
+
+          test -f "${release_dir}/api/index.mjs"
+          test -f "${release_dir}/_data/countries.json"
+          test -f "${release_dir}/admin/index.html"
+          test -f "${release_dir}/site/index.html"
+
+          archive="${output_dir}/${release_name}.tar.gz"
+          tar -C "${release_dir}" -czf "${archive}" .
+          sha256sum "${archive}" | awk '{ print $1 }' \
+            > "${archive}.sha256"
+
+          echo "archive=${archive}" >> "${GITHUB_OUTPUT}"
+          echo "checksum=${archive}.sha256" >> "${GITHUB_OUTPUT}"
+          echo "release_name=${release_name}" >> "${GITHUB_OUTPUT}"
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.release_name }}
+          path: |
+            ${{ steps.package.outputs.archive }}
+            ${{ steps.package.outputs.checksum }}
+          if-no-files-found: error
+          retention-days: 14
+
+  deploy:
+    name: Deploy release to Ubuntu
+    needs: validate-and-build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: staging
+    env:
+      STAGING_HOST: ${{ vars.STAGING_HOST || '198.46.146.184' }}
+      STAGING_USER: ${{ vars.STAGING_USER || 'bizici-deploy' }}
+
+    steps:
+      - name: Download built release
+        uses: actions/download-artifact@v4
+        with:
+          name: bizici-${{ github.sha }}
+          path: ${{ runner.temp }}/release
+
+      - name: Configure pinned SSH access
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
+        run: |
+          set -Eeuo pipefail
+          test -n "${SSH_PRIVATE_KEY}"
+          test -n "${SSH_KNOWN_HOSTS}"
+          install -d -m 0700 "${HOME}/.ssh"
+          printf '%s\n' "${SSH_PRIVATE_KEY}" > "${HOME}/.ssh/staging"
+          printf '%s\n' "${SSH_KNOWN_HOSTS}" > "${HOME}/.ssh/known_hosts"
+          chmod 0600 "${HOME}/.ssh/staging" "${HOME}/.ssh/known_hosts"
+
+      - name: Transfer and activate release
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          archive="${RUNNER_TEMP}/release/bizici-${GITHUB_SHA}.tar.gz"
+          checksum="${archive}.sha256"
+          remote_archive="/var/tmp/bizici-${GITHUB_SHA}.tar.gz"
+          remote_checksum="${remote_archive}.sha256"
+          ssh_target="${STAGING_USER}@${STAGING_HOST}"
+          ssh_options=(
+            -i "${HOME}/.ssh/staging"
+            -o BatchMode=yes
+            -o IdentitiesOnly=yes
+            -o StrictHostKeyChecking=yes
+          )
+
+          test -f "${archive}"
+          test -f "${checksum}"
+
+          scp "${ssh_options[@]}" \
+            "${archive}" \
+            "${ssh_target}:${remote_archive}"
+          scp "${ssh_options[@]}" \
+            "${checksum}" \
+            "${ssh_target}:${remote_checksum}"
+
+          ssh "${ssh_options[@]}" "${ssh_target}" \
+            sudo /usr/local/sbin/bizici-deploy-release \
+              "${GITHUB_SHA}" \
+              "${remote_archive}" \
+              "${remote_checksum}"
+
+      - name: Verify public staging endpoints
+        run: |
+          set -Eeuo pipefail
+          curl --fail --silent --show-error \
+            --retry 5 --retry-connrefused --retry-delay 2 \
+            https://api-bizici.run.place/api/healthz
+          curl --fail --silent --show-error \
+            --retry 5 --retry-connrefused --retry-delay 2 \
+            https://admin-bizici.run.place/ >/dev/null
+          curl --fail --silent --show-error \
+            --retry 5 --retry-connrefused --retry-delay 2 \
+            https://site-bizici.run.place/ >/dev/null

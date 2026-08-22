@@ -1,0 +1,31 @@
+[Unit]
+Description=BizIci staging API
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/opt/bizici/current/api/index.mjs
+ConditionPathExists=/etc/bizici/api.env
+
+[Service]
+Type=simple
+User=bizici
+Group=bizici
+WorkingDirectory=/opt/bizici/current/api
+EnvironmentFile=/etc/bizici/api.env
+ExecStart=/usr/bin/node --enable-source-maps /opt/bizici/current/api/index.mjs
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+KillSignal=SIGTERM
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target
