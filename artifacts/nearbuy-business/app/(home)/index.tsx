@@ -38,7 +38,11 @@ export default function ShopListScreen() {
         activeOpacity={0.8}
         onPress={() => {
           Haptics.selectionAsync();
-          router.push(`/(home)/shops/${shop?.id}`);
+          if (!shop?.id) return;
+          router.push({
+            pathname: "/shops/[shopId]",
+            params: { shopId: shop.id },
+          });
         }}
       >
         <Card style={styles.shopCard}>

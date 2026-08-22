@@ -29,7 +29,10 @@ export default function InvitationsScreen() {
         onSuccess: (result) => {
           queryClient.invalidateQueries({ queryKey: getListMyInvitationsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getListShopsQueryKey() });
-          router.replace(`/(home)/shops/${result.shop.id}`);
+          router.replace({
+            pathname: "/shops/[shopId]",
+            params: { shopId: result.shop.id },
+          });
         },
         onError: (err: any) => {
           Alert.alert(t("invitations.acceptError"), err?.message ?? t("invitations.tryAgain"));

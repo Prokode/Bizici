@@ -53,11 +53,7 @@ export default function SignInScreen() {
     try {
       const { error } = await signIn.password({ emailAddress, password });
       if (error) {
-        setSubmitError(
-          error.errors?.[0]?.longMessage ??
-            error.message ??
-            t("auth.errorSignIn"),
-        );
+        setSubmitError(error.message ?? t("auth.errorSignIn"));
         return;
       }
       if (signIn.status === "complete") {
@@ -68,8 +64,10 @@ export default function SignInScreen() {
           },
         });
       }
-    } catch (err: any) {
-      setSubmitError(err?.message ?? t("auth.errorGeneric"));
+    } catch (err: unknown) {
+      setSubmitError(
+        err instanceof Error ? err.message : t("auth.errorGeneric"),
+      );
     }
   };
 
@@ -95,9 +93,9 @@ export default function SignInScreen() {
             },
           });
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setSubmitError(
-          err?.message ??
+          (err instanceof Error ? err.message : null) ??
             (strategy === "oauth_apple"
               ? t("auth.errorApple")
               : t("auth.errorGoogle")),

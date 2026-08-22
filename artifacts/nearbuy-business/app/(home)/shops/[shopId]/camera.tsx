@@ -43,8 +43,8 @@ export default function CameraScreen() {
       const photo = await cameraRef.current.takePictureAsync({ base64: true, quality: 0.5 });
       if (photo) {
         router.replace({
-          pathname: `/(home)/shops/${shopId}/add-product`,
-          params: { photoUri: photo.uri, base64: photo.base64 },
+          pathname: "/(home)/shops/[shopId]/add-product",
+          params: { shopId, photoUri: photo.uri, base64: photo.base64 },
         });
       }
     }

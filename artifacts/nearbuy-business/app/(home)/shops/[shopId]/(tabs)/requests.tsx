@@ -34,6 +34,10 @@ export default function RequestsScreen() {
 
   const markRequestFound = useMarkRequestFound();
   const expireRequest = useExpireRequest();
+  const confirmActionStyle = {
+    ...styles.actionBtn,
+    backgroundColor: colors.success || colors.primary,
+  };
 
   const handleAction = (id: string, action: "confirm" | "dismiss") => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -85,7 +89,7 @@ export default function RequestsScreen() {
           <Button
             title={t("requests.confirmAvailability")}
             variant="primary"
-            style={[styles.actionBtn, { backgroundColor: colors.success || colors.primary }]}
+            style={confirmActionStyle}
             textStyle={{ color: colors.successForeground || colors.primaryForeground }}
             onPress={() => handleAction(item.id, "confirm")}
           />
