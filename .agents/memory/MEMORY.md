@@ -1,2 +1,3 @@
 - [Mobile code duplication](mobile-code-duplication.md) — no shared RN lib; copy components verbatim into both Expo apps + add i18n keys in all 4 locale files.
 - [Mongoose map reads](mongoose-map-reads.md) — lean country queries may expose currency maps as plain objects; API readers must support both Map and object shapes.
+- [Ubuntu Nginx bootstrap](ubuntu-nginx-bootstrap.md) — preflight legacy Nginx state before apt; Certbot 0.40 expects hash sizing in nginx.conf, not conf.d.
