@@ -32,6 +32,10 @@ for required_file in \
   fi
 done
 
+if [[ -L /etc/nginx/sites-enabled/default && ! -e /etc/nginx/sites-enabled/default ]]; then
+  rm -f /etc/nginx/sites-enabled/default
+fi
+
 export DEBIAN_FRONTEND=noninteractive
 
 apt-get update
@@ -129,6 +133,20 @@ systemctl enable bizici-api.service
 install -m 0644 \
   "${SCRIPT_DIR}/nginx/bizici-staging.conf" \
   "${NGINX_SITE}"
+rm -f /etc/nginx/conf.d/bizici-server-names.conf
+if grep -Eq '^[[:space:]]*server_names_hash_bucket_size[[:space:]]+' /etc/nginx/nginx.conf; then
+  sed -Ei \
+    's/^([[:space:]]*)server_names_hash_bucket_size[[:space:]]+[0-9]+;/\1server_names_hash_bucket_size 64;/' \
+    /etc/nginx/nginx.conf
+elif grep -Eq '^[[:space:]]*#[[:space:]]*server_names_hash_bucket_size[[:space:]]+' /etc/nginx/nginx.conf; then
+  sed -Ei \
+    's/^([[:space:]]*)#[[:space:]]*server_names_hash_bucket_size[[:space:]]+[0-9]+;/\1server_names_hash_bucket_size 64;/' \
+    /etc/nginx/nginx.conf
+else
+  sed -i \
+    '/^[[:space:]]*http[[:space:]]*{/a\\    server_names_hash_bucket_size 64;' \
+    /etc/nginx/nginx.conf
+fi
 ln -sfn "${NGINX_SITE}" /etc/nginx/sites-enabled/bizici-staging
 rm -f /etc/nginx/sites-enabled/default
 nginx -t
@@ -137,7 +155,7 @@ systemctl reload nginx
 
 ssh_port="$(
   /usr/sbin/sshd -T 2>/dev/null \
-    | awk '$1 == "port" { print $2; exit }'
+    | awk '$1 == "port" && !found { print $2; found = 1 }'
 )"
 ssh_port="${ssh_port:-22}"
 ufw default deny incoming
