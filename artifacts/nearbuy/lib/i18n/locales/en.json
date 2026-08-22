@@ -205,6 +205,7 @@
     "errorApple": "Apple sign-in failed",
     "errorVerify": "Invalid code",
     "errorGeneric": "Something went wrong",
+    "locationSaveError": "Could not save your country and city. Please try again.",
     "forgotLink": "Forgot password?",
     "forgotTitle": "Reset password",
     "forgotSubtitle": "Enter your email and we'll send you a 6-digit code.",

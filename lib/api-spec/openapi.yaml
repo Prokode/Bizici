@@ -41,6 +41,19 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Me" }
 
+  /me/location:
+    put:
+      operationId: updateMyLocation
+      tags: [me]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UserLocationInput" }
+      responses:
+        "204":
+          description: Country and city saved on the current user
+
   /me/push-tokens:
     post:
       operationId: registerPushToken
@@ -996,10 +1009,28 @@ components:
         id: { type: string }
         email: { type: string, nullable: true }
         name: { type: string, nullable: true }
+        countryCode: { type: string, nullable: true }
+        city:
+          oneOf:
+            - { $ref: "#/components/schemas/City" }
+            - { type: "null" }
         shops:
           type: array
           items: { $ref: "#/components/schemas/ShopWithRole" }
       required: [id, shops]
+
+    UserLocationInput:
+      type: object
+      properties:
+        countryCode:
+          type: string
+          minLength: 2
+          maxLength: 2
+          description: ISO 3166-1 alpha-2 code.
+        cityId:
+          type: string
+          description: Normalized City identifier returned by the cities API.
+      required: [countryCode, cityId]
 
     PushTokenInput:
       type: object
@@ -1109,6 +1140,15 @@ components:
         name: { type: string }
         marketName: { type: string, nullable: true }
         stallInfo: { type: string, nullable: true }
+        countryCode: { type: string, nullable: true }
+        city:
+          oneOf:
+            - { $ref: "#/components/schemas/City" }
+            - { type: "null" }
+        currency:
+          oneOf:
+            - { $ref: "#/components/schemas/CountryCurrency" }
+            - { type: "null" }
         latitude: { type: number }
         longitude: { type: number }
         isOpen: { type: boolean }
@@ -1267,6 +1307,15 @@ components:
         name: { type: string, minLength: 1 }
         marketName: { type: string, nullable: true }
         stallInfo: { type: string, nullable: true }
+        countryCode:
+          type: string
+          minLength: 2
+          maxLength: 2
+        cityId: { type: string }
+        currencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
         latitude: { type: number }
         longitude: { type: number }
         kind:
@@ -1280,7 +1329,7 @@ components:
           nullable: true
           minimum: 1
           maximum: 100
-      required: [name, latitude, longitude]
+      required: [name, countryCode, cityId, currencyCode, latitude, longitude]
 
     ShopUpdateInput:
       type: object
@@ -1333,7 +1382,18 @@ components:
         callingCode: { type: string, description: "International dialing prefix, e.g. +33" }
         flagPng: { type: string, description: "Small PNG flag URL" }
         flagEmoji: { type: string, description: "Unicode flag emoji" }
-      required: [cca2, cca3, name, nameFr, callingCode, flagPng, flagEmoji]
+        currencies:
+          type: array
+          items: { $ref: "#/components/schemas/CountryCurrency" }
+      required: [cca2, cca3, name, nameFr, callingCode, flagPng, flagEmoji, currencies]
+
+    CountryCurrency:
+      type: object
+      properties:
+        code: { type: string, minLength: 3, maxLength: 3 }
+        name: { type: string }
+        symbol: { type: string }
+      required: [code, name, symbol]
 
     City:
       type: object

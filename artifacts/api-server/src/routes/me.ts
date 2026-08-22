@@ -5,6 +5,7 @@ import { meController } from "../controllers/me";
 const router: IRouter = Router();
 
 router.get("/me", requireAuth, meController.getMe);
+router.put("/me/location", requireAuth, meController.updateLocation);
 router.get("/me/karma", requireAuth, meController.getKarma);
 
 router.post("/me/push-tokens", requireAuth, meController.registerPushToken);

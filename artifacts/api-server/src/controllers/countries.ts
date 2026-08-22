@@ -21,6 +21,20 @@ function callingCodeFrom(idd?: {
 function serializeCountry(c: any) {
   const cca2 = String(c.cca2 ?? "").toUpperCase();
   const nameFr = c.translations?.fra?.common ?? c.name?.common ?? "";
+  const currencyEntries: [string, unknown][] =
+    c.currencies instanceof Map
+      ? Array.from(c.currencies.entries())
+      : Object.entries(c.currencies ?? {});
+  const currencies = currencyEntries
+    .map(([code, value]) => {
+      const currency = value as { name?: string; symbol?: string };
+      return {
+        code: code.toUpperCase(),
+        name: currency.name ?? code.toUpperCase(),
+        symbol: currency.symbol ?? code.toUpperCase(),
+      };
+    })
+    .sort((a, b) => a.code.localeCompare(b.code));
   return {
     cca2,
     cca3: String(c.cca3 ?? "").toUpperCase(),
@@ -31,6 +45,7 @@ function serializeCountry(c: any) {
       ? `https://flagcdn.com/w80/${cca2.toLowerCase()}.png`
       : "",
     flagEmoji: c.flag ?? "",
+    currencies,
   };
 }
 

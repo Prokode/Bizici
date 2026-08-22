@@ -16,6 +16,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getListProductsQueryOptions,
   getListProductsQueryKey,
+  getGetShopQueryOptions,
   getGetShopSummaryQueryKey,
   useUpdateProduct,
   type Product,
@@ -28,12 +29,13 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { HeaderSummary } from "@/components/HeaderSummary";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
+import { formatShopPrice } from "@/lib/currency";
 
 export default function InventoryScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
 
   const {
@@ -43,6 +45,10 @@ export default function InventoryScreen() {
     isRefetching,
   } = useQuery({
     ...getListProductsQueryOptions(shopId as string),
+    enabled: !!shopId,
+  });
+  const { data: shop } = useQuery({
+    ...getGetShopQueryOptions(shopId as string),
     enabled: !!shopId,
   });
 
@@ -106,7 +112,9 @@ export default function InventoryScreen() {
           </Text>
         </View>
         <Text style={[styles.productPrice, { color: colors.foreground, fontFamily: "PlusJakartaSans_600SemiBold" }]}>
-          {item.price != null ? `$${(item.price / 100).toFixed(2)}` : t("inventory.priceNotSet")}
+          {item.price != null
+            ? formatShopPrice(item.price, shop?.currency, i18n.language)
+            : t("inventory.priceNotSet")}
         </Text>
       </View>
 

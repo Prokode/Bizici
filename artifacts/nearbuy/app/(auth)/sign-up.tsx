@@ -23,6 +23,18 @@ import { recordConsent, type ConsentSource } from "@/lib/api/consent";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
+import { CountrySelector } from "@/components/CountrySelector";
+import { CitySelector } from "@/components/CitySelector";
+import {
+  getGetMeQueryKey,
+  updateMyLocation,
+  type City,
+} from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  clearPendingSignupLocation,
+  savePendingSignupLocation,
+} from "@/lib/pendingSignupLocation";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -45,12 +57,45 @@ export default function SignUpScreen() {
   const { next } = useLocalSearchParams<{ next?: string }>();
   const { signUp, errors, fetchStatus } = useSignUp();
   const { startSSOFlow } = useSSO();
+  const queryClient = useQueryClient();
 
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [countryCode, setCountryCode] = useState<string | null>(null);
+  const [city, setCity] = useState<City | null>(null);
+
+  const hasLocation = !!countryCode && !!city;
+  const saveLocation = useCallback(
+    async (
+      session:
+        | {
+            getToken: () => Promise<string | null>;
+            user: { id: string } | null;
+          }
+        | null
+        | undefined,
+    ) => {
+      if (!countryCode || !city || !session?.user) {
+        throw new Error("Missing signup location or session");
+      }
+      await savePendingSignupLocation(session.user.id, {
+        countryCode,
+        cityId: city.id,
+      });
+      const token = await session.getToken();
+      if (!token) throw new Error("Missing session token");
+      await updateMyLocation(
+        { countryCode, cityId: city.id },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      await clearPendingSignupLocation(session.user.id);
+      await queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+    },
+    [city, countryCode, queryClient],
+  );
 
   const requireTermsOrAlert = () => {
     if (acceptedTerms) return true;
@@ -68,14 +113,12 @@ export default function SignUpScreen() {
 
   const handleSubmit = async () => {
     setSubmitError(null);
-    if (!requireTermsOrAlert()) return;
+    if (!requireTermsOrAlert() || !hasLocation) return;
     try {
       const { error } = await signUp.password({ emailAddress, password });
       if (error) {
         setSubmitError(
-          error.errors?.[0]?.longMessage ??
-            error.message ??
-            t("auth.errorSignUp"),
+          error.message ?? t("auth.errorSignUp"),
         );
         return;
       }
@@ -91,8 +134,25 @@ export default function SignUpScreen() {
       await signUp.verifications.verifyEmailCode({ code });
       if (signUp.status === "complete") {
         await signUp.finalize({
-          navigate: ({ session }) => {
+          navigate: async ({ session }) => {
             if (session?.currentTask) return;
+            try {
+              await saveLocation(session);
+            } catch {
+              if (!session?.user || !countryCode || !city) {
+                setSubmitError(t("auth.locationSaveError"));
+                return;
+              }
+              try {
+                await savePendingSignupLocation(session.user.id, {
+                  countryCode,
+                  cityId: city.id,
+                });
+              } catch {
+                setSubmitError(t("auth.locationSaveError"));
+                return;
+              }
+            }
             // Audit-trail the consent. Fire-and-forget — must NOT block
             // navigation if the API is briefly unreachable.
             void recordConsent({ version: LEGAL_VERSION, source: "email" });
@@ -119,6 +179,7 @@ export default function SignUpScreen() {
         Alert.alert(t("auth.termsRequiredTitle"), t("auth.termsRequiredBody"));
         return;
       }
+      if (!hasLocation) return;
       try {
         const { createdSessionId, setActive } = await startSSOFlow({
           strategy,
@@ -129,6 +190,23 @@ export default function SignUpScreen() {
             session: createdSessionId,
             navigate: async ({ session }) => {
               if (session?.currentTask) return;
+              try {
+                await saveLocation(session);
+              } catch {
+                if (!session?.user || !countryCode || !city) {
+                  setSubmitError(t("auth.locationSaveError"));
+                  return;
+                }
+                try {
+                  await savePendingSignupLocation(session.user.id, {
+                    countryCode,
+                    cityId: city.id,
+                  });
+                } catch {
+                  setSubmitError(t("auth.locationSaveError"));
+                  return;
+                }
+              }
               void recordConsent({ version: LEGAL_VERSION, source });
               goHome();
             },
@@ -143,7 +221,7 @@ export default function SignUpScreen() {
         );
       }
     },
-    [acceptedTerms, goHome, startSSOFlow, t],
+    [acceptedTerms, goHome, hasLocation, saveLocation, startSSOFlow, t],
   );
 
   const onGoogle = useCallback(
@@ -244,6 +322,18 @@ export default function SignUpScreen() {
           </Card>
         ) : (
           <Card style={styles.card}>
+            <CountrySelector
+              value={countryCode}
+              onChange={(nextCountryCode) => {
+                setCountryCode(nextCountryCode);
+                setCity(null);
+              }}
+            />
+            <CitySelector
+              country={countryCode}
+              value={city}
+              onChange={setCity}
+            />
             <Button
               title={t("auth.continueGoogle")}
               variant="secondary"
@@ -255,6 +345,7 @@ export default function SignUpScreen() {
                 />
               }
               onPress={onGoogle}
+              disabled={!hasLocation}
               style={{ marginBottom: 12 }}
             />
             {/*
@@ -268,6 +359,7 @@ export default function SignUpScreen() {
                 title={t("auth.continueApple")}
                 icon={<FontAwesome name="apple" size={18} color="#FFFFFF" />}
                 onPress={onApple}
+                disabled={!hasLocation}
                 style={{
                   backgroundColor: "#000000",
                   borderColor: "#000000",
@@ -336,6 +428,7 @@ export default function SignUpScreen() {
               disabled={
                 !emailAddress ||
                 !password ||
+                !hasLocation ||
                 !acceptedTerms ||
                 fetchStatus === "fetching"
               }

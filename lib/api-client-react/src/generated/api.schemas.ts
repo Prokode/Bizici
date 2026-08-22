@@ -9,6 +9,24 @@ export interface HealthStatus {
   status: string;
 }
 
+export interface City {
+  id: string;
+  /** Display name, e.g. Paris */
+  name: string;
+  /** ISO 3166-1 alpha-2, e.g. FR */
+  countryCode: string;
+}
+
+export interface CountryCurrency {
+  /**
+   * @minLength 3
+   * @maxLength 3
+   */
+  code: string;
+  name: string;
+  symbol: string;
+}
+
 /**
  * Whether this shop sells products, offers services, or both.
 Existing shops default to "products".
@@ -111,6 +129,9 @@ export interface Shop {
   name: string;
   marketName?: string | null;
   stallInfo?: string | null;
+  countryCode?: string | null;
+  city?: City | null;
+  currency?: CountryCurrency | null;
   latitude: number;
   longitude: number;
   isOpen: boolean;
@@ -167,7 +188,20 @@ export interface Me {
   id: string;
   email?: string | null;
   name?: string | null;
+  countryCode?: string | null;
+  city?: City | null;
   shops: ShopWithRole[];
+}
+
+export interface UserLocationInput {
+  /**
+   * ISO 3166-1 alpha-2 code.
+   * @minLength 2
+   * @maxLength 2
+   */
+  countryCode: string;
+  /** Normalized City identifier returned by the cities API. */
+  cityId: string;
 }
 
 export type PushTokenInputPlatform =
@@ -319,6 +353,17 @@ export interface ShopCreateInput {
   name: string;
   marketName?: string | null;
   stallInfo?: string | null;
+  /**
+   * @minLength 2
+   * @maxLength 2
+   */
+  countryCode: string;
+  cityId: string;
+  /**
+   * @minLength 3
+   * @maxLength 3
+   */
+  currencyCode: string;
   latitude: number;
   longitude: number;
   /** Defaults to "products" when omitted. */
@@ -399,14 +444,7 @@ export interface Country {
   flagPng: string;
   /** Unicode flag emoji */
   flagEmoji: string;
-}
-
-export interface City {
-  id: string;
-  /** Display name, e.g. Paris */
-  name: string;
-  /** ISO 3166-1 alpha-2, e.g. FR */
-  countryCode: string;
+  currencies: CountryCurrency[];
 }
 
 export interface ResolveCityInput {

@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import { Types } from "mongoose";
 import {
   User,
+  Country,
+  City,
   ShopMember,
   Shop,
   Product,
@@ -65,7 +67,10 @@ function serializeBasket(
 
 export const meController = {
   getMe: async (req: Request, res: Response) => {
-    const user = await User.findById(req.userId).lean();
+    const user = await User.findById(req.userId)
+      .populate("country")
+      .populate("city")
+      .lean();
     if (!user) {
       res.status(404).json({ error: "User not found" });
       return;
@@ -76,7 +81,9 @@ export const meController = {
     }).lean();
 
     const shopIds = memberships.map((m) => m.shopId);
-    const shops = await Shop.find({ _id: { $in: shopIds } }).lean();
+    const shops = await Shop.find({ _id: { $in: shopIds } })
+      .populate("city")
+      .lean();
     const shopMap = new Map(shops.map((s) => [String(s._id), s]));
 
     const shopsWithRole = memberships
@@ -94,8 +101,54 @@ export const meController = {
       id: String(user._id),
       email: user.email ?? null,
       name: user.name ?? null,
+      countryCode:
+        user.country && typeof user.country === "object"
+          ? String((user.country as any).cca2 ?? "")
+          : null,
+      city:
+        user.city && typeof user.city === "object"
+          ? {
+              id: String((user.city as any)._id),
+              name: String((user.city as any).name ?? ""),
+              countryCode: String((user.city as any).countryCode ?? ""),
+            }
+          : null,
       shops: shopsWithRole,
     });
+  },
+
+  updateLocation: async (req: Request, res: Response) => {
+    const countryCode =
+      typeof req.body?.countryCode === "string"
+        ? req.body.countryCode.trim().toUpperCase()
+        : "";
+    const cityId =
+      typeof req.body?.cityId === "string" ? req.body.cityId.trim() : "";
+
+    if (!/^[A-Z]{2}$/.test(countryCode) || !Types.ObjectId.isValid(cityId)) {
+      res.status(400).json({ error: "Valid countryCode and cityId required" });
+      return;
+    }
+
+    const [country, city] = await Promise.all([
+      Country.findOne({ cca2: countryCode }).select({ _id: 1 }).lean(),
+      City.findOne({
+        _id: new Types.ObjectId(cityId),
+        countryCode,
+      })
+        .select({ _id: 1 })
+        .lean(),
+    ]);
+    if (!country || !city) {
+      res.status(400).json({ error: "Country or city does not match" });
+      return;
+    }
+
+    await User.updateOne(
+      { _id: new Types.ObjectId(req.userId) },
+      { $set: { country: country._id, city: city._id } },
+    );
+    res.status(204).end();
   },
 
   /**

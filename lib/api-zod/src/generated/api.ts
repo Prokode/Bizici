@@ -11,6 +11,9 @@ export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
 
+export const getMeResponseShopsItemShopCurrencyOneCodeMin = 3;
+export const getMeResponseShopsItemShopCurrencyOneCodeMax = 3;
+
 export const getMeResponseShopsItemShopServiceProviderOneAgeMin = 16;
 export const getMeResponseShopsItemShopServiceProviderOneAgeMax = 120;
 
@@ -30,6 +33,17 @@ export const GetMeResponse = zod.object({
   id: zod.string(),
   email: zod.string().nullish(),
   name: zod.string().nullish(),
+  countryCode: zod.string().nullish(),
+  city: zod
+    .union([
+      zod.object({
+        id: zod.string(),
+        name: zod.string().describe("Display name, e.g. Paris"),
+        countryCode: zod.string().describe("ISO 3166-1 alpha-2, e.g. FR"),
+      }),
+      zod.null(),
+    ])
+    .optional(),
   shops: zod.array(
     zod.object({
       shop: zod.object({
@@ -38,6 +52,30 @@ export const GetMeResponse = zod.object({
         name: zod.string(),
         marketName: zod.string().nullish(),
         stallInfo: zod.string().nullish(),
+        countryCode: zod.string().nullish(),
+        city: zod
+          .union([
+            zod.object({
+              id: zod.string(),
+              name: zod.string().describe("Display name, e.g. Paris"),
+              countryCode: zod.string().describe("ISO 3166-1 alpha-2, e.g. FR"),
+            }),
+            zod.null(),
+          ])
+          .optional(),
+        currency: zod
+          .union([
+            zod.object({
+              code: zod
+                .string()
+                .min(getMeResponseShopsItemShopCurrencyOneCodeMin)
+                .max(getMeResponseShopsItemShopCurrencyOneCodeMax),
+              name: zod.string(),
+              symbol: zod.string(),
+            }),
+            zod.null(),
+          ])
+          .optional(),
         latitude: zod.number(),
         longitude: zod.number(),
         isOpen: zod.boolean(),
@@ -140,6 +178,20 @@ export const GetMeResponse = zod.object({
       role: zod.enum(["seller", "sub_seller"]),
     }),
   ),
+});
+
+export const updateMyLocationBodyCountryCodeMin = 2;
+export const updateMyLocationBodyCountryCodeMax = 2;
+
+export const UpdateMyLocationBody = zod.object({
+  countryCode: zod
+    .string()
+    .min(updateMyLocationBodyCountryCodeMin)
+    .max(updateMyLocationBodyCountryCodeMax)
+    .describe("ISO 3166-1 alpha-2 code."),
+  cityId: zod
+    .string()
+    .describe("Normalized City identifier returned by the cities API."),
 });
 
 export const RegisterPushTokenBody = zod.object({
@@ -301,6 +353,9 @@ export const DeleteMyReviewParams = zod.object({
   shopId: zod.coerce.string(),
 });
 
+export const listShopsResponseShopCurrencyOneCodeMin = 3;
+export const listShopsResponseShopCurrencyOneCodeMax = 3;
+
 export const listShopsResponseShopServiceProviderOneAgeMin = 16;
 export const listShopsResponseShopServiceProviderOneAgeMax = 120;
 
@@ -323,6 +378,30 @@ export const ListShopsResponseItem = zod.object({
     name: zod.string(),
     marketName: zod.string().nullish(),
     stallInfo: zod.string().nullish(),
+    countryCode: zod.string().nullish(),
+    city: zod
+      .union([
+        zod.object({
+          id: zod.string(),
+          name: zod.string().describe("Display name, e.g. Paris"),
+          countryCode: zod.string().describe("ISO 3166-1 alpha-2, e.g. FR"),
+        }),
+        zod.null(),
+      ])
+      .optional(),
+    currency: zod
+      .union([
+        zod.object({
+          code: zod
+            .string()
+            .min(listShopsResponseShopCurrencyOneCodeMin)
+            .max(listShopsResponseShopCurrencyOneCodeMax),
+          name: zod.string(),
+          symbol: zod.string(),
+        }),
+        zod.null(),
+      ])
+      .optional(),
     latitude: zod.number(),
     longitude: zod.number(),
     isOpen: zod.boolean(),
@@ -418,12 +497,27 @@ export const ListShopsResponseItem = zod.object({
 });
 export const ListShopsResponse = zod.array(ListShopsResponseItem);
 
+export const createShopBodyCountryCodeMin = 2;
+export const createShopBodyCountryCodeMax = 2;
+
+export const createShopBodyCurrencyCodeMin = 3;
+export const createShopBodyCurrencyCodeMax = 3;
+
 export const createShopBodyDeliveryRadiusKmMax = 100;
 
 export const CreateShopBody = zod.object({
   name: zod.string().min(1),
   marketName: zod.string().nullish(),
   stallInfo: zod.string().nullish(),
+  countryCode: zod
+    .string()
+    .min(createShopBodyCountryCodeMin)
+    .max(createShopBodyCountryCodeMax),
+  cityId: zod.string(),
+  currencyCode: zod
+    .string()
+    .min(createShopBodyCurrencyCodeMin)
+    .max(createShopBodyCurrencyCodeMax),
   latitude: zod.number(),
   longitude: zod.number(),
   kind: zod
@@ -442,6 +536,9 @@ export const CreateShopBody = zod.object({
     .max(createShopBodyDeliveryRadiusKmMax)
     .nullish(),
 });
+
+export const createShopResponseCurrencyOneCodeMin = 3;
+export const createShopResponseCurrencyOneCodeMax = 3;
 
 export const createShopResponseServiceProviderOneAgeMin = 16;
 export const createShopResponseServiceProviderOneAgeMax = 120;
@@ -464,6 +561,30 @@ export const CreateShopResponse = zod.object({
   name: zod.string(),
   marketName: zod.string().nullish(),
   stallInfo: zod.string().nullish(),
+  countryCode: zod.string().nullish(),
+  city: zod
+    .union([
+      zod.object({
+        id: zod.string(),
+        name: zod.string().describe("Display name, e.g. Paris"),
+        countryCode: zod.string().describe("ISO 3166-1 alpha-2, e.g. FR"),
+      }),
+      zod.null(),
+    ])
+    .optional(),
+  currency: zod
+    .union([
+      zod.object({
+        code: zod
+          .string()
+          .min(createShopResponseCurrencyOneCodeMin)
+          .max(createShopResponseCurrencyOneCodeMax),
+        name: zod.string(),
+        symbol: zod.string(),
+      }),
+      zod.null(),
+    ])
+    .optional(),
   latitude: zod.number(),
   longitude: zod.number(),
   isOpen: zod.boolean(),
@@ -560,6 +681,9 @@ export const GetShopParams = zod.object({
   shopId: zod.coerce.string(),
 });
 
+export const getShopResponseCurrencyOneCodeMin = 3;
+export const getShopResponseCurrencyOneCodeMax = 3;
+
 export const getShopResponseServiceProviderOneAgeMin = 16;
 export const getShopResponseServiceProviderOneAgeMax = 120;
 
@@ -581,6 +705,30 @@ export const GetShopResponse = zod.object({
   name: zod.string(),
   marketName: zod.string().nullish(),
   stallInfo: zod.string().nullish(),
+  countryCode: zod.string().nullish(),
+  city: zod
+    .union([
+      zod.object({
+        id: zod.string(),
+        name: zod.string().describe("Display name, e.g. Paris"),
+        countryCode: zod.string().describe("ISO 3166-1 alpha-2, e.g. FR"),
+      }),
+      zod.null(),
+    ])
+    .optional(),
+  currency: zod
+    .union([
+      zod.object({
+        code: zod
+          .string()
+          .min(getShopResponseCurrencyOneCodeMin)
+          .max(getShopResponseCurrencyOneCodeMax),
+        name: zod.string(),
+        symbol: zod.string(),
+      }),
+      zod.null(),
+    ])
+    .optional(),
   latitude: zod.number(),
   longitude: zod.number(),
   isOpen: zod.boolean(),
@@ -699,6 +847,9 @@ export const UpdateShopBody = zod.object({
     .nullish(),
 });
 
+export const updateShopResponseCurrencyOneCodeMin = 3;
+export const updateShopResponseCurrencyOneCodeMax = 3;
+
 export const updateShopResponseServiceProviderOneAgeMin = 16;
 export const updateShopResponseServiceProviderOneAgeMax = 120;
 
@@ -720,6 +871,30 @@ export const UpdateShopResponse = zod.object({
   name: zod.string(),
   marketName: zod.string().nullish(),
   stallInfo: zod.string().nullish(),
+  countryCode: zod.string().nullish(),
+  city: zod
+    .union([
+      zod.object({
+        id: zod.string(),
+        name: zod.string().describe("Display name, e.g. Paris"),
+        countryCode: zod.string().describe("ISO 3166-1 alpha-2, e.g. FR"),
+      }),
+      zod.null(),
+    ])
+    .optional(),
+  currency: zod
+    .union([
+      zod.object({
+        code: zod
+          .string()
+          .min(updateShopResponseCurrencyOneCodeMin)
+          .max(updateShopResponseCurrencyOneCodeMax),
+        name: zod.string(),
+        symbol: zod.string(),
+      }),
+      zod.null(),
+    ])
+    .optional(),
   latitude: zod.number(),
   longitude: zod.number(),
   isOpen: zod.boolean(),
@@ -820,6 +995,9 @@ export const SetShopOpenBody = zod.object({
   isOpen: zod.boolean(),
 });
 
+export const setShopOpenResponseCurrencyOneCodeMin = 3;
+export const setShopOpenResponseCurrencyOneCodeMax = 3;
+
 export const setShopOpenResponseServiceProviderOneAgeMin = 16;
 export const setShopOpenResponseServiceProviderOneAgeMax = 120;
 
@@ -841,6 +1019,30 @@ export const SetShopOpenResponse = zod.object({
   name: zod.string(),
   marketName: zod.string().nullish(),
   stallInfo: zod.string().nullish(),
+  countryCode: zod.string().nullish(),
+  city: zod
+    .union([
+      zod.object({
+        id: zod.string(),
+        name: zod.string().describe("Display name, e.g. Paris"),
+        countryCode: zod.string().describe("ISO 3166-1 alpha-2, e.g. FR"),
+      }),
+      zod.null(),
+    ])
+    .optional(),
+  currency: zod
+    .union([
+      zod.object({
+        code: zod
+          .string()
+          .min(setShopOpenResponseCurrencyOneCodeMin)
+          .max(setShopOpenResponseCurrencyOneCodeMax),
+        name: zod.string(),
+        symbol: zod.string(),
+      }),
+      zod.null(),
+    ])
+    .optional(),
   latitude: zod.number(),
   longitude: zod.number(),
   isOpen: zod.boolean(),
@@ -1907,6 +2109,9 @@ export const SearchServicesQueryParams = zod.object({
 
 export const searchServicesResponseServicePriceMin = 0;
 
+export const searchServicesResponseShopCurrencyOneCodeMin = 3;
+export const searchServicesResponseShopCurrencyOneCodeMax = 3;
+
 export const searchServicesResponseShopServiceProviderOneAgeMin = 16;
 export const searchServicesResponseShopServiceProviderOneAgeMax = 120;
 
@@ -1976,6 +2181,30 @@ export const SearchServicesResponseItem = zod.object({
     name: zod.string(),
     marketName: zod.string().nullish(),
     stallInfo: zod.string().nullish(),
+    countryCode: zod.string().nullish(),
+    city: zod
+      .union([
+        zod.object({
+          id: zod.string(),
+          name: zod.string().describe("Display name, e.g. Paris"),
+          countryCode: zod.string().describe("ISO 3166-1 alpha-2, e.g. FR"),
+        }),
+        zod.null(),
+      ])
+      .optional(),
+    currency: zod
+      .union([
+        zod.object({
+          code: zod
+            .string()
+            .min(searchServicesResponseShopCurrencyOneCodeMin)
+            .max(searchServicesResponseShopCurrencyOneCodeMax),
+          name: zod.string(),
+          symbol: zod.string(),
+        }),
+        zod.null(),
+      ])
+      .optional(),
     latitude: zod.number(),
     longitude: zod.number(),
     isOpen: zod.boolean(),
@@ -2282,6 +2511,9 @@ export const AcceptInvitationParams = zod.object({
   token: zod.coerce.string(),
 });
 
+export const acceptInvitationResponseShopCurrencyOneCodeMin = 3;
+export const acceptInvitationResponseShopCurrencyOneCodeMax = 3;
+
 export const acceptInvitationResponseShopServiceProviderOneAgeMin = 16;
 export const acceptInvitationResponseShopServiceProviderOneAgeMax = 120;
 
@@ -2304,6 +2536,30 @@ export const AcceptInvitationResponse = zod.object({
     name: zod.string(),
     marketName: zod.string().nullish(),
     stallInfo: zod.string().nullish(),
+    countryCode: zod.string().nullish(),
+    city: zod
+      .union([
+        zod.object({
+          id: zod.string(),
+          name: zod.string().describe("Display name, e.g. Paris"),
+          countryCode: zod.string().describe("ISO 3166-1 alpha-2, e.g. FR"),
+        }),
+        zod.null(),
+      ])
+      .optional(),
+    currency: zod
+      .union([
+        zod.object({
+          code: zod
+            .string()
+            .min(acceptInvitationResponseShopCurrencyOneCodeMin)
+            .max(acceptInvitationResponseShopCurrencyOneCodeMax),
+          name: zod.string(),
+          symbol: zod.string(),
+        }),
+        zod.null(),
+      ])
+      .optional(),
     latitude: zod.number(),
     longitude: zod.number(),
     isOpen: zod.boolean(),
@@ -2425,6 +2681,9 @@ export const ListCategoriesResponseItem = zod.object({
 });
 export const ListCategoriesResponse = zod.array(ListCategoriesResponseItem);
 
+export const listCountriesResponseCurrenciesItemCodeMin = 3;
+export const listCountriesResponseCurrenciesItemCodeMax = 3;
+
 export const ListCountriesResponseItem = zod.object({
   cca2: zod.string().describe("ISO 3166-1 alpha-2 code, e.g. FR"),
   cca3: zod.string().describe("ISO 3166-1 alpha-3 code, e.g. FRA"),
@@ -2433,6 +2692,16 @@ export const ListCountriesResponseItem = zod.object({
   callingCode: zod.string().describe("International dialing prefix, e.g. +33"),
   flagPng: zod.string().describe("Small PNG flag URL"),
   flagEmoji: zod.string().describe("Unicode flag emoji"),
+  currencies: zod.array(
+    zod.object({
+      code: zod
+        .string()
+        .min(listCountriesResponseCurrenciesItemCodeMin)
+        .max(listCountriesResponseCurrenciesItemCodeMax),
+      name: zod.string(),
+      symbol: zod.string(),
+    }),
+  ),
 });
 export const ListCountriesResponse = zod.array(ListCountriesResponseItem);
 

@@ -13,6 +13,17 @@ export interface ShopCreateInput {
   name: string;
   marketName?: string | null;
   stallInfo?: string | null;
+  /**
+   * @minLength 2
+   * @maxLength 2
+   */
+  countryCode: string;
+  cityId: string;
+  /**
+   * @minLength 3
+   * @maxLength 3
+   */
+  currencyCode: string;
   latitude: number;
   longitude: number;
   /** Defaults to "products" when omitted. */

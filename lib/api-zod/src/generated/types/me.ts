@@ -5,11 +5,14 @@
  * NearBuy Business API (MongoDB-backed)
  * OpenAPI spec version: 0.2.0
  */
+import type { City } from "./city";
 import type { ShopWithRole } from "./shopWithRole";
 
 export interface Me {
   id: string;
   email?: string | null;
   name?: string | null;
+  countryCode?: string | null;
+  city?: City | null;
   shops: ShopWithRole[];
 }

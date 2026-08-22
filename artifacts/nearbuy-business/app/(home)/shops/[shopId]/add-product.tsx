@@ -11,9 +11,10 @@ import {
   useCreateProduct,
   useAnalyzeProductPhoto,
   getListProductsQueryKey,
+  getGetShopQueryOptions,
   getGetShopSummaryQueryKey,
 } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { CategoryPicker } from "@/components/CategoryPicker";
 import { useTranslation } from "react-i18next";
@@ -24,6 +25,10 @@ export default function AddProductScreen() {
   const { t } = useTranslation();
   const params = useLocalSearchParams<{ shopId: string; photoUri?: string; base64?: string }>();
   const shopId = params.shopId;
+  const { data: shop } = useQuery({
+    ...getGetShopQueryOptions(shopId as string),
+    enabled: !!shopId,
+  });
 
   const [mode, setMode] = useState<"choose" | "form">("choose");
   const [name, setName] = useState("");
@@ -294,7 +299,13 @@ export default function AddProductScreen() {
 
       <CategoryPicker selectedIds={categoryIds} onChange={setCategoryIds} label={t("addProduct.categories")} />
 
-      <Input label={t("addProduct.price")} placeholder={t("addProduct.pricePlaceholder")} value={priceStr} onChangeText={setPriceStr} keyboardType="decimal-pad" />
+      <Input
+        label={`${t("addProduct.price")} (${shop?.currency?.code ?? "USD"})`}
+        placeholder={t("addProduct.pricePlaceholder")}
+        value={priceStr}
+        onChangeText={setPriceStr}
+        keyboardType="decimal-pad"
+      />
       <Input label={t("addProduct.quantity")} placeholder={t("addProduct.quantityPlaceholder")} value={quantityStr} onChangeText={setQuantityStr} keyboardType="number-pad" />
 
       {renderChipInput(t("addProduct.tags"), t("addProduct.tagsPlaceholder"), tagInput, setTagInput, tags, setTags)}

@@ -16,12 +16,29 @@ export function serializeShop(
 ) {
   const coords: number[] = s.location?.coordinates ?? [0, 0];
   const kind = (s.kind ?? "products") as "products" | "services" | "hybrid";
+  const city =
+    s.city && typeof s.city === "object" && "_id" in s.city
+      ? {
+          id: String(s.city._id),
+          name: String(s.city.name ?? ""),
+          countryCode: String(s.city.countryCode ?? s.countryCode ?? ""),
+        }
+      : null;
   return {
     id: String(s._id),
     sellerId: String(s.sellerId?._id ?? s.sellerId),
     name: s.name,
     marketName: s.marketName ?? null,
     stallInfo: s.stallInfo ?? null,
+    countryCode: s.countryCode ?? null,
+    city,
+    currency: s.currency
+      ? {
+          code: String(s.currency.code ?? ""),
+          name: String(s.currency.name ?? ""),
+          symbol: String(s.currency.symbol ?? ""),
+        }
+      : null,
     longitude: Number(coords[0] ?? 0),
     latitude: Number(coords[1] ?? 0),
     isOpen: !!s.isOpen,

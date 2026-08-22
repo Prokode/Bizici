@@ -9,6 +9,8 @@ import {
   Conversation,
   Message,
   ShopReview,
+  Country,
+  City,
 } from "@workspace/db";
 import { serializeShop } from "../lib/serialize";
 
@@ -18,7 +20,9 @@ export const shopsController = {
       userId: new Types.ObjectId(req.userId),
     }).lean();
     const shopIds = memberships.map((m) => m.shopId);
-    const shops = await Shop.find({ _id: { $in: shopIds } }).lean();
+    const shops = await Shop.find({ _id: { $in: shopIds } })
+      .populate("city")
+      .lean();
     const shopMap = new Map(shops.map((s) => [String(s._id), s]));
     res.json(
       memberships
@@ -41,13 +45,58 @@ export const shopsController = {
       kind,
       fulfillment,
       deliveryRadiusKm,
+      countryCode: rawCountryCode,
+      cityId,
+      currencyCode: rawCurrencyCode,
     } = req.body ?? {};
+    const countryCode =
+      typeof rawCountryCode === "string"
+        ? rawCountryCode.trim().toUpperCase()
+        : "";
+    const currencyCode =
+      typeof rawCurrencyCode === "string"
+        ? rawCurrencyCode.trim().toUpperCase()
+        : "";
     if (
       !name ||
+      !/^[A-Z]{2}$/.test(countryCode) ||
+      !Types.ObjectId.isValid(cityId) ||
+      !/^[A-Z]{3}$/.test(currencyCode) ||
       typeof latitude !== "number" ||
       typeof longitude !== "number"
     ) {
-      res.status(400).json({ error: "name, latitude, longitude required" });
+      res.status(400).json({
+        error:
+          "name, countryCode, cityId, currencyCode, latitude, longitude required",
+      });
+      return;
+    }
+
+    const [country, city] = await Promise.all([
+      Country.findOne({ cca2: countryCode }).lean(),
+      City.findOne({
+        _id: new Types.ObjectId(cityId),
+        countryCode,
+      }).lean(),
+    ]);
+    const countryCurrencies = country?.currencies as unknown;
+    const selectedCurrency =
+      countryCurrencies instanceof Map
+        ? countryCurrencies.get(currencyCode)
+        : countryCurrencies &&
+            typeof countryCurrencies === "object" &&
+            currencyCode in countryCurrencies
+          ? (
+              countryCurrencies as Record<
+                string,
+                { name?: string | null; symbol?: string | null }
+              >
+            )[currencyCode]
+          : undefined;
+    if (!country || !city || !selectedCurrency) {
+      res.status(400).json({
+        error: "Country, city, and currency must match",
+      });
       return;
     }
 
@@ -71,6 +120,13 @@ export const shopsController = {
       name,
       marketName: marketName ?? null,
       stallInfo: stallInfo ?? null,
+      countryCode,
+      city: city._id,
+      currency: {
+        code: currencyCode,
+        name: selectedCurrency.name ?? currencyCode,
+        symbol: selectedCurrency.symbol ?? currencyCode,
+      },
       location: { type: "Point", coordinates: [longitude, latitude] },
       isOpen: true,
       kind: shopKind,
@@ -115,11 +171,16 @@ export const shopsController = {
       await BroadcastRequest.insertMany(demos);
     }
 
-    res.json(serializeShop(shop.toObject()));
+    res.json(
+      serializeShop({
+        ...shop.toObject(),
+        city,
+      }),
+    );
   },
 
   getOne: async (req: Request, res: Response) => {
-    const shop = await Shop.findById(req.params.shopId).lean();
+    const shop = await Shop.findById(req.params.shopId).populate("city").lean();
     if (!shop) {
       res.status(404).json({ error: "Shop not found" });
       return;

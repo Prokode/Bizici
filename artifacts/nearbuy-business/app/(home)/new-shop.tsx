@@ -1,19 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import { ShopMapPicker } from "@/components/ShopMapPicker";
 import * as Location from "expo-location";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useCreateShop, getListShopsQueryKey, getGetMeQueryKey, type ShopCreateInputKind } from "@workspace/api-client-react";
+import {
+  useCreateShop,
+  useListCountries,
+  getListShopsQueryKey,
+  getGetMeQueryKey,
+  type City,
+  type ShopCreateInputKind,
+} from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { Feather } from "@expo/vector-icons";
 import { ShopKindSelector } from "@/components/ShopKindSelector";
+import { CountrySelector } from "@/components/CountrySelector";
+import { CitySelector } from "@/components/CitySelector";
+import { Select } from "@/components/ui/Select";
 
 export default function NewShopScreen() {
   const colors = useColors();
@@ -26,11 +36,33 @@ export default function NewShopScreen() {
   const [marketName, setMarketName] = useState("");
   const [stallInfo, setStallInfo] = useState("");
   const [kind, setKind] = useState<ShopCreateInputKind>("products");
+  const [countryCode, setCountryCode] = useState<string | null>(null);
+  const [city, setCity] = useState<City | null>(null);
+  const [currencyCode, setCurrencyCode] = useState<string | null>(null);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const createShop = useCreateShop();
+  const { data: countries = [] } = useListCountries();
+  const selectedCountry = countries.find((country) => country.cca2 === countryCode);
+  const currencyOptions = useMemo(
+    () =>
+      (selectedCountry?.currencies ?? []).map((currency) => ({
+        value: currency.code,
+        label: `${currency.code} · ${currency.name} (${currency.symbol})`,
+      })),
+    [selectedCountry],
+  );
+
+  const handleCountryChange = (nextCountryCode: string) => {
+    const nextCountry = countries.find(
+      (country) => country.cca2 === nextCountryCode,
+    );
+    setCountryCode(nextCountryCode);
+    setCity(null);
+    setCurrencyCode(nextCountry?.currencies?.[0]?.code ?? null);
+  };
 
   useEffect(() => {
     if (step === 2 && !location) {
@@ -50,7 +82,7 @@ export default function NewShopScreen() {
   }, [step, location]);
 
   const handleSave = () => {
-    if (!location) return;
+    if (!location || !countryCode || !city || !currencyCode) return;
     setError(null);
     createShop.mutate(
       {
@@ -58,6 +90,9 @@ export default function NewShopScreen() {
           name,
           marketName: marketName || null,
           stallInfo: stallInfo || null,
+          countryCode,
+          cityId: city.id,
+          currencyCode,
           latitude: location.latitude,
           longitude: location.longitude,
           kind,
@@ -67,7 +102,7 @@ export default function NewShopScreen() {
         onSuccess: (newShop) => {
           queryClient.invalidateQueries({ queryKey: getListShopsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
-          router.replace(`/(home)/shops/${newShop.id}`);
+          router.replace(`/(home)/shops/${newShop.id}` as Href);
         },
         onError: (err: any) => {
           setError(err?.message ?? t("newShop.createError"));
@@ -99,13 +134,31 @@ export default function NewShopScreen() {
           <Input label={t("newShop.marketName")} placeholder={t("newShop.marketNamePlaceholder")} value={marketName} onChangeText={setMarketName} />
           <Input label={t("newShop.stallInfo")} placeholder={t("newShop.stallInfoPlaceholder")} value={stallInfo} onChangeText={setStallInfo} />
           <ShopKindSelector value={kind} onChange={setKind} />
+          <CountrySelector
+            value={countryCode}
+            onChange={handleCountryChange}
+          />
+          <CitySelector
+            country={countryCode}
+            value={city}
+            onChange={setCity}
+          />
+          <Select
+            options={currencyOptions}
+            value={currencyCode}
+            onChange={setCurrencyCode}
+            label={t("newShop.currency")}
+            placeholder={t("newShop.currencyPlaceholder")}
+            title={t("newShop.currency")}
+            disabled={!countryCode || currencyOptions.length === 0}
+          />
 
           <View style={{ flex: 1 }} />
 
           <Button
             title={t("newShop.next")}
             size="lg"
-            disabled={!name.trim()}
+            disabled={!name.trim() || !countryCode || !city || !currencyCode}
             onPress={() => setStep(2)}
             style={{ marginTop: 24 }}
           />

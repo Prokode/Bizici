@@ -205,6 +205,7 @@
     "errorApple": "Connexion Apple impossible",
     "errorVerify": "Code invalide",
     "errorGeneric": "Une erreur est survenue",
+    "locationSaveError": "Impossible d’enregistrer votre pays et votre ville. Réessayez.",
     "forgotLink": "Mot de passe oublié ?",
     "forgotTitle": "Réinitialiser le mot de passe",
     "forgotSubtitle": "Entrez votre e-mail et nous vous enverrons un code à 6 chiffres.",

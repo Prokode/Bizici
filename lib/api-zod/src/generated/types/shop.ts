@@ -5,6 +5,8 @@
  * NearBuy Business API (MongoDB-backed)
  * OpenAPI spec version: 0.2.0
  */
+import type { City } from "./city";
+import type { CountryCurrency } from "./countryCurrency";
 import type { ServiceProviderProfile } from "./serviceProviderProfile";
 import type { ShopFulfillment } from "./shopFulfillment";
 import type { ShopKind } from "./shopKind";
@@ -16,6 +18,9 @@ export interface Shop {
   name: string;
   marketName?: string | null;
   stallInfo?: string | null;
+  countryCode?: string | null;
+  city?: City | null;
+  currency?: CountryCurrency | null;
   latitude: number;
   longitude: number;
   isOpen: boolean;

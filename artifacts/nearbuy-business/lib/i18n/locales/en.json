@@ -187,7 +187,9 @@
     "kindBoth": "Both",
     "create": "Create shop",
     "back": "Back",
-    "createError": "Failed to create shop"
+    "createError": "Failed to create shop",
+    "currency": "Shop currency *",
+    "currencyPlaceholder": "Select a currency"
   },
   "services": {
     "tabTitle": "Services",
@@ -343,6 +345,7 @@
     "errorApple": "Apple sign-in failed",
     "errorVerify": "Verification failed",
     "errorGeneric": "Something went wrong",
+    "locationSaveError": "Could not save your country and city. Please try again.",
     "forgotLink": "Forgot password?",
     "forgotTitle": "Reset password",
     "forgotSubtitle": "Enter your email and we'll send you a 6-digit code.",

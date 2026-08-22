@@ -5,6 +5,7 @@
  * NearBuy Business API (MongoDB-backed)
  * OpenAPI spec version: 0.2.0
  */
+import type { CountryCurrency } from "./countryCurrency";
 
 export interface Country {
   /** ISO 3166-1 alpha-2 code, e.g. FR */
@@ -21,4 +22,5 @@ export interface Country {
   flagPng: string;
   /** Unicode flag emoji */
   flagEmoji: string;
+  currencies: CountryCurrency[];
 }

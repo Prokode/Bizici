@@ -32,6 +32,15 @@ const PointSchema = new Schema(
   { _id: false },
 );
 
+const ShopCurrencySchema = new Schema(
+  {
+    code: { type: String, required: true, uppercase: true, trim: true },
+    name: { type: String, required: true, trim: true },
+    symbol: { type: String, required: true, trim: true },
+  },
+  { _id: false },
+);
+
 // Embedded provider profile. Populated only when shop offers services
 // (kind === "services" or "hybrid"). All fields are nullable so a shop can
 // register first and complete the profile later.
@@ -96,6 +105,17 @@ const ShopSchema = new Schema(
     name: { type: String, required: true },
     marketName: { type: String, default: null },
     stallInfo: { type: String, default: null },
+    countryCode: {
+      type: String,
+      uppercase: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 2,
+      default: null,
+      index: true,
+    },
+    city: { type: Schema.Types.ObjectId, ref: "City", default: null, index: true },
+    currency: { type: ShopCurrencySchema, default: null },
     location: { type: PointSchema, required: true },
     isOpen: { type: Boolean, default: true },
     // Whether this shop sells products, offers services, or both. Defaults to

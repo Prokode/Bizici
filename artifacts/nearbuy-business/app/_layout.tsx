@@ -5,7 +5,11 @@ import {
   PlusJakartaSans_700Bold,
   useFonts,
 } from "@expo-google-fonts/plus-jakarta-sans";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { router, Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
@@ -28,7 +32,17 @@ import {
   rememberRegisteredToken,
   unregisterPushTokenWithServer,
 } from "@/lib/push";
-import { setAuthTokenGetter, setBaseUrl } from "@workspace/api-client-react";
+import {
+  getGetMeQueryKey,
+  setAuthTokenGetter,
+  setBaseUrl,
+  updateMyLocation,
+} from "@workspace/api-client-react";
+import {
+  clearPendingSignupLocation,
+  readPendingSignupLocation,
+  subscribeToPendingSignupLocation,
+} from "@/lib/pendingSignupLocation";
 
 function AuthTokenBridge() {
   const { getToken } = useAuth();
@@ -38,6 +52,66 @@ function AuthTokenBridge() {
       setAuthTokenGetter(null);
     };
   }, [getToken]);
+  return null;
+}
+
+function PendingSignupLocationBridge() {
+  const { getToken, isLoaded, isSignedIn, userId } = useAuth();
+  const queryClient = useQueryClient();
+  const [pendingRevision, setPendingRevision] = useState(0);
+
+  useEffect(
+    () =>
+      subscribeToPendingSignupLocation(() => {
+        setPendingRevision((revision) => revision + 1);
+      }),
+    [],
+  );
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !userId) return;
+    let cancelled = false;
+
+    void (async () => {
+      const pending = await readPendingSignupLocation(userId);
+      if (!pending) return;
+
+      for (let attempt = 0; attempt < 5 && !cancelled; attempt += 1) {
+        try {
+          const token = await getToken();
+          if (!token) throw new Error("Missing session token");
+          await updateMyLocation(pending, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          await clearPendingSignupLocation(userId);
+          if (!cancelled) {
+            await queryClient.invalidateQueries({
+              queryKey: getGetMeQueryKey(),
+            });
+          }
+          return;
+        } catch {
+          if (attempt < 4 && !cancelled) {
+            await new Promise((resolve) =>
+              setTimeout(resolve, 1000 * 2 ** attempt),
+            );
+          }
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    getToken,
+    isLoaded,
+    isSignedIn,
+    pendingRevision,
+    queryClient,
+    userId,
+  ]);
+
   return null;
 }
 
@@ -147,6 +221,7 @@ export default function RootLayout() {
               <GestureHandlerRootView style={{ flex: 1 }}>
                 <KeyboardProvider>
                   <AuthTokenBridge />
+                  <PendingSignupLocationBridge />
                   <PushRegistrationBridge />
                   <NotificationTapHandler />
                   <Slot />
