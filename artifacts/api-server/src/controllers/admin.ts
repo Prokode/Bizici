@@ -47,6 +47,10 @@ function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function isAdminRole(value: unknown): value is AdminRole {
+  return typeof value === "string" && ADMIN_ROLES.includes(value as AdminRole);
+}
+
 export const adminController = {
   // ===== AUTH ==============================================================
 
@@ -127,8 +131,7 @@ export const adminController = {
       username.trim().length < 2 ||
       typeof password !== "string" ||
       password.length < 8 ||
-      typeof role !== "string" ||
-      !ADMIN_ROLES.includes(role as AdminRole)
+      !isAdminRole(role)
     ) {
       res.status(400).json({
         error:
