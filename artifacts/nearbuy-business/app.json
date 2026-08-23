@@ -2,6 +2,7 @@
   "expo": {
     "name": "BizIci Pro",
     "slug": "nearbuy-business",
+    "owner": "tksm",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/bizici-pin.png",
@@ -22,6 +23,17 @@
     },
     "web": {
       "favicon": "./assets/images/bizici-pin.png"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/828671c6-7f21-43ce-9d72-97ba1389ed16"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "828671c6-7f21-43ce-9d72-97ba1389ed16"
+      }
     },
     "plugins": [
       [
