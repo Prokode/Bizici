@@ -5,7 +5,10 @@
   "build": {
     "staging": {
       "distribution": "internal",
-      "channel": "staging"
+      "channel": "staging",
+      "env": {
+        "EXPO_PUBLIC_DOMAIN": "api-bizici.run.place"
+      }
     },
     "production": {
       "channel": "production"
