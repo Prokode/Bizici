@@ -6,6 +6,7 @@
     "staging": {
       "distribution": "internal",
       "channel": "staging",
+      "environment": "preview",
       "env": {
         "EXPO_PUBLIC_DOMAIN": "api-bizici.run.place"
       }
