@@ -67,6 +67,7 @@
     "@clerk/expo": "^3.2.4",
     "@workspace/legal-content": "workspace:*",
     "expo-auth-session": "~7.0.10",
+    "expo-build-properties": "~0.14.8",
     "expo-camera": "~17.0.10",
     "expo-crypto": "~15.0.8",
     "expo-device": "~8.0.10",

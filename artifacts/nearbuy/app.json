@@ -45,6 +45,18 @@
       "expo-font",
       "expo-web-browser",
       [
+        "expo-build-properties",
+        {
+          "android": {
+            "packagingOptions": {
+              "pickFirst": [
+                "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+              ]
+            }
+          }
+        }
+      ],
+      [
         "expo-camera",
         {
           "cameraPermission": "Autorisez BizIci à accéder à votre caméra pour rechercher des produits par photo."
