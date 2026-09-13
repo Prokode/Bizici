@@ -157,6 +157,9 @@
     "closed": "Fermée",
     "seller": "Vendeur",
     "helper": "Assistant",
+    "loadErrorTitle": "Impossible de charger vos boutiques",
+    "loadErrorHint": "Vérifiez votre connexion et réessayez.",
+    "invitationsLoadError": "Impossible de charger les invitations en attente.",
     "invitations_one": "1 invitation en attente",
     "invitations_other": "{{count}} invitations en attente"
   },

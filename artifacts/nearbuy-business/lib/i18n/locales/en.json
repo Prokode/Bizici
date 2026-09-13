@@ -157,6 +157,9 @@
     "closed": "Closed",
     "seller": "Seller",
     "helper": "Helper",
+    "loadErrorTitle": "We couldn't load your shops",
+    "loadErrorHint": "Check your connection and try again.",
+    "invitationsLoadError": "Pending invitations could not be loaded.",
     "invitations_one": "1 pending invitation",
     "invitations_other": "{{count}} pending invitations"
   },

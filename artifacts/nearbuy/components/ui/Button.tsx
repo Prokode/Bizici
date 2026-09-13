@@ -14,6 +14,7 @@ interface ButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   fullWidth?: boolean;
+  testID?: string;
 }
 
 export function Button({
@@ -27,6 +28,7 @@ export function Button({
   style,
   textStyle,
   fullWidth,
+  testID,
 }: ButtonProps) {
   const colors = useColors();
 
@@ -81,6 +83,7 @@ export function Button({
       activeOpacity={0.8}
       onPress={handlePress}
       disabled={disabled || loading}
+      testID={testID}
       style={[
         styles.button,
         {

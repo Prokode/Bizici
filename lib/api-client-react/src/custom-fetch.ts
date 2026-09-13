@@ -1,5 +1,10 @@
 export type CustomFetchOptions = RequestInit & {
   responseType?: "json" | "text" | "blob" | "auto";
+  /**
+   * Optional end-to-end deadline for token acquisition, fetch, and response
+   * body consumption. Requests without this option are not time limited.
+   */
+  timeoutMs?: number;
 };
 
 export type ErrorType<T = unknown> = ApiError<T>;
@@ -94,6 +99,69 @@ function mergeHeaders(...sources: Array<HeadersInit | undefined>): Headers {
   }
 
   return headers;
+}
+
+class RequestTimeoutError extends Error {
+  readonly name = "RequestTimeoutError";
+}
+
+function createAbortError(): Error {
+  const error = new Error("The request was aborted.");
+  error.name = "AbortError";
+  return error;
+}
+
+function validateTimeoutMs(timeoutMs: number | undefined): number | undefined {
+  if (timeoutMs === undefined) return undefined;
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+    throw new TypeError("customFetch: timeoutMs must be a positive finite number.");
+  }
+  return timeoutMs;
+}
+
+/**
+ * Runs an async operation while preserving cancellation even for runtimes
+ * where aborting a response does not make response.text()/json() reject.
+ */
+function runWithSignal<T>(
+  operation: () => Promise<T>,
+  signal: AbortSignal | undefined,
+  getAbortError: () => Error,
+): Promise<T> {
+  if (!signal) return operation();
+
+  if (signal.aborted) {
+    return Promise.reject(getAbortError());
+  }
+
+  return new Promise<T>((resolve, reject) => {
+    let settled = false;
+    const onAbort = () => {
+      if (settled) return;
+      settled = true;
+      signal.removeEventListener("abort", onAbort);
+      reject(getAbortError());
+    };
+
+    signal.addEventListener("abort", onAbort, { once: true });
+
+    Promise.resolve()
+      .then(operation)
+      .then(
+        (value) => {
+          if (settled) return;
+          settled = true;
+          signal.removeEventListener("abort", onAbort);
+          resolve(value);
+        },
+        (error: unknown) => {
+          if (settled) return;
+          settled = true;
+          signal.removeEventListener("abort", onAbort);
+          reject(error);
+        },
+      );
+  });
 }
 
 function getMediaType(headers: Headers): string | null {
@@ -332,7 +400,13 @@ export async function customFetch<T = unknown>(
   options: CustomFetchOptions = {},
 ): Promise<T> {
   input = applyBaseUrl(input);
-  const { responseType = "auto", headers: headersInit, ...init } = options;
+  const {
+    responseType = "auto",
+    headers: headersInit,
+    timeoutMs: configuredTimeoutMs,
+    ...init
+  } = options;
+  const timeoutMs = validateTimeoutMs(configuredTimeoutMs);
 
   const method = resolveMethod(input, init.method);
 
@@ -354,30 +428,86 @@ export async function customFetch<T = unknown>(
     headers.set("accept", DEFAULT_JSON_ACCEPT);
   }
 
-  // Attach bearer token when an auth getter is configured and no
-  // Authorization header has been explicitly provided.
-  if (_authTokenGetter && !headers.has("authorization")) {
-    const token = await _authTokenGetter();
-    if (token) {
-      headers.set("authorization", `Bearer ${token}`);
-    }
-  }
-
-  if (_ownerIdGetter && !headers.has("x-owner-id")) {
-    const ownerId = await _ownerIdGetter();
-    if (ownerId) {
-      headers.set("x-owner-id", ownerId);
-    }
-  }
-
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  const callerSignal = init.signal ?? (isRequest(input) ? input.signal : undefined);
+  const controller = timeoutMs === undefined ? undefined : new AbortController();
+  let didTimeout = false;
+  const abortFromCaller = () => controller?.abort();
+  const requestSignal = controller?.signal ?? callerSignal;
+  const getAbortError = () =>
+    didTimeout
+      ? new RequestTimeoutError(
+          `Request timed out after ${timeoutMs! / 1000} seconds.`,
+        )
+      : createAbortError();
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-  if (!response.ok) {
-    const errorData = await parseErrorBody(response, method);
-    throw new ApiError(response, errorData, requestInfo);
+  if (controller) {
+    if (callerSignal?.aborted) {
+      controller.abort();
+    } else {
+      callerSignal?.addEventListener("abort", abortFromCaller, { once: true });
+    }
+    timeoutId = setTimeout(() => {
+      didTimeout = true;
+      controller.abort();
+    }, timeoutMs);
   }
 
-  return (await parseSuccessBody(response, responseType, requestInfo)) as T;
+  try {
+    // Keep the selected deadline active through token acquisition as well as
+    // the network request and response body consumption.
+    if (_authTokenGetter && !headers.has("authorization")) {
+      const token = await runWithSignal(
+        () => Promise.resolve().then(() => _authTokenGetter!()),
+        requestSignal,
+        getAbortError,
+      );
+      if (token) {
+        headers.set("authorization", `Bearer ${token}`);
+      }
+    }
+
+    if (_ownerIdGetter && !headers.has("x-owner-id")) {
+      const ownerId = await runWithSignal(
+        () => Promise.resolve().then(() => _ownerIdGetter!()),
+        requestSignal,
+        getAbortError,
+      );
+      if (ownerId) {
+        headers.set("x-owner-id", ownerId);
+      }
+    }
+
+    const response = await runWithSignal(
+      () =>
+        fetch(input, {
+          ...init,
+          method,
+          headers,
+          signal: requestSignal,
+        }),
+      requestSignal,
+      getAbortError,
+    );
+
+    if (!response.ok) {
+      const errorData = await runWithSignal(
+        () => parseErrorBody(response, method),
+        requestSignal,
+        getAbortError,
+      );
+      throw new ApiError(response, errorData, requestInfo);
+    }
+
+    return (await runWithSignal(
+      () => parseSuccessBody(response, responseType, requestInfo),
+      requestSignal,
+      getAbortError,
+    )) as T;
+  } finally {
+    if (timeoutId !== undefined) clearTimeout(timeoutId);
+    callerSignal?.removeEventListener("abort", abortFromCaller);
+  }
 }

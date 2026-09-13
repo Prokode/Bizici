@@ -13,7 +13,7 @@ import {
 import { router, Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -45,15 +45,34 @@ import {
 } from "@/lib/pendingSignupLocation";
 import { syncPendingSignupLocation } from "@/lib/pendingSignupLocationCore";
 
-function AuthTokenBridge() {
-  const { getToken } = useAuth();
+function AuthTokenBridge({ children }: { children: React.ReactNode }) {
+  const { getToken, isLoaded } = useAuth();
+  const getTokenRef = useRef(getToken);
+  const [isReady, setIsReady] = useState(false);
+
   useEffect(() => {
-    setAuthTokenGetter(() => getToken());
+    getTokenRef.current = getToken;
+  }, [getToken]);
+
+  useEffect(() => {
+    if (!isLoaded) {
+      setIsReady(false);
+      return;
+    }
+
+    // Protected screens are mounted only after this getter is installed.
+    // Registering in an effect without this gate lets their first query race
+    // the getter and send an unauthenticated request.
+    setAuthTokenGetter(() => getTokenRef.current());
+    setIsReady(true);
+
     return () => {
       setAuthTokenGetter(null);
     };
-  }, [getToken]);
-  return null;
+  }, [isLoaded]);
+
+  if (!isLoaded || !isReady) return null;
+  return <>{children}</>;
 }
 
 function PendingSignupLocationBridge() {
@@ -206,16 +225,17 @@ export default function RootLayout() {
           <ErrorBoundary>
             <QueryClientProvider client={queryClient}>
               <GestureHandlerRootView style={{ flex: 1 }}>
-                <KeyboardProvider>
-                  <AuthTokenBridge />
-                  <PendingSignupLocationBridge />
-                  <PushRegistrationBridge />
-                  <NotificationTapHandler />
-                  <Slot />
-                  {!animationDone && (
-                    <AnimatedSplash onFinish={() => setAnimationDone(true)} />
-                  )}
-                </KeyboardProvider>
+                <AuthTokenBridge>
+                  <KeyboardProvider>
+                    <PendingSignupLocationBridge />
+                    <PushRegistrationBridge />
+                    <NotificationTapHandler />
+                    <Slot />
+                  </KeyboardProvider>
+                </AuthTokenBridge>
+                {!animationDone && (
+                  <AnimatedSplash onFinish={() => setAnimationDone(true)} />
+                )}
               </GestureHandlerRootView>
             </QueryClientProvider>
           </ErrorBoundary>

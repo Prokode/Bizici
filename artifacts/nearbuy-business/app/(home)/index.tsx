@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View, FlatList, RefreshControl, TouchableOpacity, Platform } from "react-native";
+import { StyleSheet, Text, View, FlatList, RefreshControl, TouchableOpacity } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { useQuery } from "@tanstack/react-query";
@@ -17,19 +17,31 @@ import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 
+const SHOP_LIST_REQUEST_TIMEOUT_MS = 15_000;
+
 export default function ShopListScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
 
-  const {
-    data: shops,
-    isLoading,
-    isRefetching,
-    refetch,
-  } = useQuery(getListShopsQueryOptions());
+  const shopsQuery = useQuery({
+    ...getListShopsQueryOptions({
+      request: { timeoutMs: SHOP_LIST_REQUEST_TIMEOUT_MS },
+    }),
+    retry: false,
+  });
+  const invitationsQuery = useQuery({
+    ...getListMyInvitationsQueryOptions({
+      request: { timeoutMs: SHOP_LIST_REQUEST_TIMEOUT_MS },
+    }),
+    retry: false,
+  });
+  const { data: shops, isLoading, isError, isRefetching, refetch } = shopsQuery;
+  const { data: invitations, isError: invitationsError } = invitationsQuery;
 
-  const { data: invitations } = useQuery(getListMyInvitationsQueryOptions());
+  const retryQueries = () => {
+    void Promise.all([refetch(), invitationsQuery.refetch()]);
+  };
 
   const renderItem = ({ item }: { item: ShopWithRole }) => {
     const shop = item.shop;
@@ -49,7 +61,7 @@ export default function ShopListScreen() {
           <View style={styles.shopHeader}>
             <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
               <Text style={[styles.avatarText, { color: colors.primaryForeground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-                {shop?.name.charAt(0).toUpperCase()}
+                {shop?.name?.charAt(0).toUpperCase() || "?"}
               </Text>
             </View>
             <View style={styles.shopInfo}>
@@ -89,30 +101,69 @@ export default function ShopListScreen() {
     );
   }
 
+  if (isError) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.emptyContainer}>
+          <Feather name="alert-circle" size={48} color={colors.destructive} style={{ marginBottom: 16 }} />
+          <Text style={[styles.emptyTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
+            {t("shopList.loadErrorTitle")}
+          </Text>
+          <Text style={[styles.emptyDesc, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
+            {t("shopList.loadErrorHint")}
+          </Text>
+          <Button
+            title={t("common.retry")}
+            onPress={retryQueries}
+            loading={isRefetching}
+            testID="shop-list-retry"
+            style={{ marginTop: 24 }}
+          />
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {(shops || []).length > 0 ? <FlatList
-        data={shops || []}
-        keyExtractor={(item) => item?.shop?.id}
+      <FlatList
+        data={shops ?? []}
+        keyExtractor={(item) => item.shop.id}
         renderItem={renderItem}
         contentContainerStyle={[
           styles.content,
+          { flexGrow: 1 },
           { paddingBottom: insets.bottom + 100 },
         ]}
         ListHeaderComponent={
-          inviteCount > 0 ? (
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => router.push("/(home)/invitations")}
-              style={[styles.inviteBanner, { backgroundColor: colors.accent, borderRadius: colors.radius }]}
-            >
-              <Feather name="mail" size={20} color={colors.accentForeground} />
-              <Text style={[styles.inviteText, { color: colors.accentForeground, fontFamily: "PlusJakartaSans_600SemiBold" }]}>
-                {t("shopList.invitations", { count: inviteCount })}
-              </Text>
-              <Feather name="chevron-right" size={20} color={colors.accentForeground} />
-            </TouchableOpacity>
-          ) : null
+          <>
+            {inviteCount > 0 ? (
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => router.push("/(home)/invitations")}
+                style={[styles.inviteBanner, { backgroundColor: colors.accent, borderRadius: colors.radius }]}
+              >
+                <Feather name="mail" size={20} color={colors.accentForeground} />
+                <Text style={[styles.inviteText, { color: colors.accentForeground, fontFamily: "PlusJakartaSans_600SemiBold" }]}>
+                  {t("shopList.invitations", { count: inviteCount })}
+                </Text>
+                <Feather name="chevron-right" size={20} color={colors.accentForeground} />
+              </TouchableOpacity>
+            ) : null}
+            {invitationsError ? (
+              <View style={[styles.secondaryError, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+                <Text style={[styles.secondaryErrorText, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_500Medium" }]}>
+                  {t("shopList.invitationsLoadError")}
+                </Text>
+                <Button
+                  title={t("common.retry")}
+                  variant="ghost"
+                  size="sm"
+                  onPress={() => void invitationsQuery.refetch()}
+                />
+              </View>
+            ) : null}
+          </>
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
@@ -126,15 +177,13 @@ export default function ShopListScreen() {
             <Button
               title={t("shopList.createFirst")}
               onPress={() => router.push("/(home)/new-shop")}
+              testID="shop-list-create"
               style={{ marginTop: 24 }}
             />
           </View>
         }
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
-      /> : (
-        <View style={styles.emptyContainer}>
-          <Feather name="shopping-bag" size={48} color={colors.mutedForeground} style={{ marginBottom: 16 }} />
-        </View> )}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={retryQueries} tintColor={colors.primary} />}
+      />
 
       {(shops?.length ?? 0) > 0 && (
         <TouchableOpacity
@@ -174,6 +223,15 @@ const styles = StyleSheet.create({
   shopName: { fontSize: 18, marginBottom: 2 },
   shopMeta: { fontSize: 13 },
   badges: { alignItems: "flex-end" },
+  secondaryError: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    marginBottom: 16,
+  },
+  secondaryErrorText: { flex: 1, fontSize: 13, lineHeight: 18 },
   emptyContainer: { alignItems: "center", paddingVertical: 64, paddingHorizontal: 32 },
   emptyTitle: { fontSize: 22, marginBottom: 8, textAlign: "center" },
   emptyDesc: { fontSize: 16, textAlign: "center", lineHeight: 22 },
