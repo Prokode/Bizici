@@ -1,0 +1,39 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+
+.bizici-current {
+  --background: #ffffff;
+  --foreground: #1b2a5c;
+  --card: #f7f9fc;
+  --primary: #f58220;
+  --primary-foreground: #ffffff;
+  --secondary: #1b2a5c;
+  --muted: #eef2f7;
+  --muted-foreground: #64748b;
+  --accent: #ffe9d6;
+  --accent-foreground: #c2620e;
+  --border: #e2e8f0;
+  --success: #7fb927;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  color: var(--foreground);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+}
+
+.bizici-current,
+.bizici-current * {
+  box-sizing: border-box;
+}
+
+.bizici-current button,
+.bizici-current input {
+  font: inherit;
+}
+
+.bizici-current button {
+  color: inherit;
+}
+
+.bizici-current::-webkit-scrollbar,
+.bizici-current *::-webkit-scrollbar {
+  display: none;
+}
