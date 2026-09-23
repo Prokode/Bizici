@@ -1,14 +1,16 @@
 import mongoose from "mongoose";
+import { mongoUri } from "./config";
 
 let connectPromise: Promise<typeof mongoose> | null = null;
 
 export function connectMongo(): Promise<typeof mongoose> {
-  if (!process.env.MONGODB_URI) {
+  const uri = mongoUri(process.env);
+  if (!uri) {
     return Promise.reject(new Error("MONGODB_URI must be set"));
   }
   if (!connectPromise) {
     mongoose.set("strictQuery", true);
-    connectPromise = mongoose.connect(process.env.MONGODB_URI, {
+    connectPromise = mongoose.connect(uri, {
       dbName: "nearbuy",
       serverSelectionTimeoutMS: 10_000,
     });
