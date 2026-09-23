@@ -12,19 +12,19 @@ const colors = {
     text: "#1B2A5C", // navy as primary ink
     tint: "#F58220",
 
-    background: "#ffffff",
-    foreground: "#1B2A5C",
+    background: "#FFF8ED",
+    foreground: "#182546",
 
-    card: "#F7F9FC",
-    cardForeground: "#1B2A5C",
+    card: "#FFFDF8",
+    cardForeground: "#182546",
 
     primary: "#F58220", // brand orange
     primaryForeground: "#ffffff",
 
-    secondary: "#1B2A5C", // brand navy
+    secondary: "#1C315E", // brand navy
     secondaryForeground: "#ffffff",
 
-    muted: "#EEF2F7",
+    muted: "#F5EEE5",
     mutedForeground: "#64748b",
 
     accent: "#FFE9D6", // soft orange tint for chips/badges
@@ -33,8 +33,8 @@ const colors = {
     destructive: "#ef4444",
     destructiveForeground: "#ffffff",
 
-    border: "#E2E8F0",
-    input: "#E2E8F0",
+    border: "#E8DED1",
+    input: "#E8DED1",
 
     success: "#7FB927", // brand green
     successForeground: "#ffffff",

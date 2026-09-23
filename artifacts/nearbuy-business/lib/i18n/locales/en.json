@@ -148,6 +148,12 @@
   },
   "shopList": {
     "yourShops": "Your shops",
+    "eyebrow": "Your professional space",
+    "heading": "Your places are part of the neighbourhood.",
+    "subtitle": "Choose a shop to continue.",
+    "myShops": "My shops",
+    "add": "Add",
+    "invitationTitle": "You have an invitation",
     "noShopsTitle": "No shops yet",
     "noShopsHint": "Create your first shop or wait for an invitation from a seller.",
     "createFirst": "Create your first shop",

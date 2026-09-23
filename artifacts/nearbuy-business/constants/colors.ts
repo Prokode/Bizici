@@ -12,10 +12,10 @@ const colors = {
     text: "#1B2A5C", // navy as primary ink
     tint: "#F58220",
 
-    background: "#ffffff",
+    background: "#FFF9F0",
     foreground: "#1B2A5C",
 
-    card: "#F7F9FC",
+    card: "#FFFFFF",
     cardForeground: "#1B2A5C",
 
     primary: "#F58220", // brand orange
@@ -24,7 +24,7 @@ const colors = {
     secondary: "#1B2A5C", // brand navy
     secondaryForeground: "#ffffff",
 
-    muted: "#EEF2F7",
+    muted: "#F5EEDF",
     mutedForeground: "#64748b",
 
     accent: "#FFE9D6", // soft orange tint for chips/badges

@@ -3,3 +3,4 @@
 - [Ubuntu Nginx bootstrap](ubuntu-nginx-bootstrap.md) — preflight legacy Nginx state before apt; Certbot 0.40 expects hash sizing in nginx.conf, not conf.d.
 - [Expo staging environment](expo-staging-environment.md) — both mobile projects source the Clerk publishable key from Expo preview; keep its real value out of Git.
 - [Mobile request deadlines](mobile-request-deadlines.md) — short read timeouts must remain opt-in and cover token acquisition through body parsing.
+- [Client discovery redesign](client-discovery-redesign.md) — keep the native map primary when evolving BizIci client discovery; the list is a complement, not a replacement.

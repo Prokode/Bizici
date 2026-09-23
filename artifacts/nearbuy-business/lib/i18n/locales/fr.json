@@ -148,6 +148,12 @@
   },
   "shopList": {
     "yourShops": "Vos boutiques",
+    "eyebrow": "Votre espace professionnel",
+    "heading": "Vos adresses font partie du quartier.",
+    "subtitle": "Choisissez une boutique pour continuer.",
+    "myShops": "Mes boutiques",
+    "add": "Ajouter",
+    "invitationTitle": "Une invitation vous attend",
     "noShopsTitle": "Aucune boutique",
     "noShopsHint": "Créez votre première boutique ou attendez une invitation d'un vendeur.",
     "createFirst": "Créer ma première boutique",

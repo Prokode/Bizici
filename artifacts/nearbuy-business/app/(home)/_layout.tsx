@@ -34,7 +34,7 @@ export default function HomeLayout() {
           statusBarStyle: isDark ? "light" : "dark",
         }}
       >
-        <Stack.Screen name="index" options={{ title: t("shopList.yourShops") }} />
+        <Stack.Screen name="index" options={{ headerShown: false, title: t("shopList.yourShops") }} />
         <Stack.Screen name="new-shop" options={{ headerShown: false, presentation: "fullScreenModal" }} />
         <Stack.Screen name="invitations" options={{ title: t("invitations.title"), presentation: "modal" }} />
         <Stack.Screen name="shops/[shopId]" options={{ headerShown: false }} />

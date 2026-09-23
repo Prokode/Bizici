@@ -68,6 +68,8 @@
     "productsCount_one": "{{count}} product",
     "productsCount_other": "{{count}} products",
     "permissionDenied": "Enable location to see shops around you.",
+    "mapView": "Show map",
+    "listView": "Show list",
     "filter": {
       "all": "All",
       "products": "Products",

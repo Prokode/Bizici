@@ -68,6 +68,7 @@ export default function MapTab() {
     null,
   );
   const [filter, setFilter] = useState<MapFilter>("all");
+  const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [maps, setMaps] = useState<{
     MapView: any;
     Marker: any;
@@ -169,6 +170,10 @@ export default function MapTab() {
   };
 
   const showMap = Platform.OS !== "web" && maps && region;
+  const mapActive = !!showMap && viewMode === "map";
+  const NativeMap = maps?.MapView;
+  const NativeMarker = maps?.Marker;
+  const NativeCircle = maps?.Circle;
 
   const filteredShops = useMemo(() => {
     if (filter === "all") return shops;
@@ -199,62 +204,157 @@ export default function MapTab() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {showMap ? (
-        <maps.MapView
-          style={StyleSheet.absoluteFill}
-          initialRegion={region}
-          showsUserLocation
-          showsMyLocationButton={false}
-        >
-          {filteredShops.map((s) => {
-            const isService = isServiceShop(s);
-            return (
-              <maps.Marker
-                key={s.id}
-                coordinate={{
-                  latitude: s.latitude,
-                  longitude: s.longitude,
+      {mapActive && NativeMap && NativeMarker && NativeCircle ? (
+        <View style={styles.mapStage}>
+          <NativeMap
+            style={StyleSheet.absoluteFill}
+            initialRegion={region}
+            showsUserLocation
+            showsMyLocationButton={false}
+          >
+            {filteredShops.map((s) => {
+              const isService = isServiceShop(s);
+              return (
+                <NativeMarker
+                  key={s.id}
+                  coordinate={{
+                    latitude: s.latitude,
+                    longitude: s.longitude,
+                  }}
+                  onPress={() => {
+                    if (isService) {
+                      setSelectedShop(null);
+                      setSelectedProvider(s);
+                    } else {
+                      setSelectedProvider(null);
+                      setSelectedShop(s);
+                    }
+                  }}
+                  anchor={{ x: 0.5, y: 1 }}
+                  tracksViewChanges={false}
+                >
+                  {isService ? (
+                    <ProviderMarker
+                      servicesCount={s.productCount}
+                      isVerified={!!s.serviceProvider?.isVerified}
+                      isHybrid={s.kind === "hybrid"}
+                    />
+                  ) : (
+                    <ShopMarker
+                      productCount={s.productCount}
+                      isOpen={s.isOpen}
+                    />
+                  )}
+                </NativeMarker>
+              );
+            })}
+            {selectedProvider?.serviceProvider?.serviceRadiusKm != null && (
+              <NativeCircle
+                center={{
+                  latitude: selectedProvider.latitude,
+                  longitude: selectedProvider.longitude,
                 }}
-                onPress={() => {
-                  if (isService) {
-                    setSelectedShop(null);
-                    setSelectedProvider(s);
-                  } else {
-                    setSelectedProvider(null);
-                    setSelectedShop(s);
-                  }
-                }}
-                anchor={{ x: 0.5, y: 1 }}
-                tracksViewChanges={false}
+                radius={selectedProvider.serviceProvider.serviceRadiusKm * 1000}
+                strokeColor={colors.primary}
+                fillColor={colors.accent}
+                strokeWidth={2}
+              />
+            )}
+          </NativeMap>
+          <View
+            style={[
+              styles.mapTray,
+              { bottom: insets.bottom + 12, backgroundColor: colors.card, shadowColor: colors.foreground },
+            ]}
+          >
+            <View style={styles.trayHeader}>
+              <View>
+                <Text style={[styles.trayTitle, { color: colors.foreground }]}>
+                  {t("map.shopsCount", { count: filteredShops.length })}
+                </Text>
+                <Text style={[styles.trayCaption, { color: colors.mutedForeground }]}>
+                  {t("map.searchPlaceholder")}
+                </Text>
+              </View>
+              <Pressable
+                accessibilityLabel={t("map.listView")}
+                onPress={() => setViewMode("list")}
+                style={[styles.trayAction, { backgroundColor: colors.foreground }]}
               >
-                {isService ? (
-                  <ProviderMarker
-                    servicesCount={s.productCount}
-                    isVerified={!!s.serviceProvider?.isVerified}
-                    isHybrid={s.kind === "hybrid"}
-                  />
-                ) : (
-                  <ShopMarker
-                    productCount={s.productCount}
-                    isOpen={s.isOpen}
-                  />
-                )}
-              </maps.Marker>
-            );
-          })}
-          {selectedProvider?.serviceProvider?.serviceRadiusKm != null && (
-            <maps.Circle
-              center={{
-                latitude: selectedProvider.latitude,
-                longitude: selectedProvider.longitude,
-              }}
-              radius={selectedProvider.serviceProvider.serviceRadiusKm * 1000}
-              strokeColor="rgba(99, 102, 241, 0.7)"
-              fillColor="rgba(139, 92, 246, 0.15)"
-              strokeWidth={2}
+                <Feather name="list" size={16} color={colors.background} />
+              </Pressable>
+            </View>
+            <FlatList
+              horizontal
+              data={sortedShops}
+              keyExtractor={(item) => item.id}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.trayList}
+              renderItem={({ item }) => (
+                <Pressable
+                  onPress={() =>
+                    isServiceShop(item)
+                      ? setSelectedProvider(item)
+                      : setSelectedShop(item)
+                  }
+                  style={({ pressed }) => [
+                    styles.trayCard,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.border,
+                      opacity: pressed ? 0.78 : 1,
+                    },
+                  ]}
+                >
+                  <View style={styles.trayCardTop}>
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={[styles.trayCardName, { color: colors.foreground }]}
+                        numberOfLines={1}
+                      >
+                        {item.name}
+                      </Text>
+                      <Text
+                        style={[styles.trayCardPlace, { color: colors.mutedForeground }]}
+                        numberOfLines={1}
+                      >
+                        {item.marketName || formatDistance(item.distanceMeters)}
+                      </Text>
+                    </View>
+                    <View
+                      style={[
+                        styles.trayStatus,
+                        { backgroundColor: item.isOpen ? colors.accent : colors.muted },
+                      ]}
+                    >
+                      <View
+                        style={[
+                          styles.openDot,
+                          { backgroundColor: item.isOpen ? colors.success : colors.mutedForeground },
+                        ]}
+                      />
+                    </View>
+                  </View>
+                  <View style={styles.trayFacts}>
+                    <Feather name="navigation" size={12} color={colors.primary} />
+                    <Text style={[styles.metaText, { color: colors.mutedForeground }]}>
+                      {formatDistance(item.distanceMeters)}
+                    </Text>
+                    <Text style={[styles.dotSep, { color: colors.border }]}>·</Text>
+                    <Text style={[styles.metaText, { color: colors.mutedForeground }]}>
+                      {t("map.productsCount", { count: item.productCount })}
+                    </Text>
+                  </View>
+                </Pressable>
+              )}
+              ListEmptyComponent={
+                <Text style={[styles.trayEmpty, { color: colors.mutedForeground }]}>
+                  {t("map.noShops")}
+                </Text>
+              }
             />
-          )}
-        </maps.MapView>
+          </View>
+        </View>
       ) : (
         <FlatList
           data={sortedShops}
@@ -265,6 +365,17 @@ export default function MapTab() {
           ]}
           ListHeaderComponent={
             <View style={styles.listHeader}>
+              <View style={styles.nearbyHeader}>
+                <View>
+                  <Text style={[styles.nearbyTitle, { color: colors.foreground }]}>
+                    {t("map.shopsCount", { count: filteredShops.length })}
+                  </Text>
+                  <Text style={[styles.nearbySubtitle, { color: colors.mutedForeground }]}>
+                    {t("map.searchPlaceholder")}
+                  </Text>
+                </View>
+                <Feather name="compass" size={22} color={colors.primary} />
+              </View>
               {Platform.OS === "web" && (
                 <View
                   style={[
@@ -307,7 +418,15 @@ export default function MapTab() {
           }
           renderItem={({ item }) => (
             <Pressable
-              onPress={() => setSelectedShop(item)}
+              onPress={() => {
+                if (isServiceShop(item)) {
+                  setSelectedShop(null);
+                  setSelectedProvider(item);
+                } else {
+                  setSelectedProvider(null);
+                  setSelectedShop(item);
+                }
+              }}
               style={({ pressed }) => [
                 styles.shopCard,
                 {
@@ -456,6 +575,7 @@ export default function MapTab() {
           styles.searchWrap,
           {
             top: insets.top + 12,
+            right: Platform.OS !== "web" ? 72 : 16,
             backgroundColor: colors.background,
             borderColor: colors.border,
             shadowColor: colors.foreground,
@@ -482,6 +602,27 @@ export default function MapTab() {
           </Pressable>
         )}
       </View>
+
+      {Platform.OS !== "web" && (
+        <Pressable
+          accessibilityLabel={viewMode === "map" ? t("map.listView") : t("map.mapView")}
+          onPress={() => setViewMode((current) => (current === "map" ? "list" : "map"))}
+          style={[
+            styles.modeButton,
+            {
+              top: insets.top + 12,
+              backgroundColor: colors.foreground,
+              shadowColor: colors.foreground,
+            },
+          ]}
+        >
+          <Feather
+            name={viewMode === "map" ? "list" : "map"}
+            size={19}
+            color={colors.background}
+          />
+        </Pressable>
+      )}
 
       <View
         style={[
@@ -592,6 +733,7 @@ export default function MapTab() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  mapStage: { flex: 1 },
   searchWrap: {
     position: "absolute",
     left: 16,
@@ -609,6 +751,19 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   searchInput: { flex: 1, fontSize: 15, padding: 0 },
+  modeButton: {
+    position: "absolute",
+    right: 16,
+    width: 46,
+    height: 46,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    elevation: 5,
+  },
   statusPill: {
     position: "absolute",
     alignSelf: "center",
@@ -638,6 +793,15 @@ const styles = StyleSheet.create({
 
   listContent: { paddingHorizontal: 16, gap: 12 },
   listHeader: { marginBottom: 12 },
+  nearbyHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 14,
+    paddingHorizontal: 2,
+  },
+  nearbyTitle: { fontSize: 21, fontWeight: "800", letterSpacing: -0.4 },
+  nearbySubtitle: { fontSize: 12, marginTop: 3 },
   webHint: {
     flexDirection: "row",
     alignItems: "center",
@@ -657,8 +821,8 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 16, fontWeight: "700", textAlign: "center" },
   emptyText: { fontSize: 13, textAlign: "center", lineHeight: 18 },
   shopCard: {
-    padding: 14,
-    borderRadius: 14,
+    padding: 16,
+    borderRadius: 20,
     borderWidth: 1,
     marginBottom: 12,
     gap: 10,
@@ -708,6 +872,55 @@ const styles = StyleSheet.create({
   previewThumbFallback: { alignItems: "center", justifyContent: "center" },
   previewName: { fontSize: 11, fontWeight: "600" },
   previewPrice: { fontSize: 11, fontWeight: "700" },
+
+  mapTray: {
+    position: "absolute",
+    left: 12,
+    right: 12,
+    paddingTop: 14,
+    paddingBottom: 10,
+    borderRadius: 24,
+    shadowOffset: { width: 0, height: 7 },
+    shadowOpacity: 0.2,
+    shadowRadius: 18,
+    elevation: 9,
+  },
+  trayHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    marginBottom: 10,
+  },
+  trayTitle: { fontSize: 16, fontWeight: "800" },
+  trayCaption: { fontSize: 11, marginTop: 2 },
+  trayAction: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  trayList: { paddingHorizontal: 12, gap: 10 },
+  trayCard: {
+    width: 218,
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 12,
+    gap: 10,
+  },
+  trayCardTop: { flexDirection: "row", alignItems: "center", gap: 8 },
+  trayCardName: { fontSize: 13, fontWeight: "800" },
+  trayCardPlace: { fontSize: 11, marginTop: 3 },
+  trayStatus: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  trayFacts: { flexDirection: "row", alignItems: "center", gap: 5 },
+  trayEmpty: { padding: 12, fontSize: 13 },
 
   filterPill: {
     position: "absolute",

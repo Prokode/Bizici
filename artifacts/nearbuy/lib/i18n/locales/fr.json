@@ -68,6 +68,8 @@
     "productsCount_one": "{{count}} produit",
     "productsCount_other": "{{count}} produits",
     "permissionDenied": "Activez la localisation pour voir les boutiques autour de vous.",
+    "mapView": "Afficher la carte",
+    "listView": "Afficher la liste",
     "filter": {
       "all": "Tous",
       "products": "Produits",
