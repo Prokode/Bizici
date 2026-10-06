@@ -349,6 +349,8 @@
     "signIn": "Se connecter",
     "signUp": "S'inscrire",
     "errorSignIn": "Connexion impossible",
+    "errorEmailFormat": "Saisissez une adresse e-mail valide.",
+    "errorSignInCredentials": "Connexion impossible. Vérifiez votre e-mail et votre mot de passe, ou utilisez Google si vous vous êtes inscrit avec Google.",
     "errorSignUp": "Inscription impossible",
     "errorGoogle": "Connexion Google impossible",
     "errorApple": "Connexion Apple impossible",

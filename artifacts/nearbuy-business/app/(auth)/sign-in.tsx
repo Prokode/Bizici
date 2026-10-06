@@ -12,6 +12,7 @@ import * as AuthSession from "expo-auth-session";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
+import { isSignInEmailValid, passwordSignInParams, signInErrorMessage } from "@/lib/signInForm";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -31,7 +32,7 @@ export default function SignInScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
-  const { signIn, errors, fetchStatus } = useSignIn();
+  const { signIn, fetchStatus } = useSignIn();
   const { startSSOFlow } = useSSO();
 
   const [emailAddress, setEmailAddress] = useState("");
@@ -40,11 +41,19 @@ export default function SignInScreen() {
 
   const handleSubmit = async () => {
     setSubmitError(null);
+    if (fetchStatus === "fetching") return;
+    if (!isSignInEmailValid(emailAddress)) {
+      setSubmitError(t("auth.errorEmailFormat"));
+      return;
+    }
     try {
-      const { error } = await signIn.password({ emailAddress: emailAddress,
-         password: password });
+      const { error } = await signIn.password(passwordSignInParams(emailAddress, password));
       if (error) {
-        setSubmitError(error.message ?? t("auth.errorSignIn"));
+        setSubmitError(signInErrorMessage(
+          error,
+          t("auth.errorSignInCredentials"),
+          t("auth.errorSignIn"),
+        ));
         return;
       }
       if (signIn.status === "complete") {
@@ -148,30 +157,38 @@ export default function SignInScreen() {
             label={t("auth.email")}
             placeholder={t("auth.emailPlaceholder")}
             value={emailAddress}
-            onChangeText={setEmailAddress}
+            onChangeText={(value) => {
+              setEmailAddress(value);
+              setSubmitError(null);
+            }}
             autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="email"
             keyboardType="email-address"
+            testID="business-sign-in-email"
           />
-          {errors?.fields?.identifier && (
-            <Text style={[styles.error, { color: colors.destructive }]}>{errors.fields.identifier.message}</Text>
-          )}
 
           <Input
             label={t("auth.password")}
             placeholder="••••••••"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(value) => {
+              setPassword(value);
+              setSubmitError(null);
+            }}
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="current-password"
             secureTextEntry
+            testID="business-sign-in-password"
           />
-          {errors?.fields?.password && (
-            <Text style={[styles.error, { color: colors.destructive }]}>{errors.fields.password.message}</Text>
-          )}
-          {submitError && <Text style={[styles.error, { color: colors.destructive }]}>{submitError}</Text>}
+          {submitError && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" testID="business-sign-in-error" style={[styles.error, { color: colors.destructive }]}>{submitError}</Text>}
 
           <Button
             title={t("auth.signInButton")}
             size="lg"
-            disabled={!emailAddress || !password || fetchStatus === "fetching"}
+            disabled={!emailAddress.trim() || !password || fetchStatus === "fetching"}
+            testID="business-sign-in-submit"
             loading={fetchStatus === "fetching"}
             onPress={handleSubmit}
             style={{ marginTop: 12 }}

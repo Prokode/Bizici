@@ -349,6 +349,8 @@
     "signIn": "Sign in",
     "signUp": "Sign up",
     "errorSignIn": "Sign in failed",
+    "errorEmailFormat": "Enter a valid email address.",
+    "errorSignInCredentials": "We couldn't sign you in. Check your email and password, or use Google if that is how you registered.",
     "errorSignUp": "Sign up failed",
     "errorGoogle": "Google sign-in failed",
     "errorApple": "Apple sign-in failed",
