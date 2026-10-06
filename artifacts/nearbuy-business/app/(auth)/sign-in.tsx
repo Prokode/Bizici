@@ -12,7 +12,7 @@ import * as AuthSession from "expo-auth-session";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
-import { isSignInEmailValid, passwordSignInParams, signInErrorMessage } from "@/lib/signInForm";
+import { isSignInEmailValid, passwordSignInParams, signInErrorMessage, signInErrorReference } from "@/lib/signInForm";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -39,6 +39,13 @@ export default function SignInScreen() {
   const [password, setPassword] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const showSignInError = (error: unknown) => {
+    const message = signInErrorMessage(
+      error, t("auth.errorSignInCredentials"), t("auth.errorSignIn"),
+    );
+    setSubmitError(__DEV__ ? `${message}\n[${signInErrorReference(error)}]` : message);
+  };
+
   const handleSubmit = async () => {
     setSubmitError(null);
     if (fetchStatus === "fetching") return;
@@ -49,11 +56,7 @@ export default function SignInScreen() {
     try {
       const { error } = await signIn.password(passwordSignInParams(emailAddress, password));
       if (error) {
-        setSubmitError(signInErrorMessage(
-          error,
-          t("auth.errorSignInCredentials"),
-          t("auth.errorSignIn"),
-        ));
+        showSignInError(error);
         return;
       }
       if (signIn.status === "complete") {
@@ -65,9 +68,7 @@ export default function SignInScreen() {
         });
       }
     } catch (err: unknown) {
-      setSubmitError(
-        err instanceof Error ? err.message : t("auth.errorGeneric"),
-      );
+      showSignInError(err);
     }
   };
 
@@ -153,6 +154,8 @@ export default function SignInScreen() {
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
           </View>
 
+          {submitError && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" testID="business-sign-in-error" style={[styles.error, { color: colors.destructive }]}>{submitError}</Text>}
+
           <Input
             label={t("auth.email")}
             placeholder={t("auth.emailPlaceholder")}
@@ -182,7 +185,6 @@ export default function SignInScreen() {
             secureTextEntry
             testID="business-sign-in-password"
           />
-          {submitError && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" testID="business-sign-in-error" style={[styles.error, { color: colors.destructive }]}>{submitError}</Text>}
 
           <Button
             title={t("auth.signInButton")}
