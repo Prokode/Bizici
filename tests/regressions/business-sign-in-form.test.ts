@@ -8,6 +8,22 @@ import {
 } from "../../artifacts/nearbuy-business/lib/signInForm";
 
 describe("Business password sign-in form", () => {
+  it("removes zero-width and directional paste formatting before validation and submission", () => {
+    for (const marker of ["\u200B", "\u200E", "\u200F", "\u202A", "\u202C", "\u2060", "\u2066", "\u2069", "\uFEFF"]) {
+      const pasted = `${marker}shopper${marker}@example.com${marker}`;
+      assert.equal(isSignInEmailValid(pasted), true);
+      assert.deepEqual(passwordSignInParams(pasted, ` pass${marker}word `), {
+        identifier: "shopper@example.com",
+        password: ` pass${marker}word `,
+      });
+    }
+  });
+  it("does not silently change visible typos and rejects remaining control characters", () => {
+    for (const email of ["shop per@example.com", "shopper@example.com\u0000", "shopper@exa\u200Dmple.com"]) {
+      assert.equal(isSignInEmailValid(email), false);
+    }
+    assert.equal(passwordSignInParams("shop per@example.com", "password").identifier, "shop per@example.com");
+  });
   it("reads Clerk API response errors rather than the outer Error message", () => {
     const error = {
       message: "Identifier is invalid.",

@@ -1,10 +1,15 @@
+/** Remove invisible paste formatting, not visible characters or internal spaces. */
+export function normalizeSignInEmail(email: string) {
+  return email.replace(/[\u200B\u200E\u200F\u202A-\u202E\u2060\u2066-\u2069\uFEFF]/g, "").trim();
+}
+
 /** Normalize the identifier only. Spaces can be meaningful in passwords. */
 export function passwordSignInParams(email: string, password: string) {
-  return { identifier: email.trim(), password };
+  return { identifier: normalizeSignInEmail(email), password };
 }
 
 export function isSignInEmailValid(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  return /^[^\s@\p{C}]+@[^\s@\p{C}]+\.[^\s@\p{C}]+$/u.test(normalizeSignInEmail(email));
 }
 
 function errorDetails(error: unknown): Record<string, unknown> {
