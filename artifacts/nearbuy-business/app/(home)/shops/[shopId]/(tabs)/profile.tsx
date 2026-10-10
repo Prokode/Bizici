@@ -167,6 +167,14 @@ export default function ProfileScreen() {
           }}
         />
         <Button
+          title={t("security.open")}
+          variant="ghost"
+          icon={<Feather name="lock" size={18} color={colors.foreground} />}
+          onPress={() => router.push("/account-security")}
+          style={{ marginTop: 4 }}
+          testID="security-open"
+        />
+        <Button
           title={t("profile.switchShop")}
           variant="ghost"
           icon={<Feather name="repeat" size={18} color={colors.foreground} />}

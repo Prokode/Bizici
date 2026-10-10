@@ -47,6 +47,11 @@ export default function ShopListScreen() {
     router.push("/(home)/new-shop");
   };
 
+  const openSecurity = () => {
+    Haptics.selectionAsync();
+    router.push("/account-security");
+  };
+
   const renderItem = ({ item }: { item: ShopWithRole }) => {
     const shop = item.shop;
     const isSeller = item.role === "seller";
@@ -103,6 +108,7 @@ export default function ShopListScreen() {
         <Text style={[styles.emptyTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>{t("shopList.loadErrorTitle")}</Text>
         <Text style={[styles.emptyDesc, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>{t("shopList.loadErrorHint")}</Text>
         <Button title={t("common.retry")} onPress={retryQueries} loading={isRefetching} testID="shop-list-retry" style={styles.retry} />
+        <Button title={t("security.open")} variant="ghost" icon={<Feather name="lock" size={18} color={colors.foreground} />} onPress={openSecurity} testID="security-open" style={styles.securityError} />
       </View>
     );
   }
@@ -124,7 +130,10 @@ export default function ShopListScreen() {
                 <Text style={[styles.title, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>{t("shopList.heading")}</Text>
                 <Text style={[styles.subtitle, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>{t("shopList.subtitle")}</Text>
               </View>
-              <View style={[styles.brandMark, { backgroundColor: colors.secondary }]}><Text style={[styles.brandText, { color: colors.secondaryForeground, fontFamily: "PlusJakartaSans_700Bold" }]}>Bi</Text></View>
+              <View style={styles.headerActions}>
+                <View style={[styles.brandMark, { backgroundColor: colors.secondary }]}><Text style={[styles.brandText, { color: colors.secondaryForeground, fontFamily: "PlusJakartaSans_700Bold" }]}>Bi</Text></View>
+                <TouchableOpacity onPress={openSecurity} accessibilityRole="button" accessibilityLabel={t("security.open")} hitSlop={8} style={[styles.securityBtn, { backgroundColor: colors.muted, borderColor: colors.border }]} testID="security-open"><Feather name="lock" size={18} color={colors.foreground} /></TouchableOpacity>
+              </View>
             </View>
             {inviteCount > 0 ? (
               <TouchableOpacity activeOpacity={0.86} onPress={() => router.push("/(home)/invitations")} style={[styles.inviteCard, { backgroundColor: colors.accent, borderColor: colors.primary }]} testID="shop-list-invitations">
@@ -154,6 +163,9 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 15, marginTop: 7 },
   brandMark: { width: 44, height: 44, borderRadius: 15, alignItems: "center", justifyContent: "center" },
   brandText: { fontSize: 22 },
+  headerActions: { alignItems: "center", gap: 10 },
+  securityBtn: { width: 44, height: 44, borderRadius: 15, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  securityError: { marginTop: 8 },
   inviteCard: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 18, padding: 14, marginBottom: 26 },
   inviteIcon: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 11 },
   inviteCopy: { flex: 1 },

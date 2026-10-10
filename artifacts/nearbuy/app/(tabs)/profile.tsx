@@ -270,6 +270,33 @@ export default function ProfileTab() {
         <Feather name="chevron-right" size={20} color={colors.mutedForeground} />
       </Pressable>
 
+      <Pressable
+        onPress={() => router.push("/account-security" as Href)}
+        accessibilityRole="button"
+        accessibilityLabel={t("security.open")}
+        testID="security-open"
+        style={[
+          styles.replayEntry,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        <View style={[styles.replayIcon, { backgroundColor: colors.muted }]}>
+          <Feather name="lock" size={20} color={colors.primary} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.replayTitle, { color: colors.foreground }]}>
+            {t("security.open")}
+          </Text>
+          <Text
+            style={[styles.replayHint, { color: colors.mutedForeground }]}
+            numberOfLines={1}
+          >
+            {t("security.openHint")}
+          </Text>
+        </View>
+        <Feather name="chevron-right" size={20} color={colors.mutedForeground} />
+      </Pressable>
+
       <View style={{ marginBottom: 16 }}>
         <LanguageSwitcher />
       </View>
