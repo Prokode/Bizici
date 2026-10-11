@@ -14,7 +14,8 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Feather } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
+import { useShopId } from "@/hooks/useShopId";
 import { ShopMapPreview } from "@/components/ShopMapPreview";
 import QRCode from "react-native-qrcode-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -26,7 +27,7 @@ export default function ShopConfigurationScreen() {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  const { shopId } = useLocalSearchParams<{ shopId: string }>();
+  const shopId = useShopId();
 
   const shopQuery = useQuery({
     ...getGetShopQueryOptions(shopId as string, { request: { timeoutMs: 15_000 } }),
@@ -57,7 +58,7 @@ export default function ShopConfigurationScreen() {
     return <View style={[styles.state, { backgroundColor: colors.background }]}><ActivityIndicator color={colors.primary} /><Text style={{ color: colors.foreground }}>{t("common.loading")}</Text></View>;
   }
   if (!shop || !shopId || shopQuery.isError || rolesQuery.isError || !myRole) {
-    return <View style={[styles.state, { backgroundColor: colors.background }]}><Text style={{ color: colors.foreground, textAlign: "center" }}>{t("shopConfiguration.loadError")}</Text><Button title={t("common.retry")} loading={shopQuery.isFetching || rolesQuery.isFetching} onPress={() => { void shopQuery.refetch(); void rolesQuery.refetch(); }} /><Button title={t("profile.switchShop")} variant="ghost" onPress={() => router.replace("/(home)")} /></View>;
+    return <View style={[styles.state, { backgroundColor: colors.background }]}><Text style={{ color: colors.foreground, textAlign: "center" }}>{t("shopConfiguration.loadError")}</Text>{shopId && <Button title={t("common.retry")} loading={shopQuery.isFetching || rolesQuery.isFetching} onPress={() => { if (!shopId) return; void shopQuery.refetch(); void rolesQuery.refetch(); }} />}<Button title={t("profile.switchShop")} variant="ghost" onPress={() => router.replace("/(home)")} /></View>;
   }
 
   return (

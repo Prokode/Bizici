@@ -4,7 +4,7 @@ import { Tabs } from "expo-router";
 import { Icon, Label, NativeTabs, Badge } from "expo-router/unstable-native-tabs";
 import { SymbolView } from "expo-symbols";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
+import { useShopId } from "@/hooks/useShopId";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import React from "react";
@@ -185,7 +185,7 @@ function ClassicTabLayout({ unread }: { unread: number }) {
 }
 
 export default function TabLayout() {
-  const { shopId } = useLocalSearchParams<{ shopId: string }>();
+  const shopId = useShopId();
   const unread = useShopUnread(shopId);
   if (isLiquidGlassAvailable()) {
     return <NativeTabLayout unread={unread} />;

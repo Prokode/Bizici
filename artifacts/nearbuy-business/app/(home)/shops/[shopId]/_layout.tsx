@@ -3,9 +3,12 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { getGetShopQueryOptions } from "@workspace/api-client-react";
 import { useTranslation } from "react-i18next";
+import { ShopIdContext } from "@/hooks/useShopId";
+import { normalizeShopId } from "@/lib/shopRoute";
 
 export default function ShopLayout() {
-  const { shopId } = useLocalSearchParams<{ shopId: string }>();
+  const params = useLocalSearchParams<{ shopId?: string | string[] }>();
+  const shopId = normalizeShopId(params.shopId);
   const { t } = useTranslation();
   const { data: shop } = useQuery({
     ...getGetShopQueryOptions(shopId as string),
@@ -13,6 +16,7 @@ export default function ShopLayout() {
   });
 
   return (
+    <ShopIdContext.Provider value={shopId}>
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
@@ -30,5 +34,6 @@ export default function ShopLayout() {
         options={{ headerShown: true, presentation: "modal", title: t("kyc.submit.headerTitle") }}
       />
     </Stack>
+    </ShopIdContext.Provider>
   );
 }
