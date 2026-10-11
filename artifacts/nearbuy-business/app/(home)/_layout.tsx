@@ -35,6 +35,7 @@ export default function HomeLayout() {
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false, title: t("shopList.yourShops") }} />
+        <Stack.Screen name="profile" options={{ title: t("nav.profile") }} />
         <Stack.Screen name="new-shop" options={{ headerShown: false, presentation: "fullScreenModal" }} />
         <Stack.Screen name="invitations" options={{ title: t("invitations.title"), presentation: "modal" }} />
         <Stack.Screen name="shops/[shopId]" options={{ headerShown: false }} />

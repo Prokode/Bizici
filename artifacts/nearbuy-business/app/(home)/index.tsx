@@ -47,9 +47,9 @@ export default function ShopListScreen() {
     router.push("/(home)/new-shop");
   };
 
-  const openSecurity = () => {
+  const openProfile = () => {
     Haptics.selectionAsync();
-    router.push("/account-security");
+    router.push("/(home)/profile");
   };
 
   const renderItem = ({ item }: { item: ShopWithRole }) => {
@@ -98,7 +98,7 @@ export default function ShopListScreen() {
   };
 
   if (isLoading) {
-    return <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 24 }]}><View style={styles.content}><Skeleton height={110} style={styles.skeleton} /><Skeleton height={110} style={styles.skeleton} /></View></View>;
+    return <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 24 }]}><View style={styles.content}><Button title={t("nav.profile")} variant="ghost" onPress={openProfile} testID="profile-open" /><Skeleton height={110} style={styles.skeleton} /><Skeleton height={110} style={styles.skeleton} /></View></View>;
   }
 
   if (isError) {
@@ -108,7 +108,7 @@ export default function ShopListScreen() {
         <Text style={[styles.emptyTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>{t("shopList.loadErrorTitle")}</Text>
         <Text style={[styles.emptyDesc, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>{t("shopList.loadErrorHint")}</Text>
         <Button title={t("common.retry")} onPress={retryQueries} loading={isRefetching} testID="shop-list-retry" style={styles.retry} />
-        <Button title={t("security.open")} variant="ghost" icon={<Feather name="lock" size={18} color={colors.foreground} />} onPress={openSecurity} testID="security-open" style={styles.securityError} />
+        <Button title={t("nav.profile")} variant="ghost" icon={<Feather name="user" size={18} color={colors.foreground} />} onPress={openProfile} testID="profile-open" style={styles.securityError} />
       </View>
     );
   }
@@ -125,14 +125,14 @@ export default function ShopListScreen() {
         ListHeaderComponent={
           <View>
             <View style={styles.headerRow}>
-              <View>
+              <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={[styles.eyebrow, { color: colors.primary, fontFamily: "PlusJakartaSans_700Bold" }]}>{t("shopList.eyebrow")}</Text>
                 <Text style={[styles.title, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>{t("shopList.heading")}</Text>
                 <Text style={[styles.subtitle, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>{t("shopList.subtitle")}</Text>
               </View>
               <View style={styles.headerActions}>
-                <View style={[styles.brandMark, { backgroundColor: colors.secondary }]}><Text style={[styles.brandText, { color: colors.secondaryForeground, fontFamily: "PlusJakartaSans_700Bold" }]}>Bi</Text></View>
-                <TouchableOpacity onPress={openSecurity} accessibilityRole="button" accessibilityLabel={t("security.open")} hitSlop={8} style={[styles.securityBtn, { backgroundColor: colors.muted, borderColor: colors.border }]} testID="security-open"><Feather name="lock" size={18} color={colors.foreground} /></TouchableOpacity>
+                <TouchableOpacity onPress={openProfile} accessibilityRole="button" accessibilityLabel={t("nav.profile")} hitSlop={8} style={[styles.securityBtn, { backgroundColor: colors.secondary, borderColor: colors.border }]} testID="profile-open"><Feather name="user" size={22} color={colors.secondaryForeground} /></TouchableOpacity>
+                <Text style={{ color: colors.foreground, fontSize: 12 }}>{t("nav.profile")}</Text>
               </View>
             </View>
             {inviteCount > 0 ? (
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   centered: { alignItems: "center", justifyContent: "center", paddingHorizontal: 30 },
   content: { paddingHorizontal: 18 },
-  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 },
+  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, gap: 12 },
   eyebrow: { fontSize: 12, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8 },
   title: { fontSize: 30, lineHeight: 35, letterSpacing: -0.5 },
   subtitle: { fontSize: 15, marginTop: 7 },

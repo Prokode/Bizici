@@ -1,4 +1,17 @@
 {
+  "userProfile": {
+    "account": "My account",
+    "description": "Your personal account, shared across all your shops.",
+    "name": "Name",
+    "email": "Email address",
+    "phone": "Phone number"
+  },
+  "shopConfiguration": {
+    "tab": "Settings",
+    "title": "Shop configuration",
+    "loadError": "Unable to load this shop. Check your connection and shop access, then retry.",
+    "readOnly": "Only the shop owner can update this configuration."
+  },
   "nav": {
     "inventory": "Inventory",
     "dashboard": "Dashboard",

@@ -1,4 +1,17 @@
 {
+  "userProfile": {
+    "account": "Mon compte",
+    "description": "Votre compte personnel, commun à toutes vos boutiques.",
+    "name": "Nom",
+    "email": "Adresse e-mail",
+    "phone": "Numéro de téléphone"
+  },
+  "shopConfiguration": {
+    "tab": "Réglages",
+    "title": "Configuration boutique",
+    "loadError": "Impossible de charger cette boutique. Vérifiez votre connexion et votre accès, puis réessayez.",
+    "readOnly": "Seul le propriétaire peut modifier cette configuration."
+  },
   "nav": {
     "inventory": "Inventaire",
     "dashboard": "Tableau",

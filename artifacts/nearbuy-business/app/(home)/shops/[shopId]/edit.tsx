@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -12,6 +12,7 @@ import {
   getGetShopQueryOptions,
   getGetShopQueryKey,
   getListShopsQueryKey,
+  getListShopsQueryOptions,
   type ShopUpdateInputKind,
   type ShopFulfillment,
 } from "@workspace/api-client-react";
@@ -26,14 +27,18 @@ export default function EditShopScreen() {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  const { shopId } = useLocalSearchParams<{ shopId: string }>();
+  const { shopId, section } = useLocalSearchParams<{ shopId: string; section?: string }>();
 
-  const { data: shop } = useQuery({
-    ...getGetShopQueryOptions(shopId as string),
+  const shopQuery = useQuery({
+    ...getGetShopQueryOptions(shopId as string, { request: { timeoutMs: 15_000 } }),
     enabled: !!shopId,
+    retry: false,
   });
+  const { data: shop } = shopQuery;
+  const rolesQuery = useQuery({ ...getListShopsQueryOptions({ request: { timeoutMs: 15_000 } }), retry: false });
+  const isSeller = rolesQuery.data?.find((entry) => entry.shop.id === shopId)?.role === "seller";
 
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(section === "location" ? 2 : 1);
   const [name, setName] = useState("");
   const [marketName, setMarketName] = useState("");
   const [stallInfo, setStallInfo] = useState("");
@@ -60,13 +65,13 @@ export default function EditShopScreen() {
   }, [shop]);
 
   const handleSave = () => {
-    if (!location || !shopId) return;
+    if (!location || !shopId || !isSeller || updateShop.isPending) return;
     setError(null);
     updateShop.mutate(
       {
         shopId: shopId as string,
         data: {
-          name,
+          name: name.trim(),
           marketName: marketName || null,
           stallInfo: stallInfo || null,
           latitude: location.latitude,
@@ -91,7 +96,9 @@ export default function EditShopScreen() {
     );
   };
 
-  if (!shop) return null;
+  if (shopQuery.isLoading || rolesQuery.isLoading) return <View style={[styles.state, { backgroundColor: colors.background }]}><ActivityIndicator color={colors.primary} /><Text style={{ color: colors.foreground }}>{t("common.loading")}</Text></View>;
+  if (!shop || shopQuery.isError || rolesQuery.isError) return <View style={[styles.state, { backgroundColor: colors.background }]}><Text style={{ color: colors.foreground }}>{t("shopConfiguration.loadError")}</Text><Button title={t("common.retry")} onPress={() => { void shopQuery.refetch(); void rolesQuery.refetch(); }} /><Button title={t("common.back")} variant="ghost" onPress={() => router.back()} /></View>;
+  if (!isSeller) return <View style={[styles.state, { backgroundColor: colors.background }]}><Text style={{ color: colors.foreground }}>{t("shopConfiguration.readOnly")}</Text><Button title={t("common.back")} onPress={() => router.back()} /></View>;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -145,6 +152,7 @@ export default function EditShopScreen() {
 }
 
 const styles = StyleSheet.create({
+  state: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, gap: 16 },
   container: { flex: 1 },
   content: { padding: 24, flexGrow: 1 },
   mapContainer: { flex: 1 },

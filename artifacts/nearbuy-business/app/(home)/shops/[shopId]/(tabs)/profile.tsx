@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View, ScrollView, Platform, Modal, Switch } from "react-native";
+import { StyleSheet, Text, View, ScrollView, Platform, Modal, Switch, ActivityIndicator } from "react-native";
 import { useColors } from "@/hooks/useColors";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -18,51 +18,53 @@ import { router, useLocalSearchParams } from "expo-router";
 import { ShopMapPreview } from "@/components/ShopMapPreview";
 import QRCode from "react-native-qrcode-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth, useClerk } from "@clerk/expo";
 import { HelpersSection } from "@/components/HelpersSection";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ONBOARDING_SEEN_KEY } from "@/app/onboarding";
 
-export default function ProfileScreen() {
+export default function ShopConfigurationScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-  const clerk = useClerk();
   const { t } = useTranslation();
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
 
-  const { data: shop } = useQuery({
-    ...getGetShopQueryOptions(shopId as string),
+  const shopQuery = useQuery({
+    ...getGetShopQueryOptions(shopId as string, { request: { timeoutMs: 15_000 } }),
     enabled: !!shopId,
+    retry: false,
   });
+  const { data: shop } = shopQuery;
 
-  const { data: shops } = useQuery(getListShopsQueryOptions());
+  const rolesQuery = useQuery({
+    ...getListShopsQueryOptions({ request: { timeoutMs: 15_000 } }),
+    retry: false,
+  });
+  const shops = rolesQuery.data;
   const myRole = shops?.find((s) => s.shop.id === shopId)?.role;
   const isSeller = myRole === "seller";
-
-  const { data: qrData } = useQuery({
-    ...getGetShopQrQueryOptions(shopId as string),
-    enabled: !!shopId && !!shop,
-  });
-
-  const setShopOpen = useSetShopOpen();
   const [showQr, setShowQr] = useState(false);
 
-  const handleSignOut = async () => {
-    await clerk.signOut();
-    queryClient.clear();
-    router.replace("/(auth)/sign-in");
-  };
+  const qrQuery = useQuery({
+    ...getGetShopQrQueryOptions(shopId as string),
+    enabled: !!shopId && !!shop && showQr,
+  });
+  const qrData = qrQuery.data;
 
-  if (!shop || !shopId) return null;
+  const setShopOpen = useSetShopOpen();
+  const [statusError, setStatusError] = useState(false);
+
+  if (shopQuery.isLoading || rolesQuery.isLoading) {
+    return <View style={[styles.state, { backgroundColor: colors.background }]}><ActivityIndicator color={colors.primary} /><Text style={{ color: colors.foreground }}>{t("common.loading")}</Text></View>;
+  }
+  if (!shop || !shopId || shopQuery.isError || rolesQuery.isError || !myRole) {
+    return <View style={[styles.state, { backgroundColor: colors.background }]}><Text style={{ color: colors.foreground, textAlign: "center" }}>{t("shopConfiguration.loadError")}</Text><Button title={t("common.retry")} loading={shopQuery.isFetching || rolesQuery.isFetching} onPress={() => { void shopQuery.refetch(); void rolesQuery.refetch(); }} /><Button title={t("profile.switchShop")} variant="ghost" onPress={() => router.replace("/(home)")} /></View>;
+  }
 
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={[
-        styles.content,
+        styles.content, { paddingBottom: insets.bottom + 100 },
         Platform.OS === "web" && { paddingTop: 67 + 16, paddingBottom: 84 + 16 },
       ]}
     >
@@ -84,6 +86,7 @@ export default function ProfileScreen() {
           </Badge>
         </View>
       </View>
+      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("shopConfiguration.title")}</Text>
 
       <View style={styles.actions}>
         {isSeller && (
@@ -111,8 +114,9 @@ export default function ProfileScreen() {
           </Text>
           <Switch
             value={shop.isOpen}
-            disabled={!isSeller}
+            disabled={!isSeller || setShopOpen.isPending}
             onValueChange={(val) => {
+              setStatusError(false);
               setShopOpen.mutate(
                 { shopId: shopId as string, data: { isOpen: val } },
                 {
@@ -120,6 +124,7 @@ export default function ProfileScreen() {
                     queryClient.invalidateQueries({ queryKey: getGetShopQueryKey(shopId as string) });
                     queryClient.invalidateQueries({ queryKey: getListShopsQueryKey() });
                   },
+                  onError: () => setStatusError(true),
                 }
               );
             }}
@@ -137,56 +142,25 @@ export default function ProfileScreen() {
           </Text>
         </View>
       </Card>
+      {statusError && <Text accessibilityRole="alert" style={{ color: colors.destructive }}>{t("common.error")}</Text>}
 
       <Text style={[styles.sectionTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
         {t("profile.location")}
       </Text>
 
       <View style={[styles.mapContainer, { borderColor: colors.border, borderRadius: colors.radius }]}>
-        <ShopMapPreview latitude={shop.latitude} longitude={shop.longitude} />
+        <ShopMapPreview key={`${shop.latitude}:${shop.longitude}`} latitude={shop.latitude} longitude={shop.longitude} />
       </View>
+      {isSeller && <Button title={t("editShop.updateLocation")} variant="secondary" onPress={() => router.push({ pathname: "/shops/[shopId]/edit", params: { shopId, section: "location" } })} />}
 
       {isSeller && <HelpersSection shopId={shopId as string} />}
 
-      <View style={{ marginTop: 24, marginBottom: 8 }}>
-        <LanguageSwitcher />
-      </View>
-
       <View style={{ marginTop: 8 }}>
-        <Button
-          title={t("onboarding.replay")}
-          variant="ghost"
-          icon={<Feather name="play-circle" size={18} color={colors.primary} />}
-          onPress={async () => {
-            try {
-              await AsyncStorage.removeItem(ONBOARDING_SEEN_KEY);
-            } catch {
-              // ignore
-            }
-            router.push("/onboarding");
-          }}
-        />
-        <Button
-          title={t("security.open")}
-          variant="ghost"
-          icon={<Feather name="lock" size={18} color={colors.foreground} />}
-          onPress={() => router.push("/account-security")}
-          style={{ marginTop: 4 }}
-          testID="security-open"
-        />
         <Button
           title={t("profile.switchShop")}
           variant="ghost"
           icon={<Feather name="repeat" size={18} color={colors.foreground} />}
           onPress={() => router.replace("/(home)")}
-          style={{ marginTop: 4 }}
-        />
-        <Button
-          title={t("common.signOut")}
-          variant="ghost"
-          icon={<Feather name="log-out" size={18} color={colors.destructive} />}
-          textStyle={{ color: colors.destructive }}
-          onPress={handleSignOut}
           style={{ marginTop: 4 }}
         />
       </View>
@@ -214,6 +188,8 @@ export default function ProfileScreen() {
               <View style={[styles.qrContainer, { backgroundColor: "#fff" }]}>
                 <QRCode value={qrData.url} size={250} color="#000" backgroundColor="#fff" />
               </View>
+            ) : qrQuery.isError ? (
+              <Button title={t("common.retry")} onPress={() => void qrQuery.refetch()} />
             ) : (
               <Text style={{ color: colors.foreground }}>{t("profile.qrLoading")}</Text>
             )}
@@ -229,6 +205,7 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  state: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, gap: 16 },
   container: { flex: 1 },
   content: { padding: 16 },
   header: { flexDirection: "row", alignItems: "center", marginBottom: 24 },

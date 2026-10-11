@@ -53,8 +53,8 @@ function NativeTabLayout({ unread }: { unread: number }) {
         {unread > 0 ? <Badge>{String(unread)}</Badge> : null}
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
-        <Icon sf={{ default: "person", selected: "person.fill" }} />
-        <Label>{t("nav.profile")}</Label>
+        <Icon sf={{ default: "gearshape", selected: "gearshape.fill" }} />
+        <Label>{t("shopConfiguration.tab")}</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -170,12 +170,13 @@ function ClassicTabLayout({ unread }: { unread: number }) {
       <Tabs.Screen
         name="profile"
         options={{
-          title: t("nav.profile"),
+          title: t("shopConfiguration.title"),
+          tabBarLabel: t("shopConfiguration.tab"),
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="person" tintColor={color} size={24} />
+              <SymbolView name="gearshape" tintColor={color} size={24} />
             ) : (
-              <Ionicons name="person-outline" size={22} color={color} />
+              <Ionicons name="settings-outline" size={22} color={color} />
             ),
         }}
       />
