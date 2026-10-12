@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
+  Modal,
   Platform,
   Pressable,
   StyleSheet,
@@ -68,6 +69,8 @@ export default function MapTab() {
     null,
   );
   const [filter, setFilter] = useState<MapFilter>("all");
+  const [radiusKm, setRadiusKm] = useState(5);
+  const [radiusPickerVisible, setRadiusPickerVisible] = useState(false);
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [maps, setMaps] = useState<{
     MapView: any;
@@ -152,12 +155,12 @@ export default function MapTab() {
   }, [region]);
 
   const { data: shops = [], isLoading: loadingShops } = useQuery({
-    queryKey: ["public-shops", center?.lat, center?.lng],
+    queryKey: ["public-shops", center?.lat, center?.lng, radiusKm],
     queryFn: ({ signal }) =>
       fetchNearbyShops({
         lat: center!.lat,
         lng: center!.lng,
-        radiusKm: 5,
+        radiusKm,
         signal,
       }),
     enabled: !!center,
@@ -270,7 +273,7 @@ export default function MapTab() {
             <View style={styles.trayHeader}>
               <View>
                 <Text style={[styles.trayTitle, { color: colors.foreground }]}>
-                  {t("map.shopsCount", { count: filteredShops.length })}
+                  {t("map.shopsCount", { count: filteredShops.length, radiusKm })}
                 </Text>
                 <Text style={[styles.trayCaption, { color: colors.mutedForeground }]}>
                   {t("map.searchPlaceholder")}
@@ -349,7 +352,7 @@ export default function MapTab() {
               )}
               ListEmptyComponent={
                 <Text style={[styles.trayEmpty, { color: colors.mutedForeground }]}>
-                  {t("map.noShops")}
+                  {t("map.noShops", { radiusKm })}
                 </Text>
               }
             />
@@ -361,14 +364,16 @@ export default function MapTab() {
           keyExtractor={(s) => s.id}
           contentContainerStyle={[
             styles.listContent,
-            { paddingTop: insets.top + 132, paddingBottom: 32 },
+            // Keep the first list heading below the floating location/filter
+            // controls; otherwise "0 shops" renders underneath the filter pill.
+            { paddingTop: insets.top + 184, paddingBottom: 32 },
           ]}
           ListHeaderComponent={
             <View style={styles.listHeader}>
               <View style={styles.nearbyHeader}>
                 <View>
                   <Text style={[styles.nearbyTitle, { color: colors.foreground }]}>
-                    {t("map.shopsCount", { count: filteredShops.length })}
+                    {t("map.shopsCount", { count: filteredShops.length, radiusKm })}
                   </Text>
                   <Text style={[styles.nearbySubtitle, { color: colors.mutedForeground }]}>
                     {t("map.searchPlaceholder")}
@@ -408,7 +413,7 @@ export default function MapTab() {
               <View style={styles.emptyCenter}>
                 <Feather name="map-pin" size={40} color={colors.mutedForeground} />
                 <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-                  {t("map.noShops")}
+                  {t("map.noShops", { radiusKm })}
                 </Text>
                 <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
                   {t("map.noShopsHint")}
@@ -644,11 +649,61 @@ export default function MapTab() {
             ? t("map.locating")
             : loadingShops
               ? t("map.loadingShops")
-              : shops.length === 0
-                ? t("map.noShops")
-                : t("map.shopsCount", { count: shops.length })}
+                : shops.length === 0
+                ? t("map.noShops", { radiusKm })
+                : t("map.shopsCount", { count: shops.length, radiusKm })}
         </Text>
+        <Pressable
+          onPress={() => setRadiusPickerVisible(true)}
+          accessibilityRole="button"
+          accessibilityLabel={t("map.radiusLabel", { radiusKm })}
+          style={[styles.radiusButton, { backgroundColor: colors.accent }]}
+          testID="map-radius-picker"
+        >
+          <Text style={[styles.radiusButtonText, { color: colors.foreground }]}>{radiusKm} km</Text>
+          <Feather name="chevron-down" size={14} color={colors.foreground} />
+        </Pressable>
       </View>
+
+      <Modal
+        transparent
+        visible={radiusPickerVisible}
+        animationType="fade"
+        onRequestClose={() => setRadiusPickerVisible(false)}
+      >
+        <Pressable style={styles.radiusBackdrop} onPress={() => setRadiusPickerVisible(false)}>
+          <Pressable
+            accessibilityRole="none"
+            onPress={(event) => event.stopPropagation()}
+            style={[styles.radiusDialog, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            <Text style={[styles.radiusTitle, { color: colors.foreground }]}>{t("map.selectRadius")}</Text>
+            <View style={styles.radiusOptions}>
+              {[1, 2, 5, 10, 20].map((option) => {
+                const selected = radiusKm === option;
+                return (
+                  <Pressable
+                    key={option}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    onPress={() => {
+                      setRadiusKm(option);
+                      setRadiusPickerVisible(false);
+                    }}
+                    style={[
+                      styles.radiusOption,
+                      { backgroundColor: selected ? colors.foreground : colors.background, borderColor: colors.border },
+                    ]}
+                    testID={`map-radius-${option}`}
+                  >
+                    <Text style={{ color: selected ? colors.background : colors.foreground, fontWeight: "700" }}>{option} km</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       {error && (
         <View
@@ -781,6 +836,21 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   statusText: { fontSize: 12, fontWeight: "700" },
+  radiusButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+    borderRadius: 999,
+    paddingHorizontal: 7,
+    paddingVertical: 5,
+    marginLeft: 2,
+  },
+  radiusButtonText: { fontSize: 11, fontWeight: "700" },
+  radiusBackdrop: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24, backgroundColor: "rgba(0,0,0,0.35)" },
+  radiusDialog: { width: "100%", maxWidth: 340, borderRadius: 22, borderWidth: 1, padding: 20, gap: 16 },
+  radiusTitle: { fontSize: 18, fontWeight: "800" },
+  radiusOptions: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  radiusOption: { minWidth: 76, alignItems: "center", justifyContent: "center", paddingHorizontal: 14, paddingVertical: 11, borderRadius: 999, borderWidth: 1 },
   errorBanner: {
     position: "absolute",
     left: 16,
