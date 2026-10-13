@@ -72,6 +72,8 @@
     "permissionDenied": "Enable location to see shops around you.",
     "mapView": "Show map",
     "listView": "Show list",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
     "filter": {
       "all": "All",
       "products": "Products",

@@ -72,6 +72,8 @@
     "permissionDenied": "Activez la localisation pour voir les boutiques autour de vous.",
     "mapView": "Afficher la carte",
     "listView": "Afficher la liste",
+    "zoomIn": "Zoomer",
+    "zoomOut": "Dézoomer",
     "filter": {
       "all": "Tous",
       "products": "Produits",

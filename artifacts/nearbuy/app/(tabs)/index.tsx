@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import type MapView from "react-native-maps";
 import {
   ActivityIndicator,
   FlatList,
@@ -72,6 +73,24 @@ export default function MapTab() {
   const [radiusKm, setRadiusKm] = useState(5);
   const [radiusPickerVisible, setRadiusPickerVisible] = useState(false);
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
+  const mapRef = useRef<MapView | null>(null);
+  // Track the visible viewport separately from the location used for searches.
+  const visibleRegionRef = useRef<Region | null>(null);
+  const zoomMap = (factor: number) => {
+    const current = visibleRegionRef.current ?? region;
+    if (!current || !mapRef.current) return;
+    const scale = Math.max(
+      0.0005 / Math.min(current.latitudeDelta, current.longitudeDelta),
+      Math.min(factor, 120 / Math.max(current.latitudeDelta, current.longitudeDelta)),
+    );
+    const next = {
+      ...current,
+      latitudeDelta: current.latitudeDelta * scale,
+      longitudeDelta: current.longitudeDelta * scale,
+    };
+    visibleRegionRef.current = next;
+    mapRef.current.animateToRegion(next, 200);
+  };
   const [maps, setMaps] = useState<{
     MapView: any;
     Marker: any;
@@ -210,10 +229,14 @@ export default function MapTab() {
       {mapActive && NativeMap && NativeMarker && NativeCircle ? (
         <View style={styles.mapStage}>
           <NativeMap
+            ref={mapRef}
             style={StyleSheet.absoluteFill}
             initialRegion={region}
+            onMapReady={() => { visibleRegionRef.current = region; }}
+            onRegionChangeComplete={(next: Region) => { visibleRegionRef.current = next; }}
             showsUserLocation
             showsMyLocationButton={false}
+            zoomControlEnabled={false}
           >
             {filteredShops.map((s) => {
               const isService = isServiceShop(s);
@@ -264,6 +287,32 @@ export default function MapTab() {
               />
             )}
           </NativeMap>
+          <View
+            style={[
+              styles.zoomControls,
+              { top: insets.top + 172, backgroundColor: colors.background, borderColor: colors.border },
+            ]}
+          >
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t("map.zoomIn")}
+              testID="map-zoom-in"
+              onPress={() => zoomMap(0.5)}
+              style={({ pressed }) => [styles.zoomButton, { opacity: pressed ? 0.5 : 1 }]}
+            >
+              <Feather name="plus" size={22} color={colors.foreground} />
+            </Pressable>
+            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t("map.zoomOut")}
+              testID="map-zoom-out"
+              onPress={() => zoomMap(2)}
+              style={({ pressed }) => [styles.zoomButton, { opacity: pressed ? 0.5 : 1 }]}
+            >
+              <Feather name="minus" size={22} color={colors.foreground} />
+            </Pressable>
+          </View>
           <View
             style={[
               styles.mapTray,
@@ -789,6 +838,15 @@ export default function MapTab() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   mapStage: { flex: 1 },
+  zoomControls: {
+    position: "absolute",
+    right: 16,
+    borderWidth: 1,
+    borderRadius: 14,
+    overflow: "hidden",
+    elevation: 4,
+  },
+  zoomButton: { width: 46, height: 46, alignItems: "center", justifyContent: "center" },
   searchWrap: {
     position: "absolute",
     left: 16,
