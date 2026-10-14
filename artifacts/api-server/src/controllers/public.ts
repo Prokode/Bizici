@@ -106,10 +106,10 @@ export const publicController = {
     }
 
     const shops = await Shop.find({
-      // Only KYC-approved shops are visible to customers on the map.
-      "kyc.status": "approved",
+      // Only KYC-approved shops are visible to customers on the map disable for the moment.
+      // "kyc.status": "approved",
       location: {
-        $nearSphere: {
+        $nearSphere: { 
           $geometry: { type: "Point", coordinates: [lng, lat] },
           $maxDistance: radiusKm * 1000,
         },
@@ -182,7 +182,7 @@ export const publicController = {
     // 1. Find shops in radius (KYC-approved only — non-validated shops are
     //    invisible to customers in product search).
     const shopsInRadius = await Shop.find({
-      "kyc.status": "approved",
+      // "kyc.status": "approved",
       location: {
         $nearSphere: {
           $geometry: { type: "Point", coordinates: [lng, lat] },
@@ -296,7 +296,7 @@ export const publicController = {
     }
 
     const shopsInRadius = await Shop.find({
-      "kyc.status": "approved",
+      // "kyc.status": "approved",
       location: {
         $nearSphere: {
           $geometry: { type: "Point", coordinates: [lng, lat] },
@@ -451,7 +451,7 @@ export const publicController = {
 
     const shop = await Shop.findOne({
       _id: new Types.ObjectId(shopId),
-      "kyc.status": "approved",
+      // "kyc.status": "approved",
     })
       .select("_id")
       .lean();
