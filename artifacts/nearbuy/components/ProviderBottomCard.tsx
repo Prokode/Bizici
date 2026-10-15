@@ -134,7 +134,7 @@ export function ProviderBottomCard({ shop, onClose, onOpenProfile }: Props) {
           style={styles.ctaGradient}
         >
           <Feather name="user" size={16} color="#ffffff" />
-          <Text style={styles.ctaText}>{t("provider.openProfile")}</Text>
+          <Text style={styles.ctaText}>{t("shopDetails.open")}</Text>
         </LinearGradient>
       </Pressable>
     </View>

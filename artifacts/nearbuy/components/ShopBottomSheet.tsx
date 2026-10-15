@@ -373,6 +373,18 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
 
               <View style={styles.footer}>
                 <Button
+                  title={t("shopDetails.open")}
+                  testID="open-shop-details"
+                  variant="outline"
+                  onPress={() => {
+                    if (!shop) return;
+                    const id = shop.id;
+                    onClose();
+                    router.push(`/shop/${id}` as Href);
+                  }}
+                  style={{ marginBottom: 8 }}
+                />
+                <Button
                   title="Discuter avec le vendeur"
                   size="lg"
                   loading={chatLoading}

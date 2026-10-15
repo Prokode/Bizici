@@ -1,4 +1,21 @@
 {
+  "shopDetails": {
+    "open": "View details",
+    "title": "Business details",
+    "unavailable": "Business details are unavailable. This business may not be approved for public viewing yet.",
+    "rating": "{{rating}} / 5 · {{count}} reviews",
+    "pickup_only": "Pickup at the shop",
+    "delivery_only": "Delivery only",
+    "both": "Pickup and delivery",
+    "deliveryRadius": "Delivery within {{km}} km",
+    "products": "Products",
+    "services": "Services",
+    "noProducts": "No products listed yet.",
+    "noServices": "No services listed yet.",
+    "inStock": "In stock",
+    "outOfStock": "Out of stock",
+    "duration": "{{minutes}} minutes"
+  },
   "nav": {
     "map": "Map",
     "search": "Search",

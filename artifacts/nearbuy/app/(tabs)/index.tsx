@@ -775,7 +775,7 @@ export default function MapTab() {
           onOpenProfile={() => {
             const id = selectedProvider.id;
             setSelectedProvider(null);
-            router.push(`/provider/${id}`);
+            router.push(`/shop/${id}`);
           }}
         />
       )}

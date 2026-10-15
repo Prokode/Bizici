@@ -1,4 +1,21 @@
 {
+  "shopDetails": {
+    "open": "Voir les détails",
+    "title": "Détails de l’établissement",
+    "unavailable": "Les détails ne sont pas disponibles. Cet établissement n’est peut-être pas encore approuvé pour un affichage public.",
+    "rating": "{{rating}} / 5 · {{count}} avis",
+    "pickup_only": "Retrait en boutique",
+    "delivery_only": "Livraison uniquement",
+    "both": "Retrait et livraison",
+    "deliveryRadius": "Livraison dans un rayon de {{km}} km",
+    "products": "Produits",
+    "services": "Services",
+    "noProducts": "Aucun produit pour le moment.",
+    "noServices": "Aucun service pour le moment.",
+    "inStock": "En stock",
+    "outOfStock": "Rupture de stock",
+    "duration": "{{minutes}} minutes"
+  },
   "nav": {
     "map": "Carte",
     "search": "Recherche",
