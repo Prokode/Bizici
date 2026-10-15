@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { publicShopKycFilter, isPublicShopKycAllowed } from "../lib/kyc-policy";
 import { Types } from "mongoose";
 import {
   Shop,
@@ -106,10 +107,9 @@ export const publicController = {
     }
 
     const shops = await Shop.find({
-      // Only KYC-approved shops are visible to customers on the map disable for the moment.
-      // "kyc.status": "approved",
+      ...publicShopKycFilter(),
       location: {
-        $nearSphere: { 
+        $nearSphere: {
           $geometry: { type: "Point", coordinates: [lng, lat] },
           $maxDistance: radiusKm * 1000,
         },
@@ -179,10 +179,9 @@ export const publicController = {
       return;
     }
 
-    // 1. Find shops in radius (KYC-approved only — non-validated shops are
-    //    invisible to customers in product search).
+    // 1. Find nearby shops under the current public visibility policy.
     const shopsInRadius = await Shop.find({
-      // "kyc.status": "approved",
+      ...publicShopKycFilter(),
       location: {
         $nearSphere: {
           $geometry: { type: "Point", coordinates: [lng, lat] },
@@ -296,7 +295,7 @@ export const publicController = {
     }
 
     const shopsInRadius = await Shop.find({
-      // "kyc.status": "approved",
+      ...publicShopKycFilter(),
       location: {
         $nearSphere: {
           $geometry: { type: "Point", coordinates: [lng, lat] },
@@ -414,9 +413,8 @@ export const publicController = {
       res.status(404).json({ error: "Shop not found" });
       return;
     }
-    // Hide non-approved shops from customer-facing detail too — otherwise a
-    // direct deep link could bypass the map filter.
-    if ((shop.kyc?.status ?? "unsubmitted") !== "approved") {
+    // Keep detail access consistent with map/search visibility.
+    if (!isPublicShopKycAllowed(shop.kyc?.status)) {
       res.status(404).json({ error: "Shop not found" });
       return;
     }
@@ -451,7 +449,7 @@ export const publicController = {
 
     const shop = await Shop.findOne({
       _id: new Types.ObjectId(shopId),
-      // "kyc.status": "approved",
+      ...publicShopKycFilter(),
     })
       .select("_id")
       .lean();

@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { publicShopKycFilter } from "../lib/kyc-policy";
 import { Types } from "mongoose";
 import { Service, Shop } from "@workspace/db";
 import {
@@ -45,7 +46,7 @@ export const servicesPublicController = {
           spherical: true,
           query: {
             kind: { $in: ["services", "hybrid"] },
-            "kyc.status": "approved",
+            ...publicShopKycFilter(),
           },
         },
       },
@@ -117,7 +118,7 @@ export const servicesPublicController = {
     const shop = await Shop.findOne({
       _id: new Types.ObjectId(req.params.shopId as string),
       kind: { $in: ["services", "hybrid"] },
-      "kyc.status": "approved",
+      ...publicShopKycFilter(),
     }).lean();
     if (!shop) {
       res.status(404).json({ error: "Provider not found" });

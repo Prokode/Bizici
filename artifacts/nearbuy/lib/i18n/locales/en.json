@@ -2,7 +2,7 @@
   "shopDetails": {
     "open": "View details",
     "title": "Business details",
-    "unavailable": "Business details are unavailable. This business may not be approved for public viewing yet.",
+    "unavailable": "Business details could not be loaded. Please try again.",
     "rating": "{{rating}} / 5 · {{count}} reviews",
     "pickup_only": "Pickup at the shop",
     "delivery_only": "Delivery only",

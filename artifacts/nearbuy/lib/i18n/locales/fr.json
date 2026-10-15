@@ -2,7 +2,7 @@
   "shopDetails": {
     "open": "Voir les détails",
     "title": "Détails de l’établissement",
-    "unavailable": "Les détails ne sont pas disponibles. Cet établissement n’est peut-être pas encore approuvé pour un affichage public.",
+    "unavailable": "Impossible de charger les détails de cet établissement. Veuillez réessayer.",
     "rating": "{{rating}} / 5 · {{count}} avis",
     "pickup_only": "Retrait en boutique",
     "delivery_only": "Livraison uniquement",

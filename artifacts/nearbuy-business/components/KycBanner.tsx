@@ -10,6 +10,8 @@ import {
 } from "@workspace/api-client-react";
 
 type Props = { shopId: string };
+// Match the API launch policy; restore alongside its KYC enforcement flag.
+export const KYC_ENFORCEMENT_ENABLED: boolean = false;
 
 type Variant = {
   bg: string;
@@ -47,10 +49,11 @@ export function KycBanner({ shopId }: Props) {
   const { t } = useTranslation();
   const { data } = useQuery({
     ...getGetShopKycStatusQueryOptions(shopId),
+    enabled: KYC_ENFORCEMENT_ENABLED,
     refetchInterval: 30_000,
   });
 
-  if (!data) return null;
+  if (!KYC_ENFORCEMENT_ENABLED || !data) return null;
   const kyc = data as KycStatusResponse;
   if (kyc.status === "approved") return null;
 
