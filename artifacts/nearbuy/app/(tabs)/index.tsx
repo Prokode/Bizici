@@ -21,9 +21,8 @@ import { useTranslation } from "react-i18next";
 
 import { useColors } from "@/hooks/useColors";
 import { fetchNearbyShops, type PublicShop } from "@/lib/api/shops";
-import { ShopMarker } from "@/components/ShopMarker";
+import { getMapPinImage } from "@/lib/map-pin-images";
 import { ShopBottomSheet } from "@/components/ShopBottomSheet";
-import { ProviderMarker } from "@/components/ProviderMarker";
 import { ProviderBottomCard } from "@/components/ProviderBottomCard";
 
 type MapFilter = "all" | "products" | "services";
@@ -179,7 +178,7 @@ export default function MapTab() {
     return { lat, lng };
   }, [region]);
 
-  const { data: shops = [], isLoading: loadingShops, dataUpdatedAt } = useQuery({
+  const { data: shops = [], isLoading: loadingShops } = useQuery({
     queryKey: ["public-shops", center?.lat, center?.lng, radiusKm],
     queryFn: ({ signal }) =>
       fetchNearbyShops({
@@ -199,14 +198,6 @@ export default function MapTab() {
 
   const showMap = Platform.OS !== "web" && maps && region;
   const mapActive = !!showMap && viewMode === "map";
-  const [trackMarkerChanges, setTrackMarkerChanges] = useState(true);
-  useEffect(() => {
-    // Android snapshots custom markers: allow the whole native view to render
-    // before freezing it, otherwise only the small pointer can be captured.
-    setTrackMarkerChanges(true);
-    const timer = setTimeout(() => setTrackMarkerChanges(false), 1000);
-    return () => clearTimeout(timer);
-  }, [maps, mapActive, dataUpdatedAt, filter]);
   const NativeMap = maps?.MapView;
   const NativeMarker = maps?.Marker;
   const NativeCircle = maps?.Circle;
@@ -270,25 +261,12 @@ export default function MapTab() {
                       setSelectedShop(s);
                     }
                   }}
-                  anchor={{ x: 0.5, y: 1 }}
-                  tracksViewChanges={trackMarkerChanges}
+                  anchor={{ x: 0.5, y: 0.92 }}
+                  image={getMapPinImage(s.name, isService)}
+                  title={s.name}
+                  tracksViewChanges={false}
                   accessibilityLabel={s.name}
-                >
-                  {isService ? (
-                    <ProviderMarker
-                      name={s.name}
-                      servicesCount={s.productCount}
-                      isVerified={!!s.serviceProvider?.isVerified}
-                      isHybrid={s.kind === "hybrid"}
-                    />
-                  ) : (
-                    <ShopMarker
-                      name={s.name}
-                      productCount={s.productCount}
-                      isOpen={s.isOpen}
-                    />
-                  )}
-                </NativeMarker>
+                />
               );
             })}
             {selectedProvider?.serviceProvider?.serviceRadiusKm != null && (
