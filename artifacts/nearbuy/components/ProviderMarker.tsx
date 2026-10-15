@@ -1,9 +1,9 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 
 type Props = {
+  name: string;
   servicesCount: number;
   isVerified: boolean;
   isHybrid?: boolean;
@@ -11,25 +11,25 @@ type Props = {
 
 /**
  * Map marker for service providers (hairdressers, gardeners, plumbers…).
- * Visually distinct from the orange product `ShopMarker`: purple gradient
- * with a scissors icon. A small green check overlays when the provider has
+ * Visually distinct from the orange product `ShopMarker`: purple initial.
+ * A small green check overlays when the provider has
  * been verified by the platform. For hybrid shops we add an amber dot to
  * signal "produits + services".
  */
 export function ProviderMarker({
+  name,
   servicesCount,
   isVerified,
   isHybrid = false,
 }: Props) {
   return (
-    <View style={styles.wrapper}>
-      <LinearGradient
-        colors={["#8B5CF6", "#6366F1"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+    <View style={styles.wrapper} collapsable={false}>
+      <View
         style={styles.bubble}
       >
-        <Feather name="scissors" size={16} color="#ffffff" />
+        <Text style={styles.initial} allowFontScaling={false}>
+          {Array.from(name.trim())[0]?.toLocaleUpperCase() || "?"}
+        </Text>
         {servicesCount > 0 && (
           <View style={styles.badge}>
             <Text style={styles.badgeText}>
@@ -43,7 +43,7 @@ export function ProviderMarker({
           </View>
         )}
         {isHybrid && <View style={styles.hybridDot} />}
-      </LinearGradient>
+      </View>
       <View style={styles.tail} />
     </View>
   );
@@ -51,15 +51,20 @@ export function ProviderMarker({
 
 const styles = StyleSheet.create({
   wrapper: {
+    width: 72,
+    height: 76,
+    paddingTop: 10,
     alignItems: "center",
   },
+  initial: { color: "#ffffff", fontSize: 26, lineHeight: 32, fontWeight: "800", textAlign: "center" },
   bubble: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    backgroundColor: "#7C3AED",
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: "#ffffff",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -113,12 +118,12 @@ const styles = StyleSheet.create({
   tail: {
     width: 0,
     height: 0,
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderTopWidth: 8,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderTopWidth: 12,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
-    borderTopColor: "#6366F1",
+    borderTopColor: "#7C3AED",
     marginTop: -2,
   },
 });

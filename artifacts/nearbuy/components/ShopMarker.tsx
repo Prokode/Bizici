@@ -1,27 +1,26 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Feather } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 
 type Props = {
+  name: string;
   productCount: number;
   isOpen: boolean;
 };
 
 /**
- * Custom map marker that mirrors the BizIci pin (orange brand gradient)
- * and shows the in-stock product count when there is at least one.
+ * Orange initial marker with a separate open/closed indicator.
+ * Fixed bounds keep the complete pin inside Android's marker snapshot.
  */
-export function ShopMarker({ productCount, isOpen }: Props) {
+export function ShopMarker({ name, productCount, isOpen }: Props) {
   return (
-    <View style={styles.wrapper}>
-      <LinearGradient
-        colors={isOpen ? ["#F58220", "#E26A0A"] : ["#9CA3AF", "#6B7280"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+    <View style={styles.wrapper} collapsable={false}>
+      <View
         style={styles.bubble}
       >
-        <Feather name="shopping-bag" size={16} color="#ffffff" />
+        <Text style={styles.initial} allowFontScaling={false}>
+          {Array.from(name.trim())[0]?.toLocaleUpperCase() || "?"}
+        </Text>
+        <View style={[styles.openDot, { backgroundColor: isOpen ? "#16A34A" : "#6B7280" }]} />
         {productCount > 0 && (
           <View style={styles.badge}>
             <Text style={styles.badgeText}>
@@ -29,12 +28,12 @@ export function ShopMarker({ productCount, isOpen }: Props) {
             </Text>
           </View>
         )}
-      </LinearGradient>
+      </View>
       <View
         style={[
           styles.tail,
           {
-            borderTopColor: isOpen ? "#E26A0A" : "#6B7280",
+            borderTopColor: "#E26A0A",
           },
         ]}
       />
@@ -44,15 +43,21 @@ export function ShopMarker({ productCount, isOpen }: Props) {
 
 const styles = StyleSheet.create({
   wrapper: {
+    width: 72,
+    height: 76,
+    paddingTop: 10,
     alignItems: "center",
   },
+  initial: { color: "#ffffff", fontSize: 26, lineHeight: 32, fontWeight: "800", textAlign: "center" },
+  openDot: { position: "absolute", bottom: -3, right: 0, width: 14, height: 14, borderRadius: 7, borderWidth: 2, borderColor: "#ffffff" },
   bubble: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    backgroundColor: "#E26A0A",
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: "#ffffff",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -63,9 +68,9 @@ const styles = StyleSheet.create({
   tail: {
     width: 0,
     height: 0,
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderTopWidth: 8,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderTopWidth: 12,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
     marginTop: -2,

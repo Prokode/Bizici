@@ -179,7 +179,7 @@ export default function MapTab() {
     return { lat, lng };
   }, [region]);
 
-  const { data: shops = [], isLoading: loadingShops } = useQuery({
+  const { data: shops = [], isLoading: loadingShops, dataUpdatedAt } = useQuery({
     queryKey: ["public-shops", center?.lat, center?.lng, radiusKm],
     queryFn: ({ signal }) =>
       fetchNearbyShops({
@@ -199,6 +199,14 @@ export default function MapTab() {
 
   const showMap = Platform.OS !== "web" && maps && region;
   const mapActive = !!showMap && viewMode === "map";
+  const [trackMarkerChanges, setTrackMarkerChanges] = useState(true);
+  useEffect(() => {
+    // Android snapshots custom markers: allow the whole native view to render
+    // before freezing it, otherwise only the small pointer can be captured.
+    setTrackMarkerChanges(true);
+    const timer = setTimeout(() => setTrackMarkerChanges(false), 1000);
+    return () => clearTimeout(timer);
+  }, [maps, mapActive, dataUpdatedAt, filter]);
   const NativeMap = maps?.MapView;
   const NativeMarker = maps?.Marker;
   const NativeCircle = maps?.Circle;
@@ -263,16 +271,19 @@ export default function MapTab() {
                     }
                   }}
                   anchor={{ x: 0.5, y: 1 }}
-                  tracksViewChanges={false}
+                  tracksViewChanges={trackMarkerChanges}
+                  accessibilityLabel={s.name}
                 >
                   {isService ? (
                     <ProviderMarker
+                      name={s.name}
                       servicesCount={s.productCount}
                       isVerified={!!s.serviceProvider?.isVerified}
                       isHybrid={s.kind === "hybrid"}
                     />
                   ) : (
                     <ShopMarker
+                      name={s.name}
                       productCount={s.productCount}
                       isOpen={s.isOpen}
                     />
