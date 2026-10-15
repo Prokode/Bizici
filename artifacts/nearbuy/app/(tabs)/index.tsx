@@ -74,8 +74,14 @@ export default function MapTab() {
   const [radiusPickerVisible, setRadiusPickerVisible] = useState(false);
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const mapRef = useRef<MapView | null>(null);
-  // Track the visible viewport separately from the location used for searches.
+  // Keep zoom taps responsive; commit the search center when movement ends.
   const visibleRegionRef = useRef<Region | null>(null);
+  const onMapRegionChangeComplete = (next: Region) => {
+    visibleRegionRef.current = next;
+    // Nearby queries are keyed by the rounded center and selected radius.
+    // Panning refreshes results; zooming at the same center does not.
+    setRegion(next);
+  };
   const zoomMap = (factor: number) => {
     const current = visibleRegionRef.current ?? region;
     if (!current || !mapRef.current) return;
@@ -233,7 +239,7 @@ export default function MapTab() {
             style={StyleSheet.absoluteFill}
             initialRegion={region}
             onMapReady={() => { visibleRegionRef.current = region; }}
-            onRegionChangeComplete={(next: Region) => { visibleRegionRef.current = next; }}
+            onRegionChangeComplete={onMapRegionChangeComplete}
             showsUserLocation
             showsMyLocationButton={false}
             zoomControlEnabled={false}
