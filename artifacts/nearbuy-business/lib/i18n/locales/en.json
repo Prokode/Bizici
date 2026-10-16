@@ -157,7 +157,8 @@
   "chat": {
     "customer": "Customer",
     "noMessages": "No messages yet.",
-    "replyPlaceholder": "Reply to customer…"
+    "replyPlaceholder": "Reply to customer…",
+    "itemContextHint": "Messages starting with [Product: …] or [Service: …] refer to an item from your catalog (ref:kind:id)."
   },
   "shopList": {
     "yourShops": "Your shops",

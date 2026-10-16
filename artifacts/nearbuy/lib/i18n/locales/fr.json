@@ -461,5 +461,24 @@
     "invalidCode": "Code invalide. Vérifiez-le et réessayez.",
     "passwordCompromised": "Ce mot de passe figure dans une fuite de données connue. Choisissez-en un autre.",
     "passwordPolicy": "Ce mot de passe ne respecte pas les exigences de sécurité. Choisissez-en un plus robuste."
+  },
+  "askItem": {
+    "askProduct": "Demander pour ce produit",
+    "askService": "Demander pour ce service",
+    "opening": "Ouverture de la discussion…",
+    "errorTitle": "Impossible d’ouvrir la discussion",
+    "errorBody": "Vérifiez votre connexion puis réessayez.",
+    "invalidLink": "Ce lien est invalide ou incomplet.",
+    "aboutProduct": "À propos de ce produit",
+    "aboutService": "À propos de ce service",
+    "removeContext": "Retirer l’article",
+    "productLabel": "Produit",
+    "serviceLabel": "Service",
+    "draftProduct": "Bonjour, ce produit est-il disponible ?",
+    "draftService": "Bonjour, êtes-vous disponible pour ce service ?",
+    "sendFailed": "Message non envoyé. Votre texte et l’article sont conservés, réessayez.",
+    "messageTooLong": "Veuillez raccourcir votre question. Le message et la référence doivent contenir au maximum 2 000 caractères.",
+    "composerPlaceholder": "Votre message…",
+    "emptyThread": "Lancez la conversation : posez votre question !"
   }
 }

@@ -25,6 +25,7 @@ import {
 import { AppointmentBookingModal } from "@/components/AppointmentBookingModal";
 import { LocationBadge } from "@/components/LocationBadge";
 import { ShopReviewsSection } from "@/components/ShopReviewsSection";
+import { chatShopHref } from "@/lib/chatItemContext";
 
 function formatPrice(svc: PublicService, t: (k: string, o?: Record<string, unknown>) => string): string {
   if (svc.pricingType === "quote") return t("search.onQuote");
@@ -334,6 +335,21 @@ export default function ProviderScreen() {
                       t={t}
                     />
                   </View>
+                  <Pressable
+                    testID={`ask-service-${s.id}`}
+                    accessibilityRole="button"
+                    onPress={() =>
+                      router.push(
+                        chatShopHref(shop.id, { kind: "service", id: s.id, name: s.title }) as never,
+                      )
+                    }
+                    style={[styles.askBtn, { borderColor: colors.primary }]}
+                  >
+                    <Feather name="message-circle" size={14} color={colors.primary} />
+                    <Text style={[styles.askText, { color: colors.primary }]}>
+                      {t("askItem.askService")}
+                    </Text>
+                  </Pressable>
                 </View>
               ))}
             </View>
@@ -384,7 +400,7 @@ export default function ProviderScreen() {
           <View style={{ flex: 1 }}>
             <Button
               title={t("provider.chat")}
-              onPress={() => router.push(`/chat-shop/${shop.id}` as never)}
+              onPress={() => router.push(chatShopHref(shop.id) as never)}
               icon={
                 <Feather name="message-circle" size={18} color="#ffffff" />
               }
@@ -414,7 +430,7 @@ export default function ProviderScreen() {
         onCreated={() => {
           // After creation, send the user straight into the chat where the
           // banner shows the new RDV with its lifecycle controls.
-          router.push(`/chat-shop/${shop.id}` as never);
+          router.push(chatShopHref(shop.id) as never);
         }}
       />
     </View>
@@ -512,6 +528,7 @@ const styles = StyleSheet.create({
   certText: { fontSize: 12, fontWeight: "600" },
   serviceCard: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     gap: 12,
     padding: 14,
@@ -527,6 +544,17 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   serviceCat: { fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4 },
+  askBtn: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  askText: { fontSize: 13, fontWeight: "700" },
   servicePrice: { fontSize: 15, fontWeight: "800" },
   portfolioImg: { width: 140, height: 140, borderRadius: 12 },
   ctaBar: {

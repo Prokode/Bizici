@@ -10,6 +10,7 @@ import { fetchShopDetail } from "@/lib/api/shops";
 import { fetchProviderDetail } from "@/lib/api/providers";
 import { LocationBadge } from "@/components/LocationBadge";
 import { ShopReviewsSection } from "@/components/ShopReviewsSection";
+import { chatShopHref } from "@/lib/chatItemContext";
 
 export default function ShopDetails() {
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
@@ -56,7 +57,7 @@ export default function ShopDetails() {
                 {shop.fulfillment !== "pickup_only" && shop.deliveryRadiusKm != null &&
                   <Text style={muted}>{t("shopDetails.deliveryRadius", { km: shop.deliveryRadiusKm })}</Text>}
                 <Button title={t("shop.directions")} variant="outline" onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${shop.latitude},${shop.longitude}`)} />
-                <Button title={t("shop.chat")} onPress={() => router.push(`/chat-shop/${shop.id}`)} />
+                <Button title={t("shop.chat")} onPress={() => router.push(chatShopHref(shop.id) as never)} />
               </View>
               {hasServices && (
                 <View style={card}>
@@ -82,6 +83,12 @@ export default function ShopDetails() {
                               service.pricingType === "hourly" ? t("search.hourlyPrice", { price: `${service.price ?? "—"} €` }) : `${service.price ?? "—"} €`}</Text>
                             {service.durationMinutes != null && <Text style={muted}>{t("shopDetails.duration", { minutes: service.durationMinutes })}</Text>}
                             <LocationBadge mode={service.effectiveServiceLocation} colors={colors} t={t} />
+                            <Button
+                              title={t("askItem.askService")}
+                              variant="outline"
+                              testID={`ask-service-${service.id}`}
+                              onPress={() => router.push(chatShopHref(shop.id, { kind: "service", id: service.id, name: service.title }) as never)}
+                            />
                           </View>
                         ))}
                       </>
@@ -100,6 +107,12 @@ export default function ShopDetails() {
                       {!!product.description && <Text style={text}>{product.description}</Text>}
                       <Text style={{ color: colors.primary }}>{money(product.price)}</Text>
                       <Text style={muted}>{t(product.stockStatus === "in_stock" ? "shopDetails.inStock" : "shopDetails.outOfStock")}</Text>
+                      <Button
+                        title={t("askItem.askProduct")}
+                        variant="outline"
+                        testID={`ask-product-${product.id}`}
+                        onPress={() => router.push(chatShopHref(shop.id, { kind: "product", id: product.id, name: product.name }) as never)}
+                      />
                     </View>
                   ))}
                 </>

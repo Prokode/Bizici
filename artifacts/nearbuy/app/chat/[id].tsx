@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -36,6 +36,11 @@ import { AppointmentCard } from "@/components/AppointmentCard";
 import { AppointmentBookingModal } from "@/components/AppointmentBookingModal";
 import { AppointmentReviewModal } from "@/components/AppointmentReviewModal";
 import { fetchProviderDetail } from "@/lib/api/providers";
+import {
+  itemReference,
+  parseItemContext,
+  type ChatItemContext,
+} from "@/lib/chatItemContext";
 
 function formatTime(iso: string): string {
   try {
@@ -50,7 +55,16 @@ function formatTime(iso: string): string {
 }
 
 export default function ChatThreadScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{
+    id: string;
+    itemKind?: string;
+    itemId?: string;
+    itemName?: string;
+  }>();
+  const id = params.id;
+  const ctxKind = params.itemKind;
+  const ctxId = params.itemId;
+  const ctxName = params.itemName;
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -59,6 +73,31 @@ export default function ChatThreadScreen() {
   const { user } = useUser();
   const { t } = useTranslation();
   const [draft, setDraft] = useState("");
+  const [itemCtx, setItemCtx] = useState<ChatItemContext | null>(null);
+  const [sendError, setSendError] = useState(false);
+  // Key of the last route context applied, so rerenders / polling never
+  // re-apply it, and the last auto-filled draft so user text is never
+  // overwritten.
+  const consumedCtxKey = useRef<string | null>(null);
+  const lastPrefill = useRef<string>("");
+
+  useEffect(() => {
+    const parsed = parseItemContext({ itemKind: ctxKind, itemId: ctxId, itemName: ctxName });
+    if (!parsed) {
+      consumedCtxKey.current = null;
+      return;
+    }
+    const key = `${id}|${parsed.kind}|${parsed.id}|${parsed.name}`;
+    if (consumedCtxKey.current === key) return;
+    consumedCtxKey.current = key;
+    const prefill = t(parsed.kind === "product" ? "askItem.draftProduct" : "askItem.draftService");
+    setItemCtx(parsed);
+    setSendError(false);
+    setDraft((d) => (!d.trim() || d === lastPrefill.current ? prefill : d));
+    lastPrefill.current = prefill;
+    // Drop the params so back-navigation / remounts don't resurrect old context.
+    router.setParams({ itemKind: undefined, itemId: undefined, itemName: undefined });
+  }, [id, ctxKind, ctxId, ctxName, t, router]);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [reviewApptId, setReviewApptId] = useState<string | null>(null);
   const [pendingApptAction, setPendingApptAction] = useState<{
@@ -155,6 +194,8 @@ export default function ChatThreadScreen() {
 
   const sendMutation = useMutation({
     mutationFn: (text: string) => sendMessage(id!, text),
+    onMutate: () => setSendError(false),
+    onError: () => setSendError(true),
     onSuccess: (msg) => {
       qc.setQueryData<{ messages: ChatMessage[]; hasMore: boolean }>(
         ["chat-messages", id],
@@ -165,6 +206,8 @@ export default function ChatThreadScreen() {
       );
       void qc.invalidateQueries({ queryKey: ["chat-conv-list"] });
       setDraft("");
+      setItemCtx(null);
+      lastPrefill.current = "";
     },
   });
 
@@ -178,8 +221,18 @@ export default function ChatThreadScreen() {
   const onSend = useCallback(() => {
     const text = draft.trim();
     if (!text || sendMutation.isPending) return;
-    sendMutation.mutate(text);
-  }, [draft, sendMutation]);
+    if (itemCtx) {
+      const label = t(itemCtx.kind === "product" ? "askItem.productLabel" : "askItem.serviceLabel");
+      const header = `[${label}: ${itemCtx.name} | ${itemReference(itemCtx)}]`;
+      if (`${header}\n${text}`.length > 2000) {
+        Alert.alert(t("askItem.messageTooLong"));
+        return;
+      }
+      sendMutation.mutate(`${header}\n${text}`);
+    } else {
+      sendMutation.mutate(text);
+    }
+  }, [draft, sendMutation, itemCtx, t]);
 
   const conversation = conversationQuery.data;
   const otherTitle = conversation?.shop.name ?? "Discussion";
@@ -326,7 +379,7 @@ export default function ChatThreadScreen() {
                 <Text
                   style={[styles.emptyText, { color: colors.mutedForeground }]}
                 >
-                  Lancez la conversation : posez votre question !
+                  {t("askItem.emptyThread")}
                 </Text>
               </View>
             }
@@ -386,6 +439,54 @@ export default function ChatThreadScreen() {
           />
         )}
 
+        {itemCtx || sendError ? (
+          <View
+            style={[
+              styles.ctxWrap,
+              { borderTopColor: colors.border, backgroundColor: colors.background },
+            ]}
+          >
+            {itemCtx ? (
+              <View
+                testID="chat-item-context"
+                style={[styles.ctxCard, { backgroundColor: colors.card, borderColor: colors.primary }]}
+              >
+                <Feather
+                  name={itemCtx.kind === "product" ? "package" : "tool"}
+                  size={18}
+                  color={colors.primary}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.ctxLabel, { color: colors.mutedForeground }]}>
+                    {t(itemCtx.kind === "product" ? "askItem.aboutProduct" : "askItem.aboutService")}
+                  </Text>
+                  <Text numberOfLines={2} style={[styles.ctxName, { color: colors.foreground }]}>
+                    {itemCtx.name}
+                  </Text>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t("askItem.removeContext")}
+                  hitSlop={10}
+                  disabled={sendMutation.isPending}
+                  onPress={() => {
+                    setItemCtx(null);
+                    if (draft === lastPrefill.current) setDraft("");
+                    lastPrefill.current = "";
+                  }}
+                >
+                  <Feather name="x" size={18} color={colors.mutedForeground} />
+                </Pressable>
+              </View>
+            ) : null}
+            {sendError ? (
+              <Text style={[styles.ctxError, { color: colors.destructive }]}>
+                {t("askItem.sendFailed")}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+
         <View
           style={[
             styles.inputBar,
@@ -414,8 +515,9 @@ export default function ChatThreadScreen() {
           ) : null}
           <TextInput
             value={draft}
+            editable={!sendMutation.isPending}
             onChangeText={setDraft}
-            placeholder="Votre message…"
+            placeholder={t("askItem.composerPlaceholder")}
             placeholderTextColor={colors.mutedForeground}
             multiline
             maxLength={2000}
@@ -547,6 +649,18 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   bubbleTime: { fontSize: 10, marginTop: 4, alignSelf: "flex-end" },
+  ctxWrap: { paddingHorizontal: 12, paddingTop: 10, gap: 6, borderTopWidth: 1 },
+  ctxCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  ctxLabel: { fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.4 },
+  ctxName: { fontSize: 14, fontWeight: "700", marginTop: 2 },
+  ctxError: { fontSize: 12 },
   inputBar: {
     flexDirection: "row",
     alignItems: "flex-end",

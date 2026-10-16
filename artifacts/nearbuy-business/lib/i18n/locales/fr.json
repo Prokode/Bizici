@@ -157,7 +157,8 @@
   "chat": {
     "customer": "Client",
     "noMessages": "Aucun message pour l'instant.",
-    "replyPlaceholder": "Répondre au client…"
+    "replyPlaceholder": "Répondre au client…",
+    "itemContextHint": "Les messages commençant par [Produit: …] ou [Service: …] concernent un article de votre catalogue (ref:type:id)."
   },
   "shopList": {
     "yourShops": "Vos boutiques",

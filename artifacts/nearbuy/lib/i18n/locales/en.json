@@ -461,5 +461,24 @@
     "invalidCode": "Invalid code. Check it and try again.",
     "passwordCompromised": "This password appeared in a known data breach. Choose a different one.",
     "passwordPolicy": "This password doesn't meet the security requirements. Choose a stronger one."
+  },
+  "askItem": {
+    "askProduct": "Ask about this product",
+    "askService": "Ask about this service",
+    "opening": "Opening the conversation…",
+    "errorTitle": "Could not open the conversation",
+    "errorBody": "Check your connection and try again.",
+    "invalidLink": "This link is invalid or incomplete.",
+    "aboutProduct": "About this product",
+    "aboutService": "About this service",
+    "removeContext": "Remove item",
+    "productLabel": "Product",
+    "serviceLabel": "Service",
+    "draftProduct": "Hello, is this product available?",
+    "draftService": "Hello, are you available for this service?",
+    "sendFailed": "Message not sent. Your text and item are kept, try again.",
+    "messageTooLong": "Please shorten your question. The message and item reference must fit within 2,000 characters.",
+    "composerPlaceholder": "Your message…",
+    "emptyThread": "Start the conversation: ask your question!"
   }
 }
