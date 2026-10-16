@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { fetchShopDetail } from "@/lib/api/shops";
 import { fetchProviderDetail } from "@/lib/api/providers";
 import { LocationBadge } from "@/components/LocationBadge";
+import { ShopReviewsSection } from "@/components/ShopReviewsSection";
 
 export default function ShopDetails() {
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
@@ -103,6 +104,13 @@ export default function ShopDetails() {
                   ))}
                 </>
               )}
+              <ShopReviewsSection
+                shopId={shop.id}
+                shopName={shop.name}
+                ratingAvg={shop.ratingAvg}
+                ratingCount={shop.ratingCount}
+                returnTo={`/shop/${shop.id}`}
+              />
             </>
           )}
       </ScrollView>

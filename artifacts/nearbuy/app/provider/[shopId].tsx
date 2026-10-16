@@ -24,6 +24,7 @@ import {
 } from "@/lib/api/providers";
 import { AppointmentBookingModal } from "@/components/AppointmentBookingModal";
 import { LocationBadge } from "@/components/LocationBadge";
+import { ShopReviewsSection } from "@/components/ShopReviewsSection";
 
 function formatPrice(svc: PublicService, t: (k: string, o?: Record<string, unknown>) => string): string {
   if (svc.pricingType === "quote") return t("search.onQuote");
@@ -358,6 +359,14 @@ export default function ProviderScreen() {
             </Text>
           )}
         </Section>
+
+        <ShopReviewsSection
+          shopId={shop.id}
+          shopName={shop.name}
+          ratingAvg={shop.ratingAvg}
+          ratingCount={shop.ratingCount}
+          returnTo={`/provider/${shop.id}`}
+        />
       </ScrollView>
 
       {/* Sticky CTA */}

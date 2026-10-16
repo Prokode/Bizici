@@ -23,6 +23,7 @@ import { ClerkProvider, ClerkLoaded, useAuth } from "@clerk/expo";
 import { tokenCache } from "@clerk/expo/token-cache";
 
 import "@/lib/i18n";
+import "@/lib/theme";
 import { AnimatedSplash } from "@/components/AnimatedSplash";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import {

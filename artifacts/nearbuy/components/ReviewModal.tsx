@@ -83,6 +83,7 @@ export function ReviewModal({ shopId, shopName, onClose }: Props) {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["shop-reviews", shopId] }),
         queryClient.invalidateQueries({ queryKey: ["public-shop", shopId] }),
+        queryClient.invalidateQueries({ queryKey: ["provider-detail", shopId] }),
         queryClient.invalidateQueries({ queryKey: ["nearby-shops"] }),
       ]);
       onClose();
@@ -114,6 +115,7 @@ export function ReviewModal({ shopId, shopName, onClose }: Props) {
                 queryKey: ["public-shop", shopId],
               }),
               queryClient.invalidateQueries({ queryKey: ["nearby-shops"] }),
+              queryClient.invalidateQueries({ queryKey: ["provider-detail", shopId] }),
             ]);
             onClose();
           } catch (err: any) {

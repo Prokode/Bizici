@@ -333,7 +333,12 @@
     "slide6Bullet2": "Avis et notes des clients",
     "slide6Bullet3": "Badges de confiance et karma",
     "replay": "Revoir l'introduction",
-    "replayHint": "Refaire le tour de l'application"
+    "replayHint": "Refaire le tour de l'application",
+    "themeLabel": "Apparence",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
+    "themeSystem": "Système",
+    "themeSaveError": "Thème appliqué, mais il n'a pas pu être enregistré pour le prochain lancement."
   },
   "notFound": {
     "title": "Cet écran n'existe pas.",

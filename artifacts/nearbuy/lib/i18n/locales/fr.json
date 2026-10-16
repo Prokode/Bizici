@@ -61,7 +61,10 @@
     "noReviews": "Aucun avis pour l'instant.",
     "reviewsCount_one": "{{count}} avis",
     "reviewsCount_other": "{{count}} avis",
-    "ratingAvg": "Note moyenne"
+    "ratingAvg": "Note moyenne",
+    "reviewsError": "Impossible de charger les avis.",
+    "anonymousCustomer": "Client",
+    "signInToReview": "Connectez-vous pour écrire un avis"
   },
   "review": {
     "title": "Votre avis",
@@ -272,7 +275,12 @@
     "slide5Title": "Préparez votre course en un clin d'œil",
     "slide5Body": "Ajoutez vos articles, on les regroupe par boutique pour une virée ultra-rapide.",
     "replay": "Revoir l'introduction",
-    "replayHint": "Refaire le tour de l'application"
+    "replayHint": "Refaire le tour de l'application",
+    "themeLabel": "Apparence",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
+    "themeSystem": "Système",
+    "themeSaveError": "Thème appliqué, mais il n'a pas pu être enregistré pour le prochain lancement."
   },
   "notFound": {
     "title": "Cette page n'existe pas.",

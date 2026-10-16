@@ -4,6 +4,7 @@ import {
   FlatList,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -25,6 +26,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
+import { OnboardingPreferences } from "@/components/OnboardingPreferences";
 import { useColors } from "@/hooks/useColors";
 
 export const ONBOARDING_SEEN_KEY = "nearbuy.consumer.onboarding.seen";
@@ -92,9 +94,10 @@ type SlideProps = {
   slide: SlideDef;
   index: number;
   scrollX: SharedValue<number>;
+  height: number;
 };
 
-function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
+function OnboardingSlide({ slide, index, scrollX, height }: SlideProps) {
   const colors = useColors();
   const { t } = useTranslation();
 
@@ -189,7 +192,7 @@ function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
   });
 
   return (
-    <View style={[styles.slide, { width: SCREEN_W }]}>
+    <View style={[styles.slide, { width: SCREEN_W, height }]}>
       <LinearGradient
         colors={slide.gradient}
         start={{ x: 0, y: 0 }}
@@ -217,7 +220,12 @@ function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
         </Animated.View>
       </LinearGradient>
 
-      <View style={styles.copy}>
+      <ScrollView
+        style={styles.copyScroll}
+        contentContainerStyle={styles.copy}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
         <Animated.View
           style={[
             styles.chip,
@@ -243,7 +251,7 @@ function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
         >
           {t(slide.bodyKey)}
         </Animated.Text>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -290,6 +298,9 @@ export default function OnboardingScreen() {
   const listRef = useRef<FlatList<SlideDef>>(null);
   const [index, setIndex] = useState(0);
   const scrollX = useSharedValue(0);
+  // Measured height left for slides once the footer is laid out, so slide
+  // content scrolls instead of running under the footer controls.
+  const [listH, setListH] = useState(0);
 
   const slides = useMemo(() => SLIDE_DEFS, []);
 
@@ -336,6 +347,9 @@ export default function OnboardingScreen() {
 
       <FlatList
         ref={listRef}
+        style={styles.list}
+        onLayout={(e) => setListH(e.nativeEvent.layout.height)}
+        extraData={listH}
         data={slides}
         horizontal
         pagingEnabled
@@ -350,11 +364,17 @@ export default function OnboardingScreen() {
           index: i,
         })}
         renderItem={({ item, index: i }) => (
-          <OnboardingSlide slide={item} index={i} scrollX={scrollX} />
+          <OnboardingSlide slide={item} index={i} scrollX={scrollX} height={listH} />
         )}
       />
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 24 }]}>
+      <View
+        style={[
+          styles.footer,
+          { paddingBottom: insets.bottom + (SMALL_SCREEN ? 14 : 24) },
+        ]}
+      >
+        {index === 0 ? <OnboardingPreferences /> : null}
         <View style={styles.dots}>
           {slides.map((s, i) => (
             <Dot key={s.key} i={i} scrollX={scrollX} color={colors.primary} />
@@ -378,7 +398,12 @@ export default function OnboardingScreen() {
   );
 }
 
-const HERO_HEIGHT = Math.min(SCREEN_H * 0.5, 480);
+const SMALL_SCREEN = SCREEN_H < 720;
+const HERO_HEIGHT = SMALL_SCREEN
+  ? Math.round(SCREEN_H * 0.34)
+  : Math.min(SCREEN_H * 0.5, 480);
+const LOGO_SIZE = Math.min(260, Math.round(HERO_HEIGHT * 0.72));
+const HALO_SIZE = Math.min(200, Math.round(HERO_HEIGHT * 0.62));
 
 const styles = StyleSheet.create({
   container: {
@@ -433,23 +458,30 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.08)",
   },
   logo: {
-    height: 260,
-    width: 260,
+    height: LOGO_SIZE,
+    width: LOGO_SIZE,
   },
   iconHalo: {
-    height: 200,
-    width: 200,
-    borderRadius: 100,
+    height: HALO_SIZE,
+    width: HALO_SIZE,
+    borderRadius: HALO_SIZE / 2,
     backgroundColor: "rgba(255,255,255,0.18)",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
     borderColor: "rgba(255,255,255,0.35)",
   },
-  copy: {
+  list: {
     flex: 1,
+  },
+  copyScroll: {
+    flex: 1,
+  },
+  copy: {
+    flexGrow: 1,
     paddingHorizontal: 28,
-    paddingTop: 32,
+    paddingTop: SMALL_SCREEN ? 18 : 32,
+    paddingBottom: 12,
     alignItems: "center",
   },
   chip: {
@@ -465,28 +497,28 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   title: {
-    fontSize: 28,
+    fontSize: SMALL_SCREEN ? 24 : 28,
     fontWeight: "800",
     textAlign: "center",
-    marginBottom: 14,
+    marginBottom: SMALL_SCREEN ? 10 : 14,
     letterSpacing: -0.5,
-    lineHeight: 34,
+    lineHeight: SMALL_SCREEN ? 30 : 34,
   },
   description: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: SMALL_SCREEN ? 15 : 16,
+    lineHeight: SMALL_SCREEN ? 22 : 24,
     textAlign: "center",
     maxWidth: 340,
   },
   footer: {
     paddingHorizontal: 24,
-    paddingTop: 16,
+    paddingTop: SMALL_SCREEN ? 10 : 16,
   },
   dots: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: SMALL_SCREEN ? 14 : 24,
     gap: 8,
   },
   dot: {

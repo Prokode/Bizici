@@ -333,7 +333,12 @@
     "slide6Bullet2": "Customer reviews & ratings",
     "slide6Bullet3": "Trust badges & karma",
     "replay": "Replay the intro",
-    "replayHint": "Take the app tour again"
+    "replayHint": "Take the app tour again",
+    "themeLabel": "Appearance",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "themeSaveError": "Theme applied, but it couldn't be saved for next launch."
   },
   "notFound": {
     "title": "This screen doesn't exist.",

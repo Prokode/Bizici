@@ -4,6 +4,7 @@ import {
   FlatList,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -25,11 +26,15 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
+import { OnboardingPreferences } from "@/components/OnboardingPreferences";
 import { useColors } from "@/hooks/useColors";
 
 export const ONBOARDING_SEEN_KEY = "nearbuy.onboarding.seen";
 
-const { width: SCREEN_W } = Dimensions.get("window");
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
+const SMALL_SCREEN = SCREEN_H < 720;
+const VISUAL_SIZE = SMALL_SCREEN ? 128 : 200;
+const ICON_CIRCLE = SMALL_SCREEN ? 108 : 160;
 
 type FeatureBullet = {
   icon: keyof typeof Feather.glyphMap;
@@ -125,9 +130,10 @@ type SlideProps = {
   slide: Slide;
   index: number;
   scrollX: SharedValue<number>;
+  height: number;
 };
 
-function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
+function OnboardingSlide({ slide, index, scrollX, height }: SlideProps) {
   const colors = useColors();
   const { t } = useTranslation();
 
@@ -211,7 +217,12 @@ function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
   });
 
   return (
-    <View style={[styles.slide, { width: SCREEN_W }]}>
+    <ScrollView
+      style={{ width: SCREEN_W, height }}
+      contentContainerStyle={styles.slide}
+      showsVerticalScrollIndicator={false}
+      bounces={false}
+    >
       <Animated.View style={[styles.visualWrap, visualStyle]}>
         {slide.visual === "logo" ? (
           <Image
@@ -228,7 +239,7 @@ function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
           >
             <Feather
               name={slide.iconName ?? "circle"}
-              size={72}
+              size={SMALL_SCREEN ? 52 : 72}
               color="#ffffff"
             />
           </LinearGradient>
@@ -281,7 +292,7 @@ function OnboardingSlide({ slide, index, scrollX }: SlideProps) {
           ))}
         </Animated.View>
       ) : null}
-    </View>
+    </ScrollView>
   );
 }
 
@@ -352,6 +363,9 @@ export default function OnboardingScreen() {
   const listRef = useRef<FlatList<Slide>>(null);
   const [index, setIndex] = useState(0);
   const scrollX = useSharedValue(0);
+  // Measured height left for slides after the footer, so slide content
+  // scrolls instead of running under the footer controls.
+  const [listH, setListH] = useState(0);
 
   const finish = useCallback(async () => {
     try {
@@ -409,6 +423,9 @@ export default function OnboardingScreen() {
 
       <FlatList
         ref={listRef}
+        style={styles.list}
+        onLayout={(e) => setListH(e.nativeEvent.layout.height)}
+        extraData={listH}
         data={slides}
         horizontal
         pagingEnabled
@@ -423,11 +440,17 @@ export default function OnboardingScreen() {
           index: i,
         })}
         renderItem={({ item, index: i }) => (
-          <OnboardingSlide slide={item} index={i} scrollX={scrollX} />
+          <OnboardingSlide slide={item} index={i} scrollX={scrollX} height={listH} />
         )}
       />
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 24 }]}>
+      <View
+        style={[
+          styles.footer,
+          { paddingBottom: insets.bottom + (SMALL_SCREEN ? 14 : 24) },
+        ]}
+      >
+        {index === 0 ? <OnboardingPreferences /> : null}
         <View style={styles.dots}>
           {slides.map((s, i) => (
             <Dot key={s.key} i={i} scrollX={scrollX} color={colors.primary} />
@@ -481,28 +504,32 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
   },
-  slide: {
+  list: {
     flex: 1,
+  },
+  slide: {
+    flexGrow: 1,
     alignItems: "center",
     justifyContent: "flex-start",
-    paddingHorizontal: 32,
-    paddingTop: 24,
+    paddingHorizontal: SMALL_SCREEN ? 24 : 32,
+    paddingTop: SMALL_SCREEN ? 12 : 24,
+    paddingBottom: 12,
   },
   visualWrap: {
-    height: 200,
-    width: 200,
+    height: VISUAL_SIZE,
+    width: VISUAL_SIZE,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 28,
+    marginBottom: SMALL_SCREEN ? 16 : 28,
   },
   logo: {
-    height: 200,
-    width: 200,
+    height: VISUAL_SIZE,
+    width: VISUAL_SIZE,
   },
   iconCircle: {
-    height: 160,
-    width: 160,
-    borderRadius: 80,
+    height: ICON_CIRCLE,
+    width: ICON_CIRCLE,
+    borderRadius: ICON_CIRCLE / 2,
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#1B2A5C",
@@ -512,7 +539,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   title: {
-    fontSize: 26,
+    fontSize: SMALL_SCREEN ? 22 : 26,
     fontWeight: "800",
     textAlign: "center",
     marginBottom: 12,
@@ -523,7 +550,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     textAlign: "center",
     maxWidth: 340,
-    marginBottom: 24,
+    marginBottom: SMALL_SCREEN ? 14 : 24,
   },
   bullets: {
     width: "100%",
@@ -554,13 +581,13 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 24,
-    paddingTop: 16,
+    paddingTop: SMALL_SCREEN ? 10 : 16,
   },
   dots: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: SMALL_SCREEN ? 12 : 20,
     gap: 8,
   },
   dot: {
