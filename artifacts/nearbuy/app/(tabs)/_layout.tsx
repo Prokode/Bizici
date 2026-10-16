@@ -32,8 +32,9 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.background,
           borderTopColor: colors.border,
-          height: Platform.OS === "web" ? 84 : undefined,
-          paddingBottom: Platform.OS === "web" ? 34 : undefined,
+          // Omit native overrides: undefined also replaces React Navigation's
+          // computed height/inset and can collapse the bar on Android.
+          ...(Platform.OS === "web" ? { height: 84, paddingBottom: 34 } : {}),
         },
         tabBarLabelStyle: {
           fontSize: 11,

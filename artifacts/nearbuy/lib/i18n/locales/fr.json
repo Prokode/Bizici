@@ -468,6 +468,14 @@
     "opening": "Ouverture de la discussion…",
     "errorTitle": "Impossible d’ouvrir la discussion",
     "errorBody": "Vérifiez votre connexion puis réessayez.",
+    "failures": {
+      "ownShop": "Vous ne pouvez pas démarrer une conversation client avec votre propre boutique. Utilisez un autre compte client pour contacter cette boutique.",
+      "session": "Votre session n’a pas pu être vérifiée. Réessayez, ou déconnectez-vous puis reconnectez-vous depuis le profil.",
+      "unavailable": "Cette boutique ou ce lien de discussion n’est plus disponible.",
+      "forbidden": "Votre compte n’a pas l’autorisation d’ouvrir cette conversation.",
+      "server": "Le serveur n’a pas pu ouvrir cette conversation. Veuillez réessayer dans un instant.",
+      "network": "Impossible de joindre le serveur. Vérifiez votre connexion puis réessayez."
+    },
     "invalidLink": "Ce lien est invalide ou incomplet.",
     "aboutProduct": "À propos de ce produit",
     "aboutService": "À propos de ce service",

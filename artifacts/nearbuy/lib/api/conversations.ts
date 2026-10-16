@@ -48,12 +48,16 @@ export async function getConversation(
 
 export async function getOrCreateConversation(
   shopId: string,
+  token?: string,
 ): Promise<ConversationSummary> {
   const data = await customFetch<{ conversation: ConversationSummary }>(
     "/api/conversations",
     {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ shopId }),
     },
   );

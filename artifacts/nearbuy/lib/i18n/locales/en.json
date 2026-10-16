@@ -468,6 +468,14 @@
     "opening": "Opening the conversation…",
     "errorTitle": "Could not open the conversation",
     "errorBody": "Check your connection and try again.",
+    "failures": {
+      "ownShop": "You cannot start a customer conversation with your own shop. Use a different customer account to contact this shop.",
+      "session": "Your sign-in session could not be verified. Try again, or sign out and sign back in from Profile.",
+      "unavailable": "This shop or chat link is no longer available.",
+      "forbidden": "Your account does not have permission to open this conversation.",
+      "server": "The server could not open this conversation. Please try again shortly.",
+      "network": "Could not reach the server. Check your connection and try again."
+    },
     "invalidLink": "This link is invalid or incomplete.",
     "aboutProduct": "About this product",
     "aboutService": "About this service",

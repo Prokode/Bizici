@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
 import { getOrCreateConversation } from "@/lib/api/conversations";
+import { chatStartFailure, type ChatStartFailure } from "@/lib/chatStartError";
 import {
   chatShopHref,
   chatThreadHref,
@@ -38,8 +39,8 @@ export default function ChatShopResolver() {
   const colors = useColors();
   const router = useRouter();
   const { t } = useTranslation();
-  const { isSignedIn, isLoaded } = useAuth();
-  const [failed, setFailed] = useState(false);
+  const { isSignedIn, isLoaded, getToken } = useAuth();
+  const [failed, setFailed] = useState<ChatStartFailure | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
@@ -51,20 +52,27 @@ export default function ChatShopResolver() {
       return;
     }
     let cancelled = false;
-    setFailed(false);
+    setFailed(null);
     (async () => {
       try {
-        const conv = await getOrCreateConversation(shopId);
+        // Do not depend on the root token bridge's effect having run first.
+        const token = await getToken();
+        if (cancelled) return;
+        if (!token) {
+          setFailed({ reason: "session", retryable: true });
+          return;
+        }
+        const conv = await getOrCreateConversation(shopId, token);
         if (cancelled) return;
         router.replace(chatThreadHref(conv.id, ctx) as Href);
-      } catch {
-        if (!cancelled) setFailed(true);
+      } catch (error) {
+        if (!cancelled) setFailed(chatStartFailure(error));
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [shopId, ctx, isSignedIn, isLoaded, router, attempt]);
+  }, [shopId, ctx, isSignedIn, isLoaded, getToken, router, attempt]);
 
   const goBack = () =>
     router.canGoBack() ? router.back() : router.replace("/(tabs)/messages" as Href);
@@ -77,10 +85,15 @@ export default function ChatShopResolver() {
           {t("askItem.errorTitle")}
         </Text>
         <Text style={[styles.label, { color: colors.mutedForeground }]}>
-          {shopId ? t("askItem.errorBody") : t("askItem.invalidLink")}
+          {shopId && failed ? t(`askItem.failures.${failed.reason}`) : t("askItem.invalidLink")}
         </Text>
+        {failed?.status ? (
+          <Text style={[styles.label, { color: colors.mutedForeground }]}>
+            HTTP {failed.status}
+          </Text>
+        ) : null}
         <View style={styles.actions}>
-          {shopId ? (
+          {shopId && failed?.retryable ? (
             <Button title={t("common.retry")} onPress={() => setAttempt((a) => a + 1)} />
           ) : null}
           <Button title={t("common.back")} variant="outline" onPress={goBack} />
