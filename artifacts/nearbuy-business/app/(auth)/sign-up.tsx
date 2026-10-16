@@ -16,7 +16,7 @@ import { Card } from "@/components/ui/Card";
 import { useSignUp, useSSO } from "@clerk/expo";
 import { Link, useRouter, type Href } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import * as AuthSession from "expo-auth-session";
+import { sellerSSORedirectUri, ssoIncompleteReason } from "@/lib/sso";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { LEGAL_VERSION } from "@workspace/legal-content";
 import { recordConsent, type ConsentSource } from "@/lib/api/consent";
@@ -169,15 +169,24 @@ export default function SignUpScreen() {
       }
       if (!hasLocation) return;
       try {
-        const { createdSessionId, setActive } = await startSSOFlow({
+        const result = await startSSOFlow({
           strategy,
-          redirectUrl: AuthSession.makeRedirectUri(),
+          redirectUrl: sellerSSORedirectUri("sign-up"),
         });
+        const { createdSessionId, setActive } = result;
+        const reason = ssoIncompleteReason(result);
+        if (reason) {
+          setSubmitError(t(`auth.sso.${reason}`));
+          return;
+        }
         if (createdSessionId && setActive) {
           await setActive({
             session: createdSessionId,
             navigate: async ({ session }) => {
-              if (session?.currentTask) return;
+              if (session?.currentTask) {
+                setSubmitError(t("auth.sso.requirements"));
+                return;
+              }
               try {
                 await saveLocation(session);
               } catch {

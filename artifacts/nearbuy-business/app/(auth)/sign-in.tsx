@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { useSignIn, useSSO } from "@clerk/expo";
 import { Link, useRouter, type Href } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import * as AuthSession from "expo-auth-session";
+import { sellerSSORedirectUri, ssoIncompleteReason } from "@/lib/sso";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
@@ -81,15 +81,24 @@ export default function SignInScreen() {
     async (strategy: "oauth_google" | "oauth_apple") => {
       setSubmitError(null);
       try {
-        const { createdSessionId, setActive } = await startSSOFlow({
+        const result = await startSSOFlow({
           strategy,
-          redirectUrl: AuthSession.makeRedirectUri(),
+          redirectUrl: sellerSSORedirectUri("sign-in"),
         });
+        const { createdSessionId, setActive } = result;
+        const reason = ssoIncompleteReason(result);
+        if (reason) {
+          setSubmitError(t(`auth.sso.${reason}`));
+          return;
+        }
         if (createdSessionId && setActive) {
           await setActive({
             session: createdSessionId,
             navigate: async ({ session }) => {
-              if (session?.currentTask) return;
+              if (session?.currentTask) {
+                setSubmitError(t("auth.sso.requirements"));
+                return;
+              }
               router.replace("/(home)" as Href);
             },
           });

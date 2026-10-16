@@ -372,6 +372,12 @@
     "errorSignInCredentials": "We couldn't sign you in. Check your email and password, or use Google if that is how you registered.",
     "errorSignUp": "Sign up failed",
     "errorGoogle": "Google sign-in failed",
+    "sso": {
+      "cancelled": "The sign-in browser closed before sign-in completed. Please try again.",
+      "second_factor": "Your account requires a second verification step. Google sign-in has not completed.",
+      "requirements": "Clerk requires additional account information or verification before sign-in can finish.",
+      "incomplete": "Google or Apple returned without a completed session. Please try again. If this continues, check the staging app's Clerk callback configuration."
+    },
     "errorApple": "Apple sign-in failed",
     "errorVerify": "Verification failed",
     "errorGeneric": "Something went wrong",

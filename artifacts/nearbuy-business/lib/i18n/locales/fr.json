@@ -372,6 +372,12 @@
     "errorSignInCredentials": "Connexion impossible. Vérifiez votre e-mail et votre mot de passe, ou utilisez Google si vous vous êtes inscrit avec Google.",
     "errorSignUp": "Inscription impossible",
     "errorGoogle": "Connexion Google impossible",
+    "sso": {
+      "cancelled": "Le navigateur s’est fermé avant la fin de la connexion. Veuillez réessayer.",
+      "second_factor": "Votre compte nécessite une seconde étape de vérification. La connexion Google n’est pas terminée.",
+      "requirements": "Clerk demande des informations ou une vérification supplémentaires avant de terminer la connexion.",
+      "incomplete": "Google ou Apple est revenu sans session complète. Veuillez réessayer. Si le problème persiste, vérifiez la configuration du retour Clerk de l’application de staging."
+    },
     "errorApple": "Connexion Apple impossible",
     "errorVerify": "Vérification impossible",
     "errorGeneric": "Une erreur est survenue",
