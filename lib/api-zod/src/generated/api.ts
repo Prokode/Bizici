@@ -7,6 +7,137 @@
  */
 import * as zod from "zod";
 
+/**
+ * @summary Search available public products nearby or outside the selected radius
+ */
+export const searchPublicProductsQueryLatMin = -90;
+export const searchPublicProductsQueryLatMax = 90;
+
+export const searchPublicProductsQueryLngMin = -180;
+export const searchPublicProductsQueryLngMax = 180;
+
+export const searchPublicProductsQueryRadiusKmDefault = 5;
+export const searchPublicProductsQueryRadiusKmMin = 0.1;
+export const searchPublicProductsQueryRadiusKmMax = 50;
+
+export const searchPublicProductsQueryLimitDefault = 60;
+export const searchPublicProductsQueryLimitMax = 200;
+
+export const SearchPublicProductsQueryParams = zod.object({
+  q: zod.coerce.string(),
+  lat: zod.coerce
+    .number()
+    .min(searchPublicProductsQueryLatMin)
+    .max(searchPublicProductsQueryLatMax),
+  lng: zod.coerce
+    .number()
+    .min(searchPublicProductsQueryLngMin)
+    .max(searchPublicProductsQueryLngMax),
+  radiusKm: zod.coerce
+    .number()
+    .min(searchPublicProductsQueryRadiusKmMin)
+    .max(searchPublicProductsQueryRadiusKmMax)
+    .default(searchPublicProductsQueryRadiusKmDefault),
+  scope: zod
+    .enum(["all"])
+    .optional()
+    .describe("'all' searches outside the radius without a maximum distance."),
+  cursor: zod.coerce.string().optional(),
+  limit: zod.coerce
+    .number()
+    .min(1)
+    .max(searchPublicProductsQueryLimitMax)
+    .default(searchPublicProductsQueryLimitDefault),
+});
+
+export const SearchPublicProductsResponse = zod.object({
+  products: zod.array(
+    zod.object({
+      id: zod.string(),
+      shopId: zod.string(),
+      shopName: zod.string(),
+      shopMarketName: zod.string().nullable(),
+      shopIsOpen: zod.boolean(),
+      name: zod.string(),
+      brand: zod.string().nullable(),
+      description: zod.string().nullable(),
+      price: zod.number(),
+      photo: zod.string().nullable(),
+      distanceMeters: zod.number(),
+    }),
+  ),
+  count: zod.number(),
+  nextCursor: zod.string().nullable(),
+  fuzzyFallback: zod.boolean(),
+});
+
+/**
+ * Follow nextCursor until null to check the complete catalog. Broader scope has no distance cap and excludes the selected nearby radius.
+ * @summary Compare a photo with the next batch of up to 24 eligible products
+ */
+export const searchPublicProductPhotosBodyLatMin = -90;
+export const searchPublicProductPhotosBodyLatMax = 90;
+
+export const searchPublicProductPhotosBodyLngMin = -180;
+export const searchPublicProductPhotosBodyLngMax = 180;
+
+export const searchPublicProductPhotosBodyRadiusKmDefault = 5;
+export const searchPublicProductPhotosBodyRadiusKmMin = 0.1;
+export const searchPublicProductPhotosBodyRadiusKmMax = 50;
+
+export const SearchPublicProductPhotosBody = zod.object({
+  lat: zod
+    .number()
+    .min(searchPublicProductPhotosBodyLatMin)
+    .max(searchPublicProductPhotosBodyLatMax),
+  lng: zod
+    .number()
+    .min(searchPublicProductPhotosBodyLngMin)
+    .max(searchPublicProductPhotosBodyLngMax),
+  radiusKm: zod
+    .number()
+    .min(searchPublicProductPhotosBodyRadiusKmMin)
+    .max(searchPublicProductPhotosBodyRadiusKmMax)
+    .default(searchPublicProductPhotosBodyRadiusKmDefault),
+  scope: zod.enum(["all"]).optional(),
+  cursor: zod.string().optional(),
+  hint: zod.string().optional(),
+  imageBase64: zod.string(),
+  imageMimeType: zod.enum(["image/jpeg", "image/png", "image/webp"]),
+});
+
+export const searchPublicProductPhotosResponseMatchesItemTwoConfidenceMin = 0;
+export const searchPublicProductPhotosResponseMatchesItemTwoConfidenceMax = 1;
+
+export const SearchPublicProductPhotosResponse = zod.object({
+  matches: zod.array(
+    zod
+      .object({
+        id: zod.string(),
+        shopId: zod.string(),
+        shopName: zod.string(),
+        shopMarketName: zod.string().nullable(),
+        shopIsOpen: zod.boolean(),
+        name: zod.string(),
+        brand: zod.string().nullable(),
+        description: zod.string().nullable(),
+        price: zod.number(),
+        photo: zod.string().nullable(),
+        distanceMeters: zod.number(),
+      })
+      .and(
+        zod.object({
+          confidence: zod
+            .number()
+            .min(searchPublicProductPhotosResponseMatchesItemTwoConfidenceMin)
+            .max(searchPublicProductPhotosResponseMatchesItemTwoConfidenceMax),
+        }),
+      ),
+  ),
+  count: zod.number(),
+  nextCursor: zod.string().nullable(),
+});
+
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });

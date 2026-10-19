@@ -3,6 +3,10 @@ import { getApiBase } from "./_base";
 import type { PublicSearchHit } from "./search";
 
 export type VisualMatch = PublicSearchHit & { confidence: number };
+export type VisualSearchPage = {
+  matches: VisualMatch[];
+  nextCursor: string | null;
+};
 
 export type VisualSearchErrorCode =
   | "photo_missing"
@@ -29,7 +33,9 @@ export async function fetchVisualSearch(params: {
   imageMimeType?: string | null;
   hint?: string;
   signal?: AbortSignal;
-}): Promise<VisualMatch[]> {
+  scope?: "all";
+  cursor?: string;
+}): Promise<VisualSearchPage> {
   const rawImage = params.imageBase64?.trim();
   if (!rawImage) throw new VisualSearchError("photo_missing");
   const prefixMatch = /^data:(image\/[^;]+);base64,/i.exec(rawImage);
@@ -54,6 +60,8 @@ export async function fetchVisualSearch(params: {
     imageBase64,
     imageMimeType,
     hint: params.hint ?? "",
+    scope: params.scope,
+    cursor: params.cursor,
   };
   let res: Response;
   try {
@@ -76,9 +84,9 @@ export async function fetchVisualSearch(params: {
     }
     throw new VisualSearchError("request_failed");
   }
-  const json = (await res.json()) as { matches?: unknown };
+  const json = (await res.json()) as { matches?: unknown; nextCursor?: string | null };
   if (!Array.isArray(json.matches)) {
     throw new VisualSearchError("request_failed");
   }
-  return json.matches as VisualMatch[];
+  return { matches: json.matches as VisualMatch[], nextCursor: json.nextCursor ?? null };
 }

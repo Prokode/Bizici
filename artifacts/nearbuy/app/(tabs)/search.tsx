@@ -15,13 +15,14 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import Fuse from "fuse.js";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { useColors } from "@/hooks/useColors";
-import { fetchSearch, type PublicSearchHit } from "@/lib/api/search";
+import { fetchSearchPage, type PublicSearchHit } from "@/lib/api/search";
 import { type PublicShop } from "@/lib/api/shops";
 import { ShopBottomSheet } from "@/components/ShopBottomSheet";
 import {
@@ -69,6 +70,10 @@ export default function SearchTab() {
   const [openShop, setOpenShop] = useState<PublicShop | null>(null);
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const [atCustomerOnly, setAtCustomerOnly] = useState(false);
+  const [radiusKm, setRadiusKm] = useState(5);
+  const [expandedFor, setExpandedFor] = useState<string | null>(null);
+  const searchKey = JSON.stringify([debouncedQ, center?.lat, center?.lng, radiusKm]);
+  const expanded = expandedFor === searchKey;
 
   // Debounce typing → 300 ms
   useEffect(() => {
@@ -128,20 +133,35 @@ export default function SearchTab() {
   }, []);
 
   // ── PRODUCTS MODE ─────────────────────────────────────────────────────────
-  const { data: serverHits = [], isLoading: loadingProducts } = useQuery({
-    queryKey: ["public-search", debouncedQ, center?.lat, center?.lng],
-    queryFn: ({ signal }) =>
-      fetchSearch({
+  const {
+    data: productPages,
+    isLoading: loadingProducts,
+    isError: productSearchError,
+    refetch: retryProducts,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+  } = useInfiniteQuery({
+    queryKey: ["public-search", debouncedQ, center?.lat, center?.lng, radiusKm, expanded],
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ signal, pageParam }) =>
+      fetchSearchPage({
         q: debouncedQ,
         lat: center!.lat,
         lng: center!.lng,
+        radiusKm,
+        scope: expanded ? "all" : undefined,
+        cursor: pageParam,
         signal,
       }),
+    getNextPageParam: (page) => page.nextCursor ?? undefined,
     enabled: mode === "products" && !!center && debouncedQ.length >= 2,
     staleTime: 30_000,
   });
 
   const productResults = useMemo<PublicSearchHit[]>(() => {
+    const serverHits = productPages?.pages.flatMap((page) => page.products) ?? [];
     if (!debouncedQ || serverHits.length === 0) return serverHits;
     const fuse = new Fuse(serverHits, {
       keys: [
@@ -156,10 +176,12 @@ export default function SearchTab() {
       minMatchCharLength: 2,
     });
     const ranked = fuse.search(debouncedQ).map((r) => r.item);
+    // A fallback pool contains unrelated nearby stock, not actual matches.
+    if (productPages?.pages[0]?.fuzzyFallback) return ranked;
     const seen = new Set(ranked.map((r) => r.id));
     const tail = serverHits.filter((s) => !seen.has(s.id));
     return [...ranked, ...tail];
-  }, [serverHits, debouncedQ]);
+  }, [productPages, debouncedQ]);
 
   // ── SERVICES MODE ─────────────────────────────────────────────────────────
   const categoriesParams = { kind: "service" as const };
@@ -285,6 +307,7 @@ export default function SearchTab() {
           setQuery("");
           setDebouncedQ("");
           setSelectedCatId(null);
+           setExpandedFor(null);
         }}
         labelProducts={t("search.modeProducts")}
         labelServices={t("search.modeServices")}
@@ -344,6 +367,25 @@ export default function SearchTab() {
         </>
       ) : null}
 
+      {mode === "products" && (
+        <Select
+          label={t("camera.searchRadius")}
+          value={String(radiusKm)}
+          options={[5, 10, 20, 50].map((km) => ({ label: `${km} km`, value: String(km) }))}
+          onChange={(value) => setRadiusKm(Number(value))}
+        />
+      )}
+      {mode === "products" && expanded && (
+        <View style={{ gap: 8, marginBottom: 12 }}>
+          <Text style={{ color: colors.foreground, fontWeight: "700" }}>
+            {t("search.expandedTitle")}
+          </Text>
+          <Text style={{ color: colors.mutedForeground }}>
+            {t("search.expandedHint", { radius: radiusKm })}
+          </Text>
+          <Button title={t("search.backToNearby")} variant="ghost" onPress={() => setExpandedFor(null)} />
+        </View>
+      )}
       {mode === "products" ? (
         showProductsEmpty ? (
           <EmptyState
@@ -352,20 +394,28 @@ export default function SearchTab() {
             body={t("search.hintBody")}
             colors={colors}
           />
+        ) : productSearchError && productResults.length === 0 ? (
+          <EmptyState
+            icon="alert-circle"
+            title={t("search.errorTitle")}
+            body={t("search.errorHint")}
+            colors={colors}
+            cta={<Button title={t("search.retry")} onPress={() => void retryProducts()} />}
+          />
         ) : showProductsNoResults ? (
           <EmptyState
             icon="alert-circle"
             title={t("search.noResultsTitle", { query: debouncedQ })}
-            body={t("search.noResultsHint")}
+            body={t(expanded ? "search.noExpandedResults" : "search.expandHint", { radius: radiusKm })}
             colors={colors}
             cta={
-              <Button
-                title={t("search.broadcast")}
-                onPress={() => {
-                  // TODO: wire BroadcastRequest endpoint in a follow-up
-                }}
-                icon={<Feather name="radio" size={18} color="#ffffff" />}
-              />
+              !expanded ? (
+                <Button
+                  title={t("search.expandSearch")}
+                  onPress={() => setExpandedFor(searchKey)}
+                  icon={<Feather name="globe" size={18} color="#ffffff" />}
+                />
+              ) : undefined
             }
           />
         ) : (
@@ -373,6 +423,14 @@ export default function SearchTab() {
             data={productResults}
             keyExtractor={(r) => r.id}
             contentContainerStyle={styles.list}
+            ListFooterComponent={hasNextPage ? (
+              <Button
+                title={t(isFetchingNextPage ? "search.searching" : isFetchNextPageError ? "search.retry" : "search.moreResults")}
+                variant="outline"
+                disabled={isFetchingNextPage}
+                onPress={() => void fetchNextPage()}
+              />
+            ) : null}
             ListHeaderComponent={
               productResults.length > 0 ? (
                 <Text

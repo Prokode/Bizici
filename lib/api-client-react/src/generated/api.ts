@@ -51,9 +51,13 @@ import type {
   ProductCreateInput,
   ProductSuggestion,
   ProductUpdateInput,
+  PublicProductPhotoSearchInput,
+  PublicProductPhotoSearchPage,
+  PublicProductSearchPage,
   PushTokenInput,
   QrPayload,
   ResolveCityInput,
+  SearchPublicProductsParams,
   SearchServicesParams,
   Service,
   ServiceCreateInput,
@@ -83,6 +87,200 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * @summary Search available public products nearby or outside the selected radius
+ */
+export const getSearchPublicProductsUrl = (
+  params: SearchPublicProductsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/public/search?${stringifiedParams}`
+    : `/api/public/search`;
+};
+
+export const searchPublicProducts = async (
+  params: SearchPublicProductsParams,
+  options?: RequestInit,
+): Promise<PublicProductSearchPage> => {
+  return customFetch<PublicProductSearchPage>(
+    getSearchPublicProductsUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getSearchPublicProductsQueryKey = (
+  params?: SearchPublicProductsParams,
+) => {
+  return [`/api/public/search`, ...(params ? [params] : [])] as const;
+};
+
+export const getSearchPublicProductsQueryOptions = <
+  TData = Awaited<ReturnType<typeof searchPublicProducts>>,
+  TError = ErrorType<void>,
+>(
+  params: SearchPublicProductsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof searchPublicProducts>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getSearchPublicProductsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof searchPublicProducts>>
+  > = ({ signal }) =>
+    searchPublicProducts(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof searchPublicProducts>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type SearchPublicProductsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof searchPublicProducts>>
+>;
+export type SearchPublicProductsQueryError = ErrorType<void>;
+
+/**
+ * @summary Search available public products nearby or outside the selected radius
+ */
+
+export function useSearchPublicProducts<
+  TData = Awaited<ReturnType<typeof searchPublicProducts>>,
+  TError = ErrorType<void>,
+>(
+  params: SearchPublicProductsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof searchPublicProducts>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getSearchPublicProductsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Follow nextCursor until null to check the complete catalog. Broader scope has no distance cap and excludes the selected nearby radius.
+ * @summary Compare a photo with the next batch of up to 24 eligible products
+ */
+export const getSearchPublicProductPhotosUrl = () => {
+  return `/api/public/visual-search`;
+};
+
+export const searchPublicProductPhotos = async (
+  publicProductPhotoSearchInput: PublicProductPhotoSearchInput,
+  options?: RequestInit,
+): Promise<PublicProductPhotoSearchPage> => {
+  return customFetch<PublicProductPhotoSearchPage>(
+    getSearchPublicProductPhotosUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(publicProductPhotoSearchInput),
+    },
+  );
+};
+
+export const getSearchPublicProductPhotosMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof searchPublicProductPhotos>>,
+    TError,
+    { data: BodyType<PublicProductPhotoSearchInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof searchPublicProductPhotos>>,
+  TError,
+  { data: BodyType<PublicProductPhotoSearchInput> },
+  TContext
+> => {
+  const mutationKey = ["searchPublicProductPhotos"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof searchPublicProductPhotos>>,
+    { data: BodyType<PublicProductPhotoSearchInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return searchPublicProductPhotos(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SearchPublicProductPhotosMutationResult = NonNullable<
+  Awaited<ReturnType<typeof searchPublicProductPhotos>>
+>;
+export type SearchPublicProductPhotosMutationBody =
+  BodyType<PublicProductPhotoSearchInput>;
+export type SearchPublicProductPhotosMutationError = ErrorType<void>;
+
+/**
+ * @summary Compare a photo with the next batch of up to 24 eligible products
+ */
+export const useSearchPublicProductPhotos = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof searchPublicProductPhotos>>,
+    TError,
+    { data: BodyType<PublicProductPhotoSearchInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof searchPublicProductPhotos>>,
+  TError,
+  { data: BodyType<PublicProductPhotoSearchInput> },
+  TContext
+> => {
+  return useMutation(getSearchPublicProductPhotosMutationOptions(options));
+};
 
 export const getHealthCheckUrl = () => {
   return `/api/healthz`;

@@ -22,7 +22,8 @@ test("all public KYC gates use the policy and seller warnings are disabled", () 
   const read = (path: string) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
   const shops = read("artifacts/api-server/src/controllers/public.ts");
   const services = read("artifacts/api-server/src/controllers/services-public.ts");
-  assert.equal((shops.match(/\.\.\.publicShopKycFilter\(\)/g) ?? []).length, 4);
+  assert.equal((shops.match(/\.\.\.publicShopKycFilter\(\)/g) ?? []).length, 3);
+  assert.equal((shops.match(/productSearchShopFilter\(lat, lng, radiusKm, expanded\)/g) ?? []).length, 2);
   assert.match(shops, /isPublicShopKycAllowed\(shop.kyc\?\.status\)/);
   assert.equal((services.match(/\.\.\.publicShopKycFilter\(\)/g) ?? []).length, 2);
   assert.doesNotMatch(shops + services, /"kyc.status": "approved"/);

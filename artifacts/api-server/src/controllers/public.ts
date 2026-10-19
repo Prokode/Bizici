@@ -25,9 +25,42 @@ function distanceMeters(
   toLng: number,
   toLat: number,
 ): number {
-  const dx = (toLng - fromLng) * 111_320 * Math.cos((fromLat * Math.PI) / 180);
-  const dy = (toLat - fromLat) * 110_540;
-  return Math.round(Math.sqrt(dx * dx + dy * dy));
+  const radians = Math.PI / 180;
+  const a =
+    Math.sin(((toLat - fromLat) * radians) / 2) ** 2 +
+    Math.cos(fromLat * radians) *
+      Math.cos(toLat * radians) *
+      Math.sin(((toLng - fromLng) * radians) / 2) ** 2;
+  return Math.round(6_371_008.8 * 2 * Math.asin(Math.sqrt(Math.min(1, a))));
+}
+
+function productSearchShopFilter(
+  lat: number,
+  lng: number,
+  radiusKm: number,
+  expanded: boolean,
+) {
+  return {
+    ...publicShopKycFilter(),
+    ...(expanded ? { "location.type": "Point" as const } : {}),
+    location: expanded
+      ? {
+          // A separate, unbounded-distance search, not a larger local radius.
+          $not: { $geoWithin: { $centerSphere: [[lng, lat], radiusKm / 6371.0088] } },
+          $exists: true,
+        }
+      : {
+          $nearSphere: {
+            $geometry: { type: "Point", coordinates: [lng, lat] },
+            $maxDistance: radiusKm * 1000,
+          },
+        },
+  };
+}
+
+function validSearchLocation(lat: number, lng: number): boolean {
+  return Number.isFinite(lat) && Number.isFinite(lng) &&
+    Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
 }
 
 function clamp(n: number, min: number, max: number): number {
@@ -159,7 +192,8 @@ export const publicController = {
 
   /**
    * Text + geo search across all in-stock products. We use case-insensitive
-   * regex on name / brand / description, scoped to shops within radiusKm.
+   * regex on name / brand / description. Explicit scope=all searches outside
+   * radiusKm with no distance cap; cursors cover the entire matching catalog.
    * The mobile client adds Fuse.js fuzzy re-ranking on top to tolerate typos.
    */
   search: async (req: Request, res: Response) => {
@@ -168,31 +202,27 @@ export const publicController = {
     const lng = Number(req.query.lng);
     const radiusKm = clamp(Number(req.query.radiusKm ?? 5), 0.1, 50);
     const limit = clamp(Number(req.query.limit ?? 60), 1, 200);
+    const expanded = req.query.scope === "all";
+    const cursor = typeof req.query.cursor === "string" ? req.query.cursor : "";
 
     if (!q) {
-      res.json({ products: [], count: 0 });
+      res.json({ products: [], count: 0, nextCursor: null, fuzzyFallback: false });
       return;
     }
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-      res.status(400).json({ error: "lat and lng query params are required" });
+    if (!validSearchLocation(lat, lng) || !Number.isFinite(radiusKm) ||
+        !Number.isFinite(limit) || (cursor && !Types.ObjectId.isValid(cursor))) {
+      res.status(400).json({ error: "Invalid search location, radius, limit, or cursor" });
       return;
     }
 
-    // 1. Find nearby shops under the current public visibility policy.
-    const shopsInRadius = await Shop.find({
-      ...publicShopKycFilter(),
-      location: {
-        $nearSphere: {
-          $geometry: { type: "Point", coordinates: [lng, lat] },
-          $maxDistance: radiusKm * 1000,
-        },
-      },
-    })
+    const shopsInRadius = await Shop.find(
+      productSearchShopFilter(lat, lng, radiusKm, expanded),
+    )
       .select("_id name marketName location isOpen")
       .lean();
 
     if (shopsInRadius.length === 0) {
-      res.json({ products: [], count: 0 });
+      res.json({ products: [], count: 0, nextCursor: null, fuzzyFallback: false });
       return;
     }
 
@@ -215,25 +245,33 @@ export const publicController = {
       ];
     });
 
-    let products = await Product.find({
+    const productFilter = {
       shop: { $in: shopIds },
       deletedAt: null,
       quantity: { $gt: 0 },
+      ...(cursor ? { _id: { $lt: new Types.ObjectId(cursor) } } : {}),
+    };
+    let products = await Product.find({
+      ...productFilter,
       $or: orClauses,
     })
-      .limit(limit)
+      .sort({ _id: -1 })
+      .limit(limit + 1)
       .lean();
 
-    if (products.length === 0) {
+    const fuzzyFallback = products.length === 0 && !expanded && !cursor;
+    if (fuzzyFallback) {
       // Fallback pool — return everything in radius so the client can fuzzy match
       products = await Product.find({
-        shop: { $in: shopIds },
-        deletedAt: null,
-        quantity: { $gt: 0 },
+        ...productFilter,
       })
+        .sort({ _id: -1 })
         .limit(limit)
         .lean();
     }
+    const hasMore = !fuzzyFallback && products.length > limit;
+    products = products.slice(0, limit);
+    const nextCursor = hasMore ? String(products[products.length - 1]!._id) : null;
 
     const result = products.map((p) => {
       const s = shopById.get(String(p.shop));
@@ -257,20 +295,22 @@ export const publicController = {
     // Stable order: distance asc (Fuse.js will re-rank by relevance client-side)
     result.sort((a, b) => a.distanceMeters - b.distanceMeters);
 
-    res.json({ products: result, count: result.length });
+    res.json({ products: result, count: result.length, nextCursor, fuzzyFallback });
   },
 
-  /** Compare the uploaded photo to public product photos from in-radius shops. */
+  /** Compare product photos in bounded batches; cursors cover every eligible product. */
   visualSearch: async (req: Request, res: Response) => {
     const lat = Number(req.body?.lat);
     const lng = Number(req.body?.lng);
     const radiusKm = clamp(Number(req.body?.radiusKm ?? 5), 0.1, 50);
-    const limit = clamp(Number(req.body?.limit ?? 6), 1, 20);
+    const expanded = req.body?.scope === "all";
+    const cursor = typeof req.body?.cursor === "string" ? req.body.cursor : "";
     const hintRaw =
       typeof req.body?.hint === "string" ? req.body.hint.trim() : "";
 
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-      res.status(400).json({ error: "lat and lng are required" });
+    if (!validSearchLocation(lat, lng) || !Number.isFinite(radiusKm) ||
+        (cursor && !Types.ObjectId.isValid(cursor))) {
+      res.status(400).json({ error: "Invalid search location, radius, or cursor" });
       return;
     }
     const parsedImage = parseVisualSearchImage(
@@ -282,35 +322,34 @@ export const publicController = {
       return;
     }
 
-    const shopsInRadius = await Shop.find({
-      ...publicShopKycFilter(),
-      location: {
-        $nearSphere: {
-          $geometry: { type: "Point", coordinates: [lng, lat] },
-          $maxDistance: radiusKm * 1000,
-        },
-      },
-    })
+    const shopsInRadius = await Shop.find(
+      productSearchShopFilter(lat, lng, radiusKm, expanded),
+    )
       .select("_id name marketName location isOpen")
       .lean();
 
     if (shopsInRadius.length === 0) {
-      res.json({ matches: [], count: 0 });
+      res.json({ matches: [], count: 0, nextCursor: null });
       return;
     }
 
     const shopById = new Map(shopsInRadius.map((s) => [String(s._id), s]));
     const shopIds = shopsInRadius.map((s) => s._id);
-    const products = await Product.find({
+    const productPage = await Product.find({
       shop: { $in: shopIds },
       deletedAt: null,
       quantity: { $gt: 0 },
       photos: { $exists: true, $ne: [] },
+      ...(cursor ? { _id: { $lt: new Types.ObjectId(cursor) } } : {}),
     })
       .select("_id shop name brand description price photos")
-      .sort({ lastVerifiedAt: -1 })
-      .limit(24)
+      .sort({ _id: -1 })
+      .limit(25)
       .lean();
+    const products = productPage.slice(0, 24);
+    const nextCursor = productPage.length > 24
+      ? String(products[products.length - 1]!._id)
+      : null;
 
     const imageCandidates = products.flatMap((product) => {
       const photo = product.photos?.[0];
@@ -318,7 +357,7 @@ export const publicController = {
       return [{ id: String(product._id), photo: photo.trim() }];
     });
     if (imageCandidates.length === 0) {
-      res.json({ matches: [], count: 0 });
+      res.json({ matches: [], count: 0, nextCursor });
       return;
     }
 
@@ -338,7 +377,7 @@ export const publicController = {
     const productById = new Map(
       products.map((product) => [String(product._id), product]),
     );
-    const matches = visualScores.slice(0, limit).flatMap(({ id, confidence }) => {
+    const matches = visualScores.flatMap(({ id, confidence }) => {
       const product = productById.get(id);
       if (!product) return [];
       const s = shopById.get(String(product.shop));
@@ -360,7 +399,7 @@ export const publicController = {
       };
     });
 
-    res.json({ matches, count: matches.length });
+    res.json({ matches, count: matches.length, nextCursor });
   },
 
   getShop: async (req: Request, res: Response) => {

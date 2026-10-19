@@ -5,6 +5,80 @@
  * NearBuy Business API (MongoDB-backed)
  * OpenAPI spec version: 0.2.0
  */
+export interface PublicProductSearchHit {
+  id: string;
+  shopId: string;
+  shopName: string;
+  shopMarketName: string | null;
+  shopIsOpen: boolean;
+  name: string;
+  brand: string | null;
+  description: string | null;
+  price: number;
+  photo: string | null;
+  distanceMeters: number;
+}
+
+export interface PublicProductSearchPage {
+  products: PublicProductSearchHit[];
+  count: number;
+  nextCursor: string | null;
+  fuzzyFallback: boolean;
+}
+
+export type PublicProductPhotoSearchInputScope =
+  (typeof PublicProductPhotoSearchInputScope)[keyof typeof PublicProductPhotoSearchInputScope];
+
+export const PublicProductPhotoSearchInputScope = {
+  all: "all",
+} as const;
+
+export type PublicProductPhotoSearchInputImageMimeType =
+  (typeof PublicProductPhotoSearchInputImageMimeType)[keyof typeof PublicProductPhotoSearchInputImageMimeType];
+
+export const PublicProductPhotoSearchInputImageMimeType = {
+  "image/jpeg": "image/jpeg",
+  "image/png": "image/png",
+  "image/webp": "image/webp",
+} as const;
+
+export interface PublicProductPhotoSearchInput {
+  /**
+   * @minimum -90
+   * @maximum 90
+   */
+  lat: number;
+  /**
+   * @minimum -180
+   * @maximum 180
+   */
+  lng: number;
+  /**
+   * @minimum 0.1
+   * @maximum 50
+   */
+  radiusKm?: number;
+  scope?: PublicProductPhotoSearchInputScope;
+  cursor?: string;
+  hint?: string;
+  imageBase64: string;
+  imageMimeType: PublicProductPhotoSearchInputImageMimeType;
+}
+
+export type PublicProductVisualMatch = PublicProductSearchHit & {
+  /**
+   * @minimum 0
+   * @maximum 1
+   */
+  confidence: number;
+};
+
+export interface PublicProductPhotoSearchPage {
+  matches: PublicProductVisualMatch[];
+  count: number;
+  nextCursor: string | null;
+}
+
 export interface HealthStatus {
   status: string;
 }
@@ -914,6 +988,42 @@ null) when the provider opted to hide it.
   /** Distance from the search origin in kilometers. */
   distanceKm: number;
 }
+
+export type SearchPublicProductsParams = {
+  q: string;
+  /**
+   * @minimum -90
+   * @maximum 90
+   */
+  lat: number;
+  /**
+   * @minimum -180
+   * @maximum 180
+   */
+  lng: number;
+  /**
+   * @minimum 0.1
+   * @maximum 50
+   */
+  radiusKm?: number;
+  /**
+   * 'all' searches outside the radius without a maximum distance.
+   */
+  scope?: SearchPublicProductsScope;
+  cursor?: string;
+  /**
+   * @minimum 1
+   * @maximum 200
+   */
+  limit?: number;
+};
+
+export type SearchPublicProductsScope =
+  (typeof SearchPublicProductsScope)[keyof typeof SearchPublicProductsScope];
+
+export const SearchPublicProductsScope = {
+  all: "all",
+} as const;
 
 export type UnregisterPushTokenBody = {
   /** @minLength 1 */

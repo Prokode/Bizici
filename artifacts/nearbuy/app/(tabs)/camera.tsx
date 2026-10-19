@@ -6,6 +6,7 @@ import {
   Image,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -92,6 +93,8 @@ export default function CameraTab() {
   const [hint, setHint] = useState("");
   const [radiusKm, setRadiusKm] = useState(5);
   const [matches, setMatches] = useState<VisualMatch[]>([]);
+  const [expanded, setExpanded] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [openShop, setOpenShop] = useState<PublicShop | null>(null);
   const [center, setCenter] = useState<{ lat: number; lng: number } | null>(
     Platform.OS === "web" ? FALLBACK : null,
@@ -141,24 +144,36 @@ export default function CameraTab() {
 
   // Visual search mutation
   const visualSearchMutation = useMutation({
-    mutationFn: async (radius: number) => {
+    mutationFn: async ({ radius, scope, cursor }: {
+      radius: number;
+      scope?: "all";
+      cursor?: string;
+    }) => {
       if (!center) throw new Error(t("camera.positionUnavailable"));
       return fetchVisualSearch({
         lat: center.lat,
         lng: center.lng,
         radiusKm: radius,
+        scope,
+        cursor,
         imageBase64: photoBase64,
         imageMimeType: photoMimeType,
         hint: hint.trim() || undefined,
       });
     },
-    onSuccess: (data) => {
-      setMatches(data);
+    onSuccess: (data, variables) => {
+      setMatches((previous) => {
+        const combined = variables.cursor ? [...previous, ...data.matches] : data.matches;
+        return Array.from(new Map(combined.map((match) => [match.id, match])).values())
+          .sort((a, b) => b.confidence - a.confidence || a.distanceMeters - b.distanceMeters);
+      });
+      setExpanded(variables.scope === "all");
+      setNextCursor(data.nextCursor);
       setStage("results");
     },
-    onError: () => {
+    onError: (_error, variables) => {
       // Keep the photo so the user can retry
-      setStage("captured");
+      if (!variables.cursor && !variables.scope) setStage("captured");
     },
   });
 
@@ -266,26 +281,28 @@ export default function CameraTab() {
     setPhotoError(null);
     setHint("");
     setMatches([]);
+    setExpanded(false);
+    setNextCursor(null);
     visualSearchMutation.reset();
   };
 
   const onAnalyze = () => {
     setStage("analyzing");
-    visualSearchMutation.mutate(radiusKm);
+    visualSearchMutation.mutate({ radius: radiusKm });
   };
 
   const radiusPicker = (
     <Select
       label={t("camera.searchRadius")}
       value={String(radiusKm)}
-      disabled={stage === "analyzing"}
+      disabled={visualSearchMutation.isPending}
       options={[5, 10, 20, 50].map((km) => ({ label: `${km} km`, value: String(km) }))}
       onChange={(value) => {
         const radius = Number(value);
         setRadiusKm(radius);
         if (stage === "results") {
           setStage("analyzing");
-          visualSearchMutation.mutate(radius);
+          visualSearchMutation.mutate({ radius });
         }
       }}
     />
@@ -444,6 +461,53 @@ export default function CameraTab() {
     </View>
   );
 
+  const renderSearchActions = () => (
+    <View style={{ gap: 12, padding: 20 }}>
+      {visualSearchMutation.isPending ? (
+        <View style={{ alignItems: "center", gap: 8 }}>
+          <ActivityIndicator color={colors.primary} />
+          <Text style={{ color: colors.mutedForeground }}>{t("search.searching")}</Text>
+        </View>
+      ) : visualSearchMutation.isError ? (
+        <>
+          <Text style={{ color: colors.destructive }}>{t("camera.analyzeError")}</Text>
+          <Button
+            title={t("search.retry")}
+            onPress={() => {
+              if (visualSearchMutation.variables) visualSearchMutation.mutate(visualSearchMutation.variables);
+            }}
+          />
+        </>
+      ) : (
+        <>
+          {nextCursor && (
+            <Button
+              title={t(expanded ? "camera.searchMoreCatalog" : "camera.searchMoreNearby")}
+              variant="outline"
+              onPress={() => visualSearchMutation.mutate({
+                radius: radiusKm,
+                scope: expanded ? "all" : undefined,
+                cursor: nextCursor,
+              })}
+            />
+          )}
+          {!expanded && matches.length === 0 && (
+            <>
+              <Text style={{ color: colors.mutedForeground, textAlign: "center" }}>
+                {t("search.expandHint", { radius: radiusKm })}
+              </Text>
+              <Button
+                title={t("search.expandSearch")}
+                onPress={() => visualSearchMutation.mutate({ radius: radiusKm, scope: "all" })}
+                icon={<Feather name="globe" size={18} color="#ffffff" />}
+              />
+            </>
+          )}
+        </>
+      )}
+    </View>
+  );
+
   const renderResults = () => (
     <View style={{ flex: 1 }}>
       <View style={styles.resultsHeader}>
@@ -462,14 +526,26 @@ export default function CameraTab() {
             {t("camera.withinRadius", { radius: radiusKm })}
           </Text>
         </View>
-        <TouchableOpacity onPress={reset} style={styles.iconBtn} hitSlop={8}>
+        <TouchableOpacity onPress={reset} disabled={visualSearchMutation.isPending} style={styles.iconBtn} hitSlop={8}>
           <Feather name="x" size={20} color={colors.mutedForeground} />
         </TouchableOpacity>
       </View>
 
       <View style={{ paddingHorizontal: 20 }}>{radiusPicker}</View>
+      {expanded && (
+        <View style={{ gap: 8, paddingHorizontal: 20 }}>
+          <Text style={{ color: colors.foreground, fontWeight: "700" }}>{t("search.expandedTitle")}</Text>
+          <Text style={{ color: colors.mutedForeground }}>{t("search.expandedHint", { radius: radiusKm })}</Text>
+          <Button
+            title={t("search.backToNearby")}
+            variant="ghost"
+            disabled={visualSearchMutation.isPending}
+            onPress={onAnalyze}
+          />
+        </View>
+      )}
       {matches.length === 0 ? (
-        <View style={styles.emptyResults}>
+        <ScrollView contentContainerStyle={styles.emptyResults}>
           <Feather name="image" size={40} color={colors.mutedForeground} />
           <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
             {t("camera.noMatches")}
@@ -477,14 +553,16 @@ export default function CameraTab() {
           <Text
             style={[styles.emptyText, { color: colors.mutedForeground }]}
           >
-            {t("camera.noMatchesHint")}
+            {t(nextCursor ? "camera.noBatchMatches" : expanded ? "search.noExpandedResults" : "camera.noMatchesHint")}
           </Text>
-        </View>
+          {renderSearchActions()}
+        </ScrollView>
       ) : (
         <FlatList
           data={matches}
           keyExtractor={(m) => m.id}
           contentContainerStyle={{ paddingBottom: 24 }}
+          ListFooterComponent={renderSearchActions()}
           renderItem={({ item }) => (
             <Pressable
               onPress={() => onPressMatch(item)}
@@ -668,7 +746,7 @@ const styles = StyleSheet.create({
   resultsTitle: { fontSize: 16, fontWeight: "700" },
   resultsSubtitle: { fontSize: 12, marginTop: 2 },
   iconBtn: { padding: 8 },
-  emptyResults: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12, paddingHorizontal: 24 },
+  emptyResults: { flexGrow: 1, alignItems: "center", justifyContent: "center", gap: 12, paddingHorizontal: 24, paddingVertical: 16 },
   emptyTitle: { fontSize: 16, fontWeight: "700", textAlign: "center" },
   emptyText: { fontSize: 13, textAlign: "center", lineHeight: 18 },
   matchCard: {
