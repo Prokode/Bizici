@@ -10,11 +10,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useColors } from "@/hooks/useColors";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { OnboardingPreferences } from "@/components/OnboardingPreferences";
 import { ONBOARDING_SEEN_KEY } from "@/app/onboarding";
 
 export default function UserProfileScreen() {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
   const clerk = useClerk();
   const queryClient = useQueryClient();
   const colors = useColors();
@@ -41,6 +41,27 @@ export default function UserProfileScreen() {
 
   if (!isLoaded) return <View style={[styles.center, { backgroundColor: colors.background }]}><ActivityIndicator color={colors.primary} /><Text style={{ color: colors.foreground }}>{t("common.loading")}</Text></View>;
 
+  if (!isSignedIn) {
+    return (
+      <ScrollView
+        style={{ flex: 1, backgroundColor: colors.background }}
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}
+        testID="guest-profile"
+      >
+        <View style={styles.hero}>
+          <Feather name="user" size={48} color={colors.primary} />
+          <Text style={[styles.title, { color: colors.foreground }]}>{t("nav.profile")}</Text>
+        </View>
+        <OnboardingPreferences testIDPrefix="profile" />
+        <Button
+          title={t("common.signIn")}
+          onPress={() => router.replace("/(auth)/sign-in")}
+          testID="guest-profile-sign-in"
+        />
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]} testID="user-profile">
       <View style={styles.hero}>
@@ -56,7 +77,7 @@ export default function UserProfileScreen() {
         {user?.primaryPhoneNumber?.phoneNumber ? <><Text style={[styles.label, { color: colors.mutedForeground }]}>{t("userProfile.phone")}</Text><Text selectable style={[styles.value, { color: colors.foreground }]}>{user.primaryPhoneNumber.phoneNumber}</Text></> : null}
       </Card>
       <Button title={t("security.open")} variant="secondary" icon={<Feather name="lock" size={18} color={colors.foreground} />} onPress={() => router.push("/account-security")} testID="security-open" />
-      <View style={styles.language}><LanguageSwitcher /></View>
+      <View style={styles.language}><OnboardingPreferences testIDPrefix="profile" /></View>
       <Button title={t("onboarding.replay")} variant="ghost" icon={<Feather name="play-circle" size={18} color={colors.primary} />} onPress={async () => {
         try { await AsyncStorage.removeItem(ONBOARDING_SEEN_KEY); router.push("/onboarding"); } catch { setError(true); }
       }} />

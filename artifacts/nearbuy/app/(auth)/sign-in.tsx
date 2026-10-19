@@ -13,6 +13,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
+import { OnboardingPreferences } from "@/components/OnboardingPreferences";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -136,6 +137,7 @@ export default function SignInScreen() {
           </Text>
         </Pressable>
 
+        <OnboardingPreferences testIDPrefix="login" />
         <View style={styles.header}>
           <LinearGradient
             colors={["#F58220", "#E26A0A"]}

@@ -19,7 +19,7 @@ test("personal profile is outside shop routes and reads the authenticated identi
   assert.match(profile, /primaryEmailAddress/);
   assert.match(profile, /user\?\.fullName/);
   assert.match(profile, /\/account-security/);
-  assert.match(profile, /LanguageSwitcher/);
+  assert.match(profile, /OnboardingPreferences/);
   assert.doesNotMatch(profile, /useLocalSearchParams|getGetShop|shopId/);
   assert.match(read("app/(home)/_layout.tsx"), /Stack.Screen name="profile"/);
 });

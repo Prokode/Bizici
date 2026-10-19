@@ -19,7 +19,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
 import { fetchMyKarma, type KarmaEvent } from "@/lib/api/karma";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { OnboardingPreferences } from "@/components/OnboardingPreferences";
 import { ONBOARDING_SEEN_KEY } from "@/app/onboarding";
 
 const API_BASE = process.env.EXPO_PUBLIC_DOMAIN
@@ -116,6 +116,9 @@ export default function ProfileTab() {
             {t("profile.createWithBonus")}
           </Text>
         </Pressable>
+        <View style={{ marginTop: 24 }}>
+          <OnboardingPreferences testIDPrefix="profile" />
+        </View>
       </ScrollView>
     );
   }
@@ -304,7 +307,7 @@ export default function ProfileTab() {
       </Pressable>
 
       <View style={{ marginBottom: 16 }}>
-        <LanguageSwitcher />
+        <OnboardingPreferences testIDPrefix="profile" />
       </View>
 
       <Pressable

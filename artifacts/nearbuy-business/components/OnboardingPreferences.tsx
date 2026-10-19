@@ -84,8 +84,8 @@ function Segmented<T extends string>({
   );
 }
 
-/** Language + theme choices shown on the first onboarding page. */
-export function OnboardingPreferences() {
+/** Persisted, device-local preferences, available with or without an account. */
+export function OnboardingPreferences({ testIDPrefix = "onboarding" }: { testIDPrefix?: string }) {
   const { t, i18n } = useTranslation();
   const theme = useSyncExternalStore(
     subscribeThemePreference,
@@ -102,7 +102,7 @@ export function OnboardingPreferences() {
         label={t("common.language")}
         icon="globe"
         value={lang}
-        testIDPrefix="onboarding-lang"
+        testIDPrefix={`${testIDPrefix}-lang`}
         onChange={(v) => {
           if (v !== lang) setLanguage(v);
         }}
@@ -115,7 +115,7 @@ export function OnboardingPreferences() {
         label={t("onboarding.themeLabel")}
         icon="sun"
         value={theme}
-        testIDPrefix="onboarding-theme"
+        testIDPrefix={`${testIDPrefix}-theme`}
         onChange={(v) => {
           setSaveError(false);
           setThemePreference(v).catch(() => setSaveError(true));
