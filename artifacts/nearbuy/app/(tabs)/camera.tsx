@@ -23,7 +23,12 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { useColors } from "@/hooks/useColors";
-import { fetchVisualSearch, type VisualMatch } from "@/lib/api/visualSearch";
+import {
+  fetchVisualSearch,
+  VisualSearchError,
+  type VisualMatch,
+  type VisualSearchErrorCode,
+} from "@/lib/api/visualSearch";
 import { fetchShopDetail, type PublicShop } from "@/lib/api/shops";
 import { ShopBottomSheet } from "@/components/ShopBottomSheet";
 
@@ -39,6 +44,40 @@ function formatDistance(m: number): string {
 
 type Stage = "idle" | "captured" | "analyzing" | "results";
 
+async function prepareWebPhoto(file: File): Promise<{
+  dataUrl: string;
+  base64: string;
+}> {
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const image = document.createElement("img");
+    image.src = objectUrl;
+    await new Promise<void>((resolve, reject) => {
+      image.onload = () => resolve();
+      image.onerror = () => reject(new Error("Could not read image"));
+    });
+
+    const maxDimension = 1280;
+    const scale = Math.min(
+      1,
+      maxDimension / Math.max(image.naturalWidth, image.naturalHeight),
+    );
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Could not prepare image");
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.72);
+    const comma = dataUrl.indexOf(",");
+    if (comma < 0) throw new Error("Could not encode image");
+    return { dataUrl, base64: dataUrl.slice(comma + 1) };
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 export default function CameraTab() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -46,6 +85,10 @@ export default function CameraTab() {
   const [stage, setStage] = useState<Stage>("idle");
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
+  const [photoMimeType, setPhotoMimeType] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<VisualSearchErrorCode | null>(
+    null,
+  );
   const [hint, setHint] = useState("");
   const [radiusKm, setRadiusKm] = useState(5);
   const [matches, setMatches] = useState<VisualMatch[]>([]);
@@ -105,6 +148,7 @@ export default function CameraTab() {
         lng: center.lng,
         radiusKm: radius,
         imageBase64: photoBase64,
+        imageMimeType: photoMimeType,
         hint: hint.trim() || undefined,
       });
     },
@@ -147,8 +191,11 @@ export default function CameraTab() {
       });
       if (!result.canceled && result.assets[0]) {
         const a = result.assets[0];
+        visualSearchMutation.reset();
         setPhotoUri(a.uri);
         setPhotoBase64(a.base64 ?? null);
+        setPhotoMimeType(a.mimeType ?? "image/jpeg");
+        setPhotoError(null);
         setStage("captured");
       }
     } catch {
@@ -177,8 +224,11 @@ export default function CameraTab() {
     });
     if (!result.canceled && result.assets[0]) {
       const a = result.assets[0];
+      visualSearchMutation.reset();
       setPhotoUri(a.uri);
       setPhotoBase64(a.base64 ?? null);
+      setPhotoMimeType(a.mimeType ?? "image/jpeg");
+      setPhotoError(null);
       setStage("captured");
     }
   };
@@ -187,24 +237,33 @@ export default function CameraTab() {
   const onWebFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = String(reader.result || "");
-      setPhotoUri(dataUrl);
-      // Strip "data:image/jpeg;base64," prefix → keep only the base64 payload
-      const comma = dataUrl.indexOf(",");
-      setPhotoBase64(comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl);
-      setStage("captured");
-    };
-    reader.readAsDataURL(file);
     // Reset so picking the same file twice still fires onChange
     e.target.value = "";
+    visualSearchMutation.reset();
+    setPhotoUri(null);
+    setPhotoBase64(null);
+    setPhotoMimeType(null);
+    setPhotoError(null);
+    setStage("captured");
+    void prepareWebPhoto(file)
+      .then(({ dataUrl, base64 }) => {
+        setPhotoUri(dataUrl);
+        setPhotoBase64(base64);
+        setPhotoMimeType("image/jpeg");
+        setStage("captured");
+      })
+      .catch(() => {
+        setPhotoError("invalid_image");
+        setStage("captured");
+      });
   };
 
   const reset = () => {
     setStage("idle");
     setPhotoUri(null);
     setPhotoBase64(null);
+    setPhotoMimeType(null);
+    setPhotoError(null);
     setHint("");
     setMatches([]);
     visualSearchMutation.reset();
@@ -348,9 +407,13 @@ export default function CameraTab() {
         ]}
       />
 
-      {visualSearchMutation.isError && (
+      {(photoError || visualSearchMutation.isError) && (
         <Text style={[styles.errorText, { color: colors.destructive }]}>
-          {t("camera.analyzeError")}
+          {photoError
+            ? t("camera.invalidImage")
+            : visualSearchMutation.error instanceof VisualSearchError
+              ? t(`camera.${visualSearchMutation.error.code}`)
+              : t("camera.analyzeError")}
         </Text>
       )}
 
@@ -360,7 +423,7 @@ export default function CameraTab() {
         size="lg"
         fullWidth
         onPress={onAnalyze}
-        disabled={analyzing || !center}
+        disabled={analyzing || !center || !photoBase64 || !!photoError}
         icon={
           analyzing ? (
             <ActivityIndicator size="small" color="#ffffff" />

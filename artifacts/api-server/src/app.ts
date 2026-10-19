@@ -1,4 +1,9 @@
-import express, { type Express } from "express";
+import express, {
+  type Express,
+  type NextFunction,
+  type Request,
+  type Response,
+} from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import { clerkMiddleware } from "@clerk/express";
@@ -67,6 +72,28 @@ app.use(express.urlencoded({ extended: true }));
 app.use(clerkMiddleware());
 
 app.use("/api", router);
+
+// Convert oversized route-local JSON bodies (notably visual-search photos)
+// into a small, predictable response instead of Express's default HTML page.
+app.use(
+  (
+    error: { status?: number; statusCode?: number; type?: string },
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    if (
+      error.status === 413 ||
+      error.statusCode === 413 ||
+      error.type === "entity.too.large"
+    ) {
+      req.log.warn({ err: error }, "Request body exceeded the size limit");
+      res.status(413).json({ error: "Request body too large" });
+      return;
+    }
+    next(error);
+  },
+);
 
 export const appReady = connectMongo().then(async () => {
   logger.info("MongoDB connected");
