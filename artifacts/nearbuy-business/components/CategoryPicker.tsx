@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import { useColors } from "@/hooks/useColors";
+import { useTranslation } from "react-i18next";
 import { useListCategories, type Category } from "@workspace/api-client-react";
 
 type Props = {
@@ -15,8 +16,9 @@ type Props = {
   kind?: "product" | "service";
 };
 
-export function CategoryPicker({ selectedIds, onChange, label = "Categories", kind }: Props) {
+export function CategoryPicker({ selectedIds, onChange, label, kind }: Props) {
   const colors = useColors();
+  const { t } = useTranslation();
   const { data: categories, isLoading } = useListCategories(kind ? { kind } : undefined);
 
   const toggle = (id: string) => {
@@ -35,10 +37,10 @@ export function CategoryPicker({ selectedIds, onChange, label = "Categories", ki
           { color: colors.foreground, fontFamily: "PlusJakartaSans_600SemiBold" },
         ]}
       >
-        {label}
+        {label ?? t("addProduct.categories")}
       </Text>
       {isLoading ? (
-        <Text style={{ color: colors.mutedForeground }}>Loading...</Text>
+        <Text style={{ color: colors.mutedForeground }}>{t("common.loading")}</Text>
       ) : (
         <ScrollView
           horizontal

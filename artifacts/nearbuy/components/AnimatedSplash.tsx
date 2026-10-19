@@ -11,6 +11,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Svg, { Ellipse, G, Path, Rect } from "react-native-svg";
+import { useTranslation } from "react-i18next";
 
 /**
  * BizIci animated splash.
@@ -40,6 +41,7 @@ type Props = {
 };
 
 export function AnimatedSplash({ onFinish }: Props) {
+  const { t } = useTranslation();
   // Each layer has its own opacity/scale so we can choreograph independently.
   const pinOpacity = useSharedValue(0);
   const pinTranslate = useSharedValue(-60);
@@ -197,8 +199,8 @@ export function AnimatedSplash({ onFinish }: Props) {
           <Text style={{ color: GREEN }}>Ici</Text>
         </Text>
         <Text style={styles.tagline}>
-          <Text style={{ color: NAVY }}>Trouvez tout </Text>
-          <Text style={{ color: ORANGE }}>près de vous</Text>
+          <Text style={{ color: NAVY }}>{t("onboarding.splashTaglineFirst")}</Text>
+          <Text style={{ color: ORANGE }}>{t("onboarding.splashTaglineSecond")}</Text>
         </Text>
       </Animated.View>
 

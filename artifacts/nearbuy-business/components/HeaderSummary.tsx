@@ -3,9 +3,11 @@ import { StyleSheet, Text, View } from "react-native";
 import { useColors } from "@/hooks/useColors";
 import { useQuery } from "@tanstack/react-query";
 import { getGetShopSummaryQueryOptions } from "@workspace/api-client-react";
+import { useTranslation } from "react-i18next";
 
 export function HeaderSummary({ shopId }: { shopId: string }) {
   const colors = useColors();
+  const { t } = useTranslation();
   const { data, isLoading } = useQuery({
     ...getGetShopSummaryQueryOptions(shopId),
     enabled: !!shopId,
@@ -18,7 +20,11 @@ export function HeaderSummary({ shopId }: { shopId: string }) {
   return (
     <View style={[styles.container, { backgroundColor: colors.muted, borderRadius: colors.radius }]}>
       <Text style={[styles.text, { color: colors.foreground, fontFamily: "PlusJakartaSans_500Medium" }]}>
-        {data.totalProducts} Products • {data.inStockCount} In Stock • {data.activeRequestsCount} Requests
+        {t("dashboard.summary", {
+          products: data.totalProducts,
+          inStock: data.inStockCount,
+          requests: data.activeRequestsCount,
+        })}
       </Text>
     </View>
   );

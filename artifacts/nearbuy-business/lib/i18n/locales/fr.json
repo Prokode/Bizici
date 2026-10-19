@@ -48,6 +48,32 @@
     "done": "Terminé",
     "noResults": "Aucun résultat"
   },
+  "errorFallback": {
+    "title": "Une erreur est survenue",
+    "message": "Veuillez relancer l'application pour continuer.",
+    "tryAgain": "Réessayer",
+    "details": "Détails de l'erreur",
+    "viewDetails": "Afficher les détails de l'erreur",
+    "error": "Erreur",
+    "stackTrace": "Trace de la pile"
+  },
+  "helpers": {
+    "title": "Équipe",
+    "email": "E-mail de l'assistant",
+    "emailPlaceholder": "assistant@example.com",
+    "sendInvitation": "Envoyer l'invitation",
+    "invitationHint": "L'invitation sera visible dans l'application après la connexion.",
+    "inviteError": "Impossible d'envoyer l'invitation.",
+    "empty": "Aucun assistant pour le moment. Invitez-en un ci-dessus.",
+    "pending": "Invitation en attente",
+    "removeTitle": "Retirer l'assistant",
+    "removeBody": "Retirer {{name}} de cette boutique ?",
+    "remove": "Retirer",
+    "cancelInviteTitle": "Annuler l'invitation",
+    "cancelInviteBody": "Annuler l'invitation envoyée à {{email}} ?",
+    "keep": "Conserver",
+    "cancelInvite": "Annuler l'invitation"
+  },
   "dashboard": {
     "title": "Tableau de bord",
     "subtitle": "Vue d'ensemble de votre boutique sur les 7 derniers jours.",
@@ -68,7 +94,8 @@
     "nearbyRequestsHint": "Dans un rayon de 5 km",
     "lastMessage": "Dernier message",
     "noMessage": "Aucun message",
-    "loadFailed": "Impossible de charger le tableau de bord."
+    "loadFailed": "Impossible de charger le tableau de bord.",
+    "summary": "{{products}} produits • {{inStock}} en stock • {{requests}} demandes"
   },
   "inventory": {
     "title": "Inventaire",
@@ -117,7 +144,8 @@
     "pinTitle": "Placez votre repère",
     "done": "Terminé",
     "updateError": "Mise à jour de la boutique impossible",
-    "screenTitle": "Modifier la boutique"
+    "screenTitle": "Modifier la boutique",
+    "pinAdjustHint": "Utilisez les flèches pour ajuster l'emplacement de la boutique."
   },
   "addProduct": {
     "missingShop": "Boutique indisponible. Revenez en arrière et ouvrez à nouveau la boutique.",
@@ -309,6 +337,8 @@
     "skip": "Passer",
     "next": "Suivant",
     "start": "Commencer",
+    "splashTaglineFirst": "Gérez votre ",
+    "splashTaglineSecond": "boutique",
     "slide1Title": "Bienvenue sur BizIci Pro",
     "slide1Body": "Le compagnon des commerçants et prestataires qui veulent vendre, servir et fidéliser leur quartier.",
     "slide2Title": "Configurez votre boutique",

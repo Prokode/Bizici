@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, View, Text, Pressable } from "react-native";
 import { useColors } from "@/hooks/useColors";
 import { Feather } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   latitude: number;
@@ -11,6 +12,7 @@ interface Props {
 
 export function ShopMapPicker({ latitude, longitude, onChange }: Props) {
   const colors = useColors();
+  const { t } = useTranslation();
 
   const nudge = (latDelta: number, lngDelta: number) => {
     onChange({
@@ -38,7 +40,7 @@ export function ShopMapPicker({ latitude, longitude, onChange }: Props) {
           {latitude.toFixed(5)}, {longitude.toFixed(5)}
         </Text>
         <Text style={[styles.hint, { color: colors.mutedForeground }]}>
-          Use the arrows to fine-tune your shop's pin.
+          {t("editShop.pinAdjustHint")}
         </Text>
         <View style={styles.padContainer}>
           <View style={styles.padRow}>

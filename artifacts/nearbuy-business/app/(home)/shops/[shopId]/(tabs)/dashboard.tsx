@@ -147,7 +147,7 @@ export default function DashboardScreen() {
             ]}
             numberOfLines={2}
           >
-            {error.message}
+            {t("dashboard.loadFailed")}
           </Text>
         ) : null}
       </View>

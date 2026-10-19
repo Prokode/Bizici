@@ -48,6 +48,32 @@
     "done": "Done",
     "noResults": "No results"
   },
+  "errorFallback": {
+    "title": "Something went wrong",
+    "message": "Please reload the app to continue.",
+    "tryAgain": "Try Again",
+    "details": "Error Details",
+    "viewDetails": "View error details",
+    "error": "Error",
+    "stackTrace": "Stack Trace"
+  },
+  "helpers": {
+    "title": "Helpers",
+    "email": "Helper email",
+    "emailPlaceholder": "helper@example.com",
+    "sendInvitation": "Send invitation",
+    "invitationHint": "They'll see the invitation when they sign in to the app.",
+    "inviteError": "Could not send invitation.",
+    "empty": "No helpers yet. Invite one above.",
+    "pending": "Pending invitation",
+    "removeTitle": "Remove helper",
+    "removeBody": "Remove {{name}} from this shop?",
+    "remove": "Remove",
+    "cancelInviteTitle": "Cancel invitation",
+    "cancelInviteBody": "Cancel invite for {{email}}?",
+    "keep": "Keep",
+    "cancelInvite": "Cancel invite"
+  },
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "Overview of your shop over the last 7 days.",
@@ -68,7 +94,8 @@
     "nearbyRequestsHint": "Within a 5 km radius",
     "lastMessage": "Last message",
     "noMessage": "No message",
-    "loadFailed": "Could not load the dashboard."
+    "loadFailed": "Could not load the dashboard.",
+    "summary": "{{products}} Products • {{inStock}} In Stock • {{requests}} Requests"
   },
   "inventory": {
     "title": "Inventory",
@@ -117,7 +144,8 @@
     "pinTitle": "Pin your location",
     "done": "Done",
     "updateError": "Failed to update shop",
-    "screenTitle": "Edit shop"
+    "screenTitle": "Edit shop",
+    "pinAdjustHint": "Use the arrows to fine-tune your shop's pin."
   },
   "addProduct": {
     "missingShop": "Shop unavailable. Go back and open the shop again.",
@@ -309,6 +337,8 @@
     "skip": "Skip",
     "next": "Next",
     "start": "Get started",
+    "splashTaglineFirst": "Manage your ",
+    "splashTaglineSecond": "shop",
     "slide1Title": "Welcome to BizIci Pro",
     "slide1Body": "The companion app for shopkeepers and providers who want to sell, serve and grow their neighborhood.",
     "slide2Title": "Set up your shop",

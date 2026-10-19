@@ -6,6 +6,7 @@ import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { Badge } from "./ui/Badge";
 import { Feather } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getListShopMembersQueryOptions,
@@ -21,6 +22,7 @@ export function HelpersSection({ shopId }: { shopId: string }) {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteError, setInviteError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const { data, isLoading } = useQuery(getListShopMembersQueryOptions(shopId));
   const inviteMember = useInviteShopMember();
@@ -39,16 +41,16 @@ export function HelpersSection({ shopId }: { shopId: string }) {
           setInviteOpen(false);
           invalidate();
         },
-        onError: (err: any) => setInviteError(err?.message ?? "Could not send invitation"),
+        onError: () => setInviteError(t("helpers.inviteError")),
       }
     );
   };
 
   const handleRemove = (userId: string, name: string) => {
-    Alert.alert("Remove helper", `Remove ${name} from this shop?`, [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("helpers.removeTitle"), t("helpers.removeBody", { name }), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Remove",
+        text: t("helpers.remove"),
         style: "destructive",
         onPress: () => removeMember.mutate({ shopId, userId }, { onSuccess: invalidate }),
       },
@@ -56,10 +58,10 @@ export function HelpersSection({ shopId }: { shopId: string }) {
   };
 
   const handleCancelInvite = (invitationId: string, email: string) => {
-    Alert.alert("Cancel invitation", `Cancel invite for ${email}?`, [
-      { text: "Keep", style: "cancel" },
+    Alert.alert(t("helpers.cancelInviteTitle"), t("helpers.cancelInviteBody", { email }), [
+      { text: t("helpers.keep"), style: "cancel" },
       {
-        text: "Cancel invite",
+        text: t("helpers.cancelInvite"),
         style: "destructive",
         onPress: () =>
           cancelInvite.mutate({ shopId, invitationId }, { onSuccess: invalidate }),
@@ -71,7 +73,7 @@ export function HelpersSection({ shopId }: { shopId: string }) {
     <View style={{ marginTop: 24 }}>
       <View style={styles.headerRow}>
         <Text style={[styles.sectionTitle, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-          Helpers
+          {t("helpers.title")}
         </Text>
         <TouchableOpacity onPress={() => setInviteOpen((v) => !v)}>
           <Feather name={inviteOpen ? "x" : "user-plus"} size={20} color={colors.primary} />
@@ -81,8 +83,8 @@ export function HelpersSection({ shopId }: { shopId: string }) {
       {inviteOpen && (
         <Card style={{ padding: 16, marginBottom: 12 }}>
           <Input
-            label="Helper email"
-            placeholder="helper@example.com"
+            label={t("helpers.email")}
+            placeholder={t("helpers.emailPlaceholder")}
             value={inviteEmail}
             onChangeText={setInviteEmail}
             autoCapitalize="none"
@@ -90,24 +92,24 @@ export function HelpersSection({ shopId }: { shopId: string }) {
           />
           {inviteError && <Text style={{ color: colors.destructive, fontSize: 13, marginBottom: 8 }}>{inviteError}</Text>}
           <Button
-            title="Send invitation"
+            title={t("helpers.sendInvitation")}
             disabled={!inviteEmail.includes("@") || inviteMember.isPending}
             loading={inviteMember.isPending}
             onPress={handleInvite}
           />
           <Text style={[styles.hint, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>
-            They'll see the invitation when they sign in to the app.
+            {t("helpers.invitationHint")}
           </Text>
         </Card>
       )}
 
       {isLoading || !data ? (
-        <Text style={{ color: colors.mutedForeground }}>Loading…</Text>
+        <Text style={{ color: colors.mutedForeground }}>{t("common.loading")}</Text>
       ) : (
         <Card style={{ padding: 0 }}>
           {data.members.length === 0 && data.invitations.length === 0 ? (
             <View style={{ padding: 16 }}>
-              <Text style={{ color: colors.mutedForeground }}>No helpers yet. Invite one above.</Text>
+              <Text style={{ color: colors.mutedForeground }}>{t("helpers.empty")}</Text>
             </View>
           ) : null}
 
@@ -125,7 +127,7 @@ export function HelpersSection({ shopId }: { shopId: string }) {
                 <Text style={[styles.email, { color: colors.mutedForeground }]}>{m.email}</Text>
               </View>
               <Badge variant={m.role === "seller" ? "default" : "secondary"} style={{ marginRight: 8 }}>
-                {m.role === "seller" ? "Seller" : "Helper"}
+                {m.role === "seller" ? t("profile.seller") : t("profile.helper")}
               </Badge>
               {m.role !== "seller" && (
                 <TouchableOpacity onPress={() => handleRemove(m.userId, m.name || m.email || "this helper")}>
@@ -150,7 +152,7 @@ export function HelpersSection({ shopId }: { shopId: string }) {
                 <Text style={[styles.name, { color: colors.foreground, fontFamily: "PlusJakartaSans_600SemiBold" }]}>
                   {p.email}
                 </Text>
-                <Text style={[styles.email, { color: colors.mutedForeground }]}>Pending invitation</Text>
+                <Text style={[styles.email, { color: colors.mutedForeground }]}>{t("helpers.pending")}</Text>
               </View>
               <TouchableOpacity onPress={() => handleCancelInvite(p.id, p.email)}>
                 <Feather name="x" size={18} color={colors.mutedForeground} />

@@ -74,8 +74,8 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
       Number.isNaN(lng)
     ) {
       Alert.alert(
-        "Position indisponible",
-        "Cette boutique n'a pas de coordonnées renseignées.",
+        t("map.positionUnavailable"),
+        t("map.shopCoordinatesMissing"),
       );
       return;
     }
@@ -95,8 +95,8 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
         await Linking.openURL(universalUrl);
       } catch {
         Alert.alert(
-          "Itinéraire indisponible",
-          "Aucune application de cartes n'a pu être ouverte.",
+          t("map.directionsUnavailable"),
+          t("map.directionsOpenFailed"),
         );
       }
     }
@@ -118,10 +118,10 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
       const conv = await getOrCreateConversation(shop.id);
       onClose();
       router.push(`/chat/${conv.id}` as Href);
-    } catch (err: any) {
+    } catch {
       Alert.alert(
-        "Discussion indisponible",
-        err?.message ?? "Impossible d'ouvrir la discussion. Réessayez.",
+        t("shop.chatUnavailable"),
+        t("shop.chatOpenFailed"),
       );
     } finally {
       setChatLoading(false);
@@ -232,7 +232,9 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                       { color: colors.mutedForeground },
                     ]}
                   >
-                    {data?.products?.length ?? shop.productCount} produits
+                    {t("map.productsCount", {
+                      count: data?.products?.length ?? shop.productCount,
+                    })}
                   </Text>
                 </View>
                 {shop.fulfillment ? (
@@ -275,7 +277,7 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                         { color: colors.mutedForeground },
                       ]}
                     >
-                      Aucun produit listé pour cette boutique pour le moment.
+                      {t("shopDetails.noProducts")}
                     </Text>
                   }
                   renderItem={({ item }) => (
@@ -353,7 +355,7 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                   style={{ marginBottom: 8 }}
                 />
                 <Button
-                  title="Discuter avec le vendeur"
+                  title={t("shop.chat")}
                   size="lg"
                   loading={chatLoading}
                   onPress={handleChatPress}
@@ -369,7 +371,7 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                 <View style={styles.secondaryRow}>
                   <View style={{ flex: 1 }}>
                     <Button
-                      title="Itinéraire"
+                      title={t("shop.directions")}
                       variant="outline"
                       onPress={handleDirectionsPress}
                       icon={
@@ -383,7 +385,7 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Button
-                      title="Encore là ?"
+                      title={t("shop.stillHere")}
                       variant="outline"
                       onPress={() => {
                         // TODO: Karma "Still There?" verification flow
