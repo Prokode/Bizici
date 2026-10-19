@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, Platform, Image, TouchableOpacity, ScrollView } from "react-native";
+import { Alert, StyleSheet, Text, View, Platform, Image, TouchableOpacity, ScrollView } from "react-native";
 import { useColors } from "@/hooks/useColors";
+import { useShopId } from "@/hooks/useShopId";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -24,7 +25,7 @@ export default function AddProductScreen() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const params = useLocalSearchParams<{ shopId: string; photoUri?: string; base64?: string }>();
-  const shopId = params.shopId;
+  const shopId = useShopId();
   const { data: shop } = useQuery({
     ...getGetShopQueryOptions(shopId as string),
     enabled: !!shopId,
@@ -45,6 +46,7 @@ export default function AddProductScreen() {
   const [sizeInput, setSizeInput] = useState("");
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [photos, setPhotos] = useState<string[]>([]);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const createProduct = useCreateProduct();
   const analyzePhoto = useAnalyzeProductPhoto();
@@ -104,14 +106,25 @@ export default function AddProductScreen() {
   };
 
   const handleSave = () => {
-    if (!shopId) return;
-    const priceCents = priceStr.trim() ? Math.round(parseFloat(priceStr) * 100) : 0;
-    const quantity = quantityStr.trim() ? Math.max(0, parseInt(quantityStr, 10) || 0) : 1;
+    if (createProduct.isPending) return;
+    setSaveError(null);
+    const fail = (message: string) => {
+      setSaveError(message);
+      Alert.alert(t("common.error"), message);
+    };
+    if (!shopId) { fail(t("addProduct.missingShop")); return; }
+    const priceCents = priceStr.trim() ? Math.round(Number(priceStr.replace(",", ".")) * 100) : 0;
+    const quantity = quantityStr.trim() ? Number(quantityStr) : 1;
+    if (!name.trim() || !Number.isSafeInteger(priceCents) || priceCents < 0 ||
+        !Number.isSafeInteger(quantity) || quantity < 0) {
+      fail(t("addProduct.invalidValues"));
+      return;
+    }
     createProduct.mutate(
       {
         shopId,
         data: {
-          name,
+          name: name.trim(),
           brand: brand.trim() || null,
           description: description.trim() || null,
           category: category.trim() || null,
@@ -126,6 +139,7 @@ export default function AddProductScreen() {
         },
       },
       {
+        onError: () => fail(t("addProduct.saveError")),
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListProductsQueryKey(shopId) });
           queryClient.invalidateQueries({ queryKey: getGetShopSummaryQueryKey(shopId) });
@@ -317,11 +331,12 @@ export default function AddProductScreen() {
       <Button
         title={t("addProduct.save")}
         size="lg"
-        disabled={!name.trim() || analyzePhoto.isPending}
+        disabled={!name.trim() || analyzePhoto.isPending || createProduct.isPending}
         loading={createProduct.isPending}
         onPress={handleSave}
         style={{ marginTop: 24 }}
       />
+      {saveError && <Text accessibilityRole="alert" style={{ color: colors.destructive, marginTop: 12 }}>{saveError}</Text>}
     </KeyboardAwareScrollViewCompat>
   );
 }

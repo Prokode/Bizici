@@ -71,14 +71,13 @@ const ProductSchema = new Schema(
   { timestamps: true },
 );
 
-ProductSchema.pre("save", function (this: any, next: (err?: unknown) => void) {
+ProductSchema.pre("save", function () {
   if (this.isModified("name") || !this.slug) {
     this.slug = slugify(this.name as string);
   }
   if (this.isModified("quantity")) {
     this.stockStatus = (this.quantity ?? 0) > 0 ? "in_stock" : "out_of_stock";
   }
-  next();
 });
 
 ProductSchema.virtual("discounts", {

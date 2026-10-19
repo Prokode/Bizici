@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View, Platform } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View, Platform } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
@@ -80,6 +80,10 @@ export default function SignInScreen() {
   const onSSO = useCallback(
     async (strategy: "oauth_google" | "oauth_apple") => {
       setSubmitError(null);
+      const reportFailure = (message: string) => {
+        setSubmitError(message);
+        Alert.alert(t("auth.sso.errorTitle"), message);
+      };
       try {
         const result = await startSSOFlow({
           strategy,
@@ -88,15 +92,15 @@ export default function SignInScreen() {
         const { createdSessionId, setActive } = result;
         const reason = ssoIncompleteReason(result);
         if (reason) {
-          setSubmitError(t(`auth.sso.${reason}`));
+          reportFailure(t(`auth.sso.${reason}`));
           return;
         }
         if (createdSessionId && setActive) {
           await setActive({
             session: createdSessionId,
             navigate: async ({ session }) => {
-              if (session?.currentTask) {
-                setSubmitError(t("auth.sso.requirements"));
+              if (!session || session.currentTask) {
+                reportFailure(t("auth.sso.requirements"));
                 return;
               }
               router.replace("/(home)" as Href);
@@ -104,7 +108,7 @@ export default function SignInScreen() {
           });
         }
       } catch (err: unknown) {
-        setSubmitError(
+        reportFailure(
           (err instanceof Error ? err.message : null) ??
             (strategy === "oauth_apple"
               ? t("auth.errorApple")

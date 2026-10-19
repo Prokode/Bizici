@@ -72,10 +72,16 @@ export default function ProfileTab() {
 
   if (!isSignedIn) {
     return (
-      <View
-        style={[
+      <ScrollView
+        style={{ flex: 1, backgroundColor: colors.background }}
+        contentContainerStyle={[
           styles.container,
-          { backgroundColor: colors.background, paddingTop: insets.top + 24 },
+          {
+            flexGrow: 1,
+            justifyContent: "center",
+            paddingTop: insets.top + 24,
+            paddingBottom: insets.bottom + 32,
+          },
         ]}
       >
         <View style={styles.signInHero}>
@@ -110,7 +116,7 @@ export default function ProfileTab() {
             {t("profile.createWithBonus")}
           </Text>
         </Pressable>
-      </View>
+      </ScrollView>
     );
   }
 

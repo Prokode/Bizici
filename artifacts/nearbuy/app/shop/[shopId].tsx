@@ -1,5 +1,6 @@
 import React from "react";
-import { ActivityIndicator, Image, Linking, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Feather } from "@expo/vector-icons";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
@@ -37,8 +38,17 @@ export default function ShopDetails() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack.Screen options={{ title: shop?.name ?? t("shopDetails.title") }} />
-      <ScrollView contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: insets.bottom + 24 }}>
-        <Button title={t("common.back")} variant="ghost" onPress={() => router.canGoBack() ? router.back() : router.replace("/")} />
+      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: insets.top + 12, gap: 16, paddingBottom: insets.bottom + 24 }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t("common.back")}
+          testID="shop-back"
+          onPress={() => router.canGoBack() ? router.back() : router.replace("/")}
+          style={({ pressed }) => [styles.back, { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+        >
+          <Feather name="arrow-left" size={18} color={colors.foreground} />
+          <Text style={[styles.backText, text]}>{t("common.back")}</Text>
+        </Pressable>
         {detail.isLoading ? <ActivityIndicator color={colors.primary} /> :
           detail.isError || !shop ? (
             <View style={card}>
@@ -47,17 +57,48 @@ export default function ShopDetails() {
             </View>
           ) : (
             <>
-              <View style={card}>
-                <Text style={[styles.title, text]}>{shop.name}</Text>
-                <Text style={{ color: colors.primary }}>{t(shop.isOpen ? "shop.openNow" : "shop.closed")}</Text>
-                {!!shop.marketName && <Text style={text}>{shop.marketName}</Text>}
-                {!!shop.stallInfo && <Text style={text}>{shop.stallInfo}</Text>}
-                <Text style={muted}>{t("shopDetails.rating", { rating: shop.ratingAvg.toFixed(1), count: shop.ratingCount })}</Text>
-                {!!shop.fulfillment && <Text style={text}>{t(`shopDetails.${shop.fulfillment}`)}</Text>}
-                {shop.fulfillment !== "pickup_only" && shop.deliveryRadiusKm != null &&
-                  <Text style={muted}>{t("shopDetails.deliveryRadius", { km: shop.deliveryRadiusKm })}</Text>}
-                <Button title={t("shop.directions")} variant="outline" onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${shop.latitude},${shop.longitude}`)} />
-                <Button title={t("shop.chat")} onPress={() => router.push(chatShopHref(shop.id) as never)} />
+              <View style={[styles.hero, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={[styles.heroBand, { backgroundColor: colors.primary }]}>
+                  <View style={[styles.monogram, { backgroundColor: colors.background }]}>
+                    <Text style={[styles.monogramText, { color: colors.primary }]}>{shop.name.charAt(0).toUpperCase()}</Text>
+                  </View>
+                </View>
+                <View style={styles.heroBody}>
+                  <Text style={[styles.title, text]}>{shop.name}</Text>
+                  <View style={styles.chips}>
+                    <View style={[styles.chip, { backgroundColor: shop.isOpen ? colors.primary : colors.muted }]}>
+                      <View style={[styles.dot, { backgroundColor: shop.isOpen ? colors.primaryForeground : colors.mutedForeground }]} />
+                      <Text style={[styles.chipText, { color: shop.isOpen ? colors.primaryForeground : colors.mutedForeground }]}>{t(shop.isOpen ? "shop.openNow" : "shop.closed")}</Text>
+                    </View>
+                    <View style={[styles.chip, { backgroundColor: colors.muted }]}>
+                      <Feather name="star" size={13} color={colors.primary} />
+                      <Text style={[styles.chipText, text]}>{t("shopDetails.rating", { rating: shop.ratingAvg.toFixed(1), count: shop.ratingCount })}</Text>
+                    </View>
+                  </View>
+                  {(!!shop.marketName || !!shop.stallInfo) && (
+                    <View style={styles.infoRow}>
+                      <Feather name="map-pin" size={15} color={colors.mutedForeground} />
+                      <Text style={[styles.infoText, text]}>{[shop.marketName, shop.stallInfo].filter(Boolean).join(" · ")}</Text>
+                    </View>
+                  )}
+                  {!!shop.fulfillment && (
+                    <View style={styles.infoRow}>
+                      <Feather name="truck" size={15} color={colors.mutedForeground} />
+                      <Text style={[styles.infoText, text]}>
+                        {t(`shopDetails.${shop.fulfillment}`)}
+                        {shop.fulfillment !== "pickup_only" && shop.deliveryRadiusKm != null ? ` · ${t("shopDetails.deliveryRadius", { km: shop.deliveryRadiusKm })}` : ""}
+                      </Text>
+                    </View>
+                  )}
+                  <View style={[styles.actions, { flexDirection: "column" }]}>
+                    <View style={{ flex: 1 }}>
+                      <Button title={t("shop.directions")} variant="outline" fullWidth icon={<Feather name="navigation" size={16} color={colors.primary} />} onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${shop.latitude},${shop.longitude}`)} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Button title={t("shop.chat")} fullWidth icon={<Feather name="message-circle" size={16} color={colors.primaryForeground} />} onPress={() => router.push(chatShopHref(shop.id) as never)} />
+                    </View>
+                  </View>
+                </View>
               </View>
               {hasServices && (
                 <View style={card}>
@@ -97,7 +138,7 @@ export default function ShopDetails() {
               )}
               {(shop.kind !== "services" || !!detail.data?.products.length) && (
                 <>
-                  <Text style={[styles.heading, text]}>{t("shopDetails.products")}</Text>
+                  <Text style={[styles.section, text]}>{t("shopDetails.products")}</Text>
                   {!detail.data?.products.length && <Text style={muted}>{t("shopDetails.noProducts")}</Text>}
                   {detail.data?.products.map(product => (
                     <View key={product.id} style={card}>
@@ -105,7 +146,7 @@ export default function ShopDetails() {
                       <Text style={[styles.heading, text]}>{product.name}</Text>
                       {!!product.brand && <Text style={muted}>{product.brand}</Text>}
                       {!!product.description && <Text style={text}>{product.description}</Text>}
-                      <Text style={{ color: colors.primary }}>{money(product.price)}</Text>
+                      <Text style={[styles.price, { color: colors.primary }]}>{money(product.price)}</Text>
                       <Text style={muted}>{t(product.stockStatus === "in_stock" ? "shopDetails.inStock" : "shopDetails.outOfStock")}</Text>
                       <Button
                         title={t("askItem.askProduct")}
@@ -133,7 +174,23 @@ export default function ShopDetails() {
 
 const styles = StyleSheet.create({
   card: { padding: 16, borderWidth: 1, borderRadius: 18, gap: 12 },
-  title: { fontSize: 26, fontWeight: "800" },
+  title: { fontSize: 28, fontWeight: "800", letterSpacing: -0.5 },
+  back: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 9, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1 },
+  backText: { fontSize: 15, fontWeight: "600" },
+  hero: { borderWidth: 1, borderRadius: 22, overflow: "hidden" },
+  heroBand: { height: 84 },
+  monogram: { position: "absolute", left: 18, bottom: -30, width: 64, height: 64, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+  monogramText: { fontSize: 30, fontWeight: "800" },
+  heroBody: { padding: 18, paddingTop: 42, gap: 12 },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chip: { flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999 },
+  chipText: { fontSize: 13, fontWeight: "600" },
+  dot: { width: 7, height: 7, borderRadius: 4 },
+  infoRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  infoText: { fontSize: 14, flex: 1 },
+  actions: { flexDirection: "row", gap: 10, marginTop: 4 },
+  price: { fontSize: 18, fontWeight: "800" },
   heading: { fontSize: 18, fontWeight: "700" },
+  section: { fontSize: 20, fontWeight: "800", marginTop: 8 },
   photo: { width: "100%", height: 210, borderRadius: 12, resizeMode: "cover" },
 });

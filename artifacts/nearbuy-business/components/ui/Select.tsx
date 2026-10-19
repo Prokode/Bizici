@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import {
   FlatList,
+  Keyboard,
   Modal,
   Pressable,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
   ViewStyle,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useTranslation } from "react-i18next";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
@@ -115,6 +117,7 @@ export function Select(props: SelectProps) {
   };
 
   const closeSheet = () => {
+    Keyboard.dismiss();
     setOpen(false);
     setQuery("");
   };
@@ -201,6 +204,7 @@ export function Select(props: SelectProps) {
         animationType="slide"
         onRequestClose={closeSheet}
       >
+        <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
         <Pressable style={styles.backdrop} onPress={closeSheet}>
           <Pressable
             style={[
@@ -348,6 +352,7 @@ export function Select(props: SelectProps) {
             />
           </Pressable>
         </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );

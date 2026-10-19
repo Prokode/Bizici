@@ -21,6 +21,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { useColors } from "@/hooks/useColors";
 import { fetchVisualSearch, type VisualMatch } from "@/lib/api/visualSearch";
 import { fetchShopDetail, type PublicShop } from "@/lib/api/shops";
@@ -46,6 +47,7 @@ export default function CameraTab() {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [hint, setHint] = useState("");
+  const [radiusKm, setRadiusKm] = useState(5);
   const [matches, setMatches] = useState<VisualMatch[]>([]);
   const [openShop, setOpenShop] = useState<PublicShop | null>(null);
   const [center, setCenter] = useState<{ lat: number; lng: number } | null>(
@@ -96,11 +98,12 @@ export default function CameraTab() {
 
   // Visual search mutation
   const visualSearchMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (radius: number) => {
       if (!center) throw new Error(t("camera.positionUnavailable"));
       return fetchVisualSearch({
         lat: center.lat,
         lng: center.lng,
+        radiusKm: radius,
         imageBase64: photoBase64,
         hint: hint.trim() || undefined,
       });
@@ -209,8 +212,25 @@ export default function CameraTab() {
 
   const onAnalyze = () => {
     setStage("analyzing");
-    visualSearchMutation.mutate();
+    visualSearchMutation.mutate(radiusKm);
   };
+
+  const radiusPicker = (
+    <Select
+      label={t("camera.searchRadius")}
+      value={String(radiusKm)}
+      disabled={stage === "analyzing"}
+      options={[5, 10, 20, 50].map((km) => ({ label: `${km} km`, value: String(km) }))}
+      onChange={(value) => {
+        const radius = Number(value);
+        setRadiusKm(radius);
+        if (stage === "results") {
+          setStage("analyzing");
+          visualSearchMutation.mutate(radius);
+        }
+      }}
+    />
+  );
 
   const onPressMatch = (m: VisualMatch) => {
     const stub: PublicShop = {
@@ -300,6 +320,7 @@ export default function CameraTab() {
 
   const renderCaptured = (analyzing: boolean) => (
     <View style={styles.capturedWrap}>
+      {radiusPicker}
       {photoUri && (
         <Image source={{ uri: photoUri }} style={styles.previewImg} />
       )}
@@ -375,7 +396,7 @@ export default function CameraTab() {
           <Text
             style={[styles.resultsSubtitle, { color: colors.mutedForeground }]}
           >
-            {t("camera.withinRadius")}
+            {t("camera.withinRadius", { radius: radiusKm })}
           </Text>
         </View>
         <TouchableOpacity onPress={reset} style={styles.iconBtn} hitSlop={8}>
@@ -383,6 +404,7 @@ export default function CameraTab() {
         </TouchableOpacity>
       </View>
 
+      <View style={{ paddingHorizontal: 20 }}>{radiusPicker}</View>
       {matches.length === 0 ? (
         <View style={styles.emptyResults}>
           <Feather name="image" size={40} color={colors.mutedForeground} />

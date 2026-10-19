@@ -15,7 +15,7 @@ import { Card } from "@/components/ui/Card";
 import { useSignUp, useSSO } from "@clerk/expo";
 import { Link, useLocalSearchParams, useRouter, type Href } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import * as AuthSession from "expo-auth-session";
+import { clientSSORedirectUri, ssoIncompleteReason } from "@/lib/sso";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { LEGAL_VERSION } from "@workspace/legal-content";
@@ -66,6 +66,7 @@ export default function SignUpScreen() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [countryCode, setCountryCode] = useState<string | null>(null);
   const [city, setCity] = useState<City | null>(null);
+  const [showEmailForm, setShowEmailForm] = useState(false);
 
   const hasLocation = !!countryCode && !!city;
   const saveLocation = useCallback(
@@ -175,26 +176,39 @@ export default function SignUpScreen() {
   const onSSO = useCallback(
     async (strategy: "oauth_google" | "oauth_apple", source: ConsentSource) => {
       setSubmitError(null);
+      const reportFailure = (message: string) => {
+        setSubmitError(message);
+        Alert.alert(t("auth.sso.errorTitle"), message);
+      };
       if (!acceptedTerms) {
         Alert.alert(t("auth.termsRequiredTitle"), t("auth.termsRequiredBody"));
         return;
       }
       if (!hasLocation) return;
       try {
-        const { createdSessionId, setActive } = await startSSOFlow({
+        const result = await startSSOFlow({
           strategy,
-          redirectUrl: AuthSession.makeRedirectUri(),
+          redirectUrl: clientSSORedirectUri("sign-up"),
         });
+        const { createdSessionId, setActive } = result;
+        const reason = ssoIncompleteReason(result);
+        if (reason) {
+          reportFailure(t(`auth.sso.${reason}`));
+          return;
+        }
         if (createdSessionId && setActive) {
           await setActive({
             session: createdSessionId,
             navigate: async ({ session }) => {
-              if (session?.currentTask) return;
+              if (!session || session.currentTask) {
+                reportFailure(t("auth.sso.requirements"));
+                return;
+              }
               try {
                 await saveLocation(session);
               } catch {
                 if (!session?.user || !countryCode || !city) {
-                  setSubmitError(t("auth.locationSaveError"));
+                  reportFailure(t("auth.locationSaveError"));
                   return;
                 }
                 try {
@@ -203,7 +217,7 @@ export default function SignUpScreen() {
                     cityId: city.id,
                   });
                 } catch {
-                  setSubmitError(t("auth.locationSaveError"));
+                  reportFailure(t("auth.locationSaveError"));
                   return;
                 }
               }
@@ -213,7 +227,7 @@ export default function SignUpScreen() {
           });
         }
       } catch (err: any) {
-        setSubmitError(
+        reportFailure(
           err?.message ??
             (strategy === "oauth_apple"
               ? t("auth.errorApple")
@@ -321,7 +335,14 @@ export default function SignUpScreen() {
             />
           </Card>
         ) : (
+          <>
           <Card style={styles.card}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+              {t("auth.signupLocationTitle")}
+            </Text>
+            <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>
+              {t("auth.signupLocationHint")}
+            </Text>
             <CountrySelector
               value={countryCode}
               onChange={(nextCountryCode) => {
@@ -334,6 +355,25 @@ export default function SignUpScreen() {
               value={city}
               onChange={setCity}
             />
+            <ConsentCheckbox
+              accepted={acceptedTerms}
+              onToggle={() => setAcceptedTerms((v) => !v)}
+              colors={colors}
+              t={t}
+            />
+          </Card>
+          <Card style={styles.card}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+              {t("auth.signupMethodTitle")}
+            </Text>
+            <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>
+              {t(!hasLocation || !acceptedTerms ? "auth.signupRequirementsHint" : "auth.signupMethodHint")}
+            </Text>
+            {submitError && (
+              <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={[styles.error, { color: colors.destructive }]}>
+                {submitError}
+              </Text>
+            )}
             <Button
               title={t("auth.continueGoogle")}
               variant="secondary"
@@ -345,7 +385,7 @@ export default function SignUpScreen() {
                 />
               }
               onPress={onGoogle}
-              disabled={!hasLocation}
+              disabled={!hasLocation || !acceptedTerms}
               style={{ marginBottom: 12 }}
             />
             {/*
@@ -359,7 +399,7 @@ export default function SignUpScreen() {
                 title={t("auth.continueApple")}
                 icon={<FontAwesome name="apple" size={18} color="#FFFFFF" />}
                 onPress={onApple}
-                disabled={!hasLocation}
+                disabled={!hasLocation || !acceptedTerms}
                 style={{
                   backgroundColor: "#000000",
                   borderColor: "#000000",
@@ -383,6 +423,15 @@ export default function SignUpScreen() {
               />
             </View>
 
+            <Button
+              title={t("auth.continueEmail")}
+              variant="outline"
+              icon={<Feather name="mail" size={18} color={colors.primary} />}
+              onPress={() => setShowEmailForm((visible) => !visible)}
+              style={{ marginBottom: showEmailForm ? 20 : 0 }}
+            />
+            {showEmailForm && (
+            <>
             <Input
               label={t("auth.email")}
               placeholder={t("auth.emailPlaceholder")}
@@ -409,19 +458,6 @@ export default function SignUpScreen() {
                 {errors.fields.password.message}
               </Text>
             )}
-            {submitError && (
-              <Text style={[styles.error, { color: colors.destructive }]}>
-                {submitError}
-              </Text>
-            )}
-
-            <ConsentCheckbox
-              accepted={acceptedTerms}
-              onToggle={() => setAcceptedTerms((v) => !v)}
-              colors={colors}
-              t={t}
-            />
-
             <Button
               title={t("auth.signUpButton")}
               size="lg"
@@ -436,9 +472,12 @@ export default function SignUpScreen() {
               onPress={handleSubmit}
               style={{ marginTop: 12 }}
             />
+            </>
+            )}
 
             <View nativeID="clerk-captcha" />
           </Card>
+          </>
         )}
 
         <View style={styles.footer}>
@@ -563,6 +602,8 @@ function ConsentCheckbox({
 }
 
 const styles = StyleSheet.create({
+  sectionTitle: { fontSize: 18, fontFamily: "PlusJakartaSans_700Bold", marginBottom: 8 },
+  sectionHint: { fontSize: 13, lineHeight: 20, marginBottom: 20 },
   container: { flex: 1 },
   content: { padding: 24, flexGrow: 1 },
   back: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 },

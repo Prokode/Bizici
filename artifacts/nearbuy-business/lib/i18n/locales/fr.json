@@ -120,6 +120,9 @@
     "screenTitle": "Modifier la boutique"
   },
   "addProduct": {
+    "missingShop": "Boutique indisponible. Revenez en arrière et ouvrez à nouveau la boutique.",
+    "invalidValues": "Saisissez un nom, un prix positif ou nul et une quantité entière positive ou nulle.",
+    "saveError": "Le produit n’a pas pu être enregistré. Votre formulaire est conservé. Veuillez réessayer.",
     "screenTitle": "Ajouter un produit",
     "howAdd": "Comment ajouter un produit ?",
     "photoToInventory": "Photo vers inventaire",
@@ -373,6 +376,7 @@
     "errorSignUp": "Inscription impossible",
     "errorGoogle": "Connexion Google impossible",
     "sso": {
+      "errorTitle": "Connexion non terminée",
       "cancelled": "Le navigateur s’est fermé avant la fin de la connexion. Veuillez réessayer.",
       "second_factor": "Votre compte nécessite une seconde étape de vérification. La connexion Google n’est pas terminée.",
       "requirements": "Clerk demande des informations ou une vérification supplémentaires avant de terminer la connexion.",

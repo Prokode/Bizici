@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { useSignIn, useSSO } from "@clerk/expo";
 import { Link, useLocalSearchParams, useRouter, type Href } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import * as AuthSession from "expo-auth-session";
+import { clientSSORedirectUri, ssoIncompleteReason } from "@/lib/sso";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -79,22 +79,35 @@ export default function SignInScreen() {
   const onSSO = useCallback(
     async (strategy: "oauth_google" | "oauth_apple") => {
       setSubmitError(null);
+      const reportFailure = (message: string) => {
+        setSubmitError(message);
+        Alert.alert(t("auth.sso.errorTitle"), message);
+      };
       try {
-        const { createdSessionId, setActive } = await startSSOFlow({
+        const result = await startSSOFlow({
           strategy,
-          redirectUrl: AuthSession.makeRedirectUri(),
+          redirectUrl: clientSSORedirectUri("sign-in"),
         });
+        const { createdSessionId, setActive } = result;
+        const reason = ssoIncompleteReason(result);
+        if (reason) {
+          reportFailure(t(`auth.sso.${reason}`));
+          return;
+        }
         if (createdSessionId && setActive) {
           await setActive({
             session: createdSessionId,
             navigate: async ({ session }) => {
-              if (session?.currentTask) return;
+              if (!session || session.currentTask) {
+                reportFailure(t("auth.sso.requirements"));
+                return;
+              }
               goHome();
             },
           });
         }
       } catch (err: unknown) {
-        setSubmitError(
+        reportFailure(
           (err instanceof Error ? err.message : null) ??
             (strategy === "oauth_apple"
               ? t("auth.errorApple")

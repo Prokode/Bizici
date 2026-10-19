@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Keyboard,
   Modal,
   Pressable,
   StyleSheet,
@@ -12,6 +13,7 @@ import {
   type ViewStyle,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useTranslation } from "react-i18next";
 import * as Haptics from "expo-haptics";
 import {
@@ -96,6 +98,7 @@ export function CitySelector({
   };
 
   const closeSheet = () => {
+    Keyboard.dismiss();
     setOpen(false);
     setQuery("");
     setDebounced("");
@@ -183,6 +186,7 @@ export function CitySelector({
         animationType="slide"
         onRequestClose={closeSheet}
       >
+        <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
         <Pressable style={styles.backdrop} onPress={closeSheet}>
           <Pressable
             style={[
@@ -324,6 +328,7 @@ export function CitySelector({
             />
           </Pressable>
         </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );

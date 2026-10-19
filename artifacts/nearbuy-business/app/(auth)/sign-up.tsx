@@ -163,6 +163,10 @@ export default function SignUpScreen() {
   const onSSO = useCallback(
     async (strategy: "oauth_google" | "oauth_apple", source: ConsentSource) => {
       setSubmitError(null);
+      const reportFailure = (message: string) => {
+        setSubmitError(message);
+        Alert.alert(t("auth.sso.errorTitle"), message);
+      };
       if (!acceptedTerms) {
         Alert.alert(t("auth.termsRequiredTitle"), t("auth.termsRequiredBody"));
         return;
@@ -176,22 +180,22 @@ export default function SignUpScreen() {
         const { createdSessionId, setActive } = result;
         const reason = ssoIncompleteReason(result);
         if (reason) {
-          setSubmitError(t(`auth.sso.${reason}`));
+          reportFailure(t(`auth.sso.${reason}`));
           return;
         }
         if (createdSessionId && setActive) {
           await setActive({
             session: createdSessionId,
             navigate: async ({ session }) => {
-              if (session?.currentTask) {
-                setSubmitError(t("auth.sso.requirements"));
+              if (!session || session.currentTask) {
+                reportFailure(t("auth.sso.requirements"));
                 return;
               }
               try {
                 await saveLocation(session);
               } catch {
                 if (!session?.user || !countryCode || !city) {
-                  setSubmitError(t("auth.locationSaveError"));
+                  reportFailure(t("auth.locationSaveError"));
                   return;
                 }
                 try {
@@ -200,7 +204,7 @@ export default function SignUpScreen() {
                     cityId: city.id,
                   });
                 } catch {
-                  setSubmitError(t("auth.locationSaveError"));
+                  reportFailure(t("auth.locationSaveError"));
                   return;
                 }
               }
@@ -210,7 +214,7 @@ export default function SignUpScreen() {
           });
         }
       } catch (err: any) {
-        setSubmitError(
+        reportFailure(
           err?.message ??
             (strategy === "oauth_apple"
               ? t("auth.errorApple")

@@ -120,6 +120,9 @@
     "screenTitle": "Edit shop"
   },
   "addProduct": {
+    "missingShop": "Shop unavailable. Go back and open the shop again.",
+    "invalidValues": "Enter a name, a valid non-negative price, and a whole-number quantity.",
+    "saveError": "The product could not be saved. Your form has been kept. Please try again.",
     "screenTitle": "Add product",
     "howAdd": "How would you like to add a product?",
     "photoToInventory": "Photo to Inventory",
@@ -373,6 +376,7 @@
     "errorSignUp": "Sign up failed",
     "errorGoogle": "Google sign-in failed",
     "sso": {
+      "errorTitle": "Sign-in not completed",
       "cancelled": "The sign-in browser closed before sign-in completed. Please try again.",
       "second_factor": "Your account requires a second verification step. Google sign-in has not completed.",
       "requirements": "Clerk requires additional account information or verification before sign-in can finish.",

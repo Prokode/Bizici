@@ -12,6 +12,7 @@ export function sellerSSORedirectUri(screen: "sign-in" | "sign-up") {
 
 type SSOResult = {
   createdSessionId?: string | null;
+  setActive?: unknown;
   authSessionResult?: { type: string } | null;
   signIn?: { status: string | null } | null;
   signUp?: { status: string | null; missingFields?: string[] } | null;
@@ -19,7 +20,7 @@ type SSOResult = {
 
 /** Only safe status codes, never callback URLs, nonces, or session tokens. */
 export function ssoIncompleteReason(result: SSOResult): string | null {
-  if (result.createdSessionId) return null;
+  if (result.createdSessionId && typeof result.setActive === "function") return null;
   const browser = result.authSessionResult?.type;
   if (browser === "cancel" || browser === "dismiss") return "cancelled";
   if (result.signIn?.status === "needs_second_factor") return "second_factor";
