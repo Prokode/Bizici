@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { getAuth, clerkClient } from "@clerk/express";
 import { User, ShopMember, type ShopMemberDoc } from "@workspace/db";
 import { Types } from "mongoose";
+import { getAuthFailureDiagnostics } from "./authDiagnostics";
 
 declare global {
   namespace Express {
@@ -61,6 +62,17 @@ export async function requireAuth(
       auth?.userId ??
       undefined;
     if (!clerkUserId) {
+      req.log.warn(
+        {
+          authFailure: getAuthFailureDiagnostics({
+            authorization: req.get("authorization"),
+            cookie: req.get("cookie"),
+            sessionStatus: auth.sessionStatus,
+            debug: () => auth.debug(),
+          }),
+        },
+        "API authentication rejected",
+      );
       res.status(401).json({ error: "Unauthorized" });
       return;
     }
