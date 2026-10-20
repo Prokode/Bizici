@@ -19,11 +19,11 @@ test("only the seller's account-level profile route is public", () => {
   assert.match(layout, /if \(!isSignedIn && !isGuestProfile\) return <Redirect/);
 });
 
-test("both apps expose language and theme on login and in both profile states", () => {
+test("both apps omit login preferences but preserve them in both profile states", () => {
   for (const app of ["nearbuy", "nearbuy-business"]) {
     const login = read(app, "app/(auth)/sign-in.tsx");
     const profile = read(app, `app/${app === "nearbuy" ? "(tabs)" : "(home)"}/profile.tsx`);
-    assert.match(login, /<OnboardingPreferences testIDPrefix="login"/);
+    assert.doesNotMatch(login, /OnboardingPreferences/);
     const [beforeAuth, guest, signedIn] = profile.split(/if \(!isSignedIn\) \{|const displayName =|const points =/);
     assert.ok(beforeAuth);
     assert.match(guest, /<OnboardingPreferences testIDPrefix="profile"/);

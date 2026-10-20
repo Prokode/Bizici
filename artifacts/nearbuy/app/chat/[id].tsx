@@ -3,14 +3,13 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Feather } from "@expo/vector-icons";
@@ -352,7 +351,7 @@ export default function ChatThreadScreen() {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior="padding"
         keyboardVerticalOffset={0}
       >
         {messagesQuery.isLoading ? (
@@ -362,6 +361,8 @@ export default function ChatThreadScreen() {
         ) : (
           <FlatList
             inverted
+            keyboardDismissMode="interactive"
+            keyboardShouldPersistTaps="handled"
             data={invertedData}
             keyExtractor={(m) => m.id}
             contentContainerStyle={

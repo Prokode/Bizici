@@ -12,7 +12,6 @@ import { sellerSSORedirectUri, ssoIncompleteReason } from "@/lib/sso";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
-import { OnboardingPreferences } from "@/components/OnboardingPreferences";
 import { isSignInEmailValid, passwordSignInParams, signInErrorMessage, signInErrorReference } from "@/lib/signInForm";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -126,7 +125,6 @@ export default function SignInScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       <KeyboardAwareScrollViewCompat contentContainerStyle={styles.content}>
-        <OnboardingPreferences testIDPrefix="login" />
         <View style={styles.header}>
           <View style={[styles.logo, { backgroundColor: colors.primary }]}>
             <Feather name="shopping-bag" size={28} color={colors.primaryForeground} />
