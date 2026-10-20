@@ -3,6 +3,34 @@ import { describe, it } from "node:test";
 import { getAuthFailureDiagnostics } from "../../artifacts/api-server/src/lib/authDiagnostics";
 
 describe("safe API authentication failure diagnostics", () => {
+  it("preserves every token verification reason in the installed Clerk SDK", () => {
+    // @clerk/backend 3.x TokenVerificationErrorReason values. In particular,
+    // key-id mismatches must not be hidden as 'unrecognized'.
+    const sdkReasons = [
+      "token-expired",
+      "token-invalid",
+      "token-invalid-algorithm",
+      "token-invalid-authorized-parties",
+      "token-invalid-signature",
+      "token-not-active-yet",
+      "token-iat-in-the-future",
+      "token-verification-failed",
+      "secret-key-invalid",
+      "jwk-local-missing",
+      "jwk-remote-failed-to-load",
+      "jwk-remote-invalid",
+      "jwk-remote-missing",
+      "jwk-failed-to-resolve",
+      "jwk-kid-mismatch",
+    ];
+    for (const reason of sdkReasons) {
+      assert.equal(
+        getAuthFailureDiagnostics({ debug: () => ({ reason }) }).clerkReason,
+        reason,
+      );
+    }
+  });
+
   it("identifies missing credentials and the Clerk reason", () => {
     assert.deepEqual(
       getAuthFailureDiagnostics({
