@@ -4,6 +4,8 @@ import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
 import { rm } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -63,7 +65,9 @@ async function buildAll() {
       "@aws-sdk/*",
       "@azure/*",
       "@opentelemetry/*",
-      "@google-cloud/*",
+      // Storage is required by product photo routes and must ship in the
+      // standalone release. Only SDKs requiring external proto files stay external.
+      "@google-cloud/secret-manager",
       "@google/*",
       "googleapis",
       "firebase-admin",
@@ -118,6 +122,14 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     `,
     },
   });
+  // CI deploys only the API bundle and data files, not node_modules. Verify that
+  // exact layout in isolation so missing runtime imports fail before deployment.
+  const { stdout } = await promisify(execFile)(process.execPath, [
+    path.resolve(artifactDir, "../../deploy/staging/verify-api-release.mjs"),
+    distDir,
+    path.resolve(artifactDir, "_data"),
+  ], { timeout: 30_000 });
+  process.stdout.write(stdout);
 }
 
 buildAll().catch((err) => {
