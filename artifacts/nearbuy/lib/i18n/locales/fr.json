@@ -549,5 +549,22 @@
     "messageTooLong": "Veuillez raccourcir votre question. Le message et la référence doivent contenir au maximum 2 000 caractères.",
     "composerPlaceholder": "Votre message…",
     "emptyThread": "Lancez la conversation : posez votre question !"
+  },
+  "shopBrandPhoto": {
+    "title": "Photo de la boutique",
+    "subtitle": "Visible par les clients sur la carte et sur la page de votre boutique. C'est l'identité de votre boutique, pas la photo de votre compte personnel.",
+    "choose": "Choisir une photo",
+    "replace": "Remplacer la photo",
+    "remove": "Supprimer la photo",
+    "uploading": "Envoi de la photo...",
+    "removing": "Suppression de la photo...",
+    "uploadError": "La photo n'a pas pu être envoyée. Veuillez réessayer.",
+    "removeError": "La photo n'a pas pu être supprimée. Veuillez réessayer.",
+    "removeConfirmTitle": "Supprimer la photo de la boutique ?",
+    "removeConfirmBody": "Les clients verront l'initiale de votre boutique à la place.",
+    "removeConfirm": "Supprimer",
+    "cancel": "Annuler",
+    "helperReadOnly": "Seul le propriétaire de la boutique peut modifier cette photo.",
+    "alt": "Photo de {{name}}"
   }
 }

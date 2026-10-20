@@ -14,6 +14,7 @@ export type PublicProductPreview = {
 };
 
 export type PublicShop = {
+  brandPhotoUrl?: string | null;
   currency?: ShopCurrency | null;
   id: string;
   sellerId: string;

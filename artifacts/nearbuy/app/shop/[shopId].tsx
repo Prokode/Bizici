@@ -14,6 +14,7 @@ import { fetchProviderDetail } from "@/lib/api/providers";
 import { LocationBadge } from "@/components/LocationBadge";
 import { ShopReviewsSection } from "@/components/ShopReviewsSection";
 import { chatShopHref } from "@/lib/chatItemContext";
+import { BrandPhoto } from "@/components/BrandPhoto";
 
 export default function ShopDetails() {
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
@@ -61,8 +62,8 @@ export default function ShopDetails() {
             <>
               <View style={[styles.hero, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <View style={[styles.heroBand, { backgroundColor: colors.primary }]}>
-                  <View style={[styles.monogram, { backgroundColor: colors.background }]}>
-                    <Text style={[styles.monogramText, { color: colors.primary }]}>{shop.name.charAt(0).toUpperCase()}</Text>
+                  <View style={[styles.monogram, { backgroundColor: colors.background, borderColor: colors.background }]}>
+                    <BrandPhoto uri={shop.brandPhotoUrl} name={shop.name} size={60} style={{ borderRadius: 16 }} />
                   </View>
                 </View>
                 <View style={styles.heroBody}>
@@ -182,8 +183,7 @@ const styles = StyleSheet.create({
   backText: { fontSize: 15, fontWeight: "600" },
   hero: { borderWidth: 1, borderRadius: 22, overflow: "hidden" },
   heroBand: { height: 84 },
-  monogram: { position: "absolute", left: 18, bottom: -30, width: 64, height: 64, borderRadius: 18, alignItems: "center", justifyContent: "center" },
-  monogramText: { fontSize: 30, fontWeight: "800" },
+  monogram: { position: "absolute", left: 18, bottom: -30, width: 64, height: 64, borderRadius: 18, alignItems: "center", justifyContent: "center", overflow: "hidden" },
   heroBody: { padding: 18, paddingTop: 42, gap: 12 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: { flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999 },

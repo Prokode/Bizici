@@ -50,6 +50,7 @@ export type PublicProviderProfile = {
 
 export type PublicProviderDetail = {
   shop: {
+    brandPhotoUrl?: string | null;
     currency?: ShopCurrency | null;
     id: string;
     sellerId: string;

@@ -21,6 +21,8 @@ import QRCode from "react-native-qrcode-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HelpersSection } from "@/components/HelpersSection";
 import { useTranslation } from "react-i18next";
+import { BrandPhoto } from "@/components/BrandPhoto";
+import { ShopBrandPhotoSettings } from "@/components/ShopBrandPhotoSettings";
 
 export default function ShopConfigurationScreen() {
   const colors = useColors();
@@ -70,11 +72,7 @@ export default function ShopConfigurationScreen() {
       ]}
     >
       <View style={styles.header}>
-        <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-          <Text style={[styles.avatarText, { color: colors.primaryForeground, fontFamily: "PlusJakartaSans_700Bold" }]}>
-            {shop.name.charAt(0).toUpperCase()}
-          </Text>
-        </View>
+        <BrandPhoto uri={shop.brandPhotoUrl} name={shop.name} size={64} style={styles.avatar} />
         <View style={styles.headerInfo}>
           <Text style={[styles.shopName, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>
             {shop.name}
@@ -109,6 +107,8 @@ export default function ShopConfigurationScreen() {
           onPress={() => setShowQr(true)}
         />
       </View>
+
+      {isSeller && <ShopBrandPhotoSettings shopId={shopId as string} name={shop.name} brandPhotoUrl={shop.brandPhotoUrl} />}
 
       <Card style={styles.detailsCard}>
         <View style={styles.detailRow}>
@@ -212,8 +212,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16 },
   header: { flexDirection: "row", alignItems: "center", marginBottom: 24 },
-  avatar: { width: 64, height: 64, borderRadius: 16, alignItems: "center", justifyContent: "center", marginRight: 16 },
-  avatarText: { fontSize: 28 },
+  avatar: { marginRight: 16 },
   headerInfo: { flex: 1 },
   shopName: { fontSize: 24, marginBottom: 4 },
   shopCategory: { fontSize: 16 },

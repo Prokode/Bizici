@@ -104,6 +104,7 @@ const ShopSchema = new Schema(
     sellerId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     name: { type: String, required: true },
     marketName: { type: String, default: null },
+    brandPhotoUrl: { type: String, default: null },
     stallInfo: { type: String, default: null },
     countryCode: {
       type: String,

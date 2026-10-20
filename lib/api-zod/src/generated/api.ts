@@ -8,6 +8,177 @@
 import * as zod from "zod";
 
 /**
+ * @summary Request a direct upload URL for a shop brand photo (owner only)
+ */
+export const RequestShopBrandPhotoUploadParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const requestShopBrandPhotoUploadBodySizeMax = 5242880;
+
+export const RequestShopBrandPhotoUploadBody = zod.object({
+  contentType: zod.enum(["image/jpeg", "image/png", "image/webp"]),
+  size: zod.number().min(1).max(requestShopBrandPhotoUploadBodySizeMax),
+});
+
+export const RequestShopBrandPhotoUploadResponse = zod.object({
+  uploadUrl: zod.string(),
+  photoId: zod.string(),
+});
+
+/**
+ * @summary Save a completed brand photo upload, or remove it with null (owner only)
+ */
+export const SetShopBrandPhotoParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const SetShopBrandPhotoBody = zod.object({
+  photoId: zod.string().nullable(),
+});
+
+export const setShopBrandPhotoResponseCurrencyOneCodeMin = 3;
+export const setShopBrandPhotoResponseCurrencyOneCodeMax = 3;
+
+export const setShopBrandPhotoResponseServiceProviderOneAgeMin = 16;
+export const setShopBrandPhotoResponseServiceProviderOneAgeMax = 120;
+
+export const setShopBrandPhotoResponseServiceProviderOneYearsExperienceMin = 0;
+export const setShopBrandPhotoResponseServiceProviderOneYearsExperienceMax = 80;
+
+export const setShopBrandPhotoResponseServiceProviderOneServiceRadiusKmMax = 100;
+
+export const setShopBrandPhotoResponseRatingAvgMin = 0;
+export const setShopBrandPhotoResponseRatingAvgMax = 5;
+
+export const setShopBrandPhotoResponseRatingCountMin = 0;
+
+export const setShopBrandPhotoResponseDeliveryRadiusKmMax = 100;
+
+export const SetShopBrandPhotoResponse = zod.object({
+  id: zod.string(),
+  sellerId: zod.string(),
+  name: zod.string(),
+  marketName: zod.string().nullish(),
+  brandPhotoUrl: zod.string().nullish(),
+  stallInfo: zod.string().nullish(),
+  countryCode: zod.string().nullish(),
+  city: zod
+    .union([
+      zod.object({
+        id: zod.string(),
+        name: zod.string().describe("Display name, e.g. Paris"),
+        countryCode: zod.string().describe("ISO 3166-1 alpha-2, e.g. FR"),
+      }),
+      zod.null(),
+    ])
+    .optional(),
+  currency: zod
+    .union([
+      zod.object({
+        code: zod
+          .string()
+          .min(setShopBrandPhotoResponseCurrencyOneCodeMin)
+          .max(setShopBrandPhotoResponseCurrencyOneCodeMax),
+        name: zod.string(),
+        symbol: zod.string(),
+      }),
+      zod.null(),
+    ])
+    .optional(),
+  latitude: zod.number(),
+  longitude: zod.number(),
+  isOpen: zod.boolean(),
+  kind: zod
+    .enum(["products", "services", "hybrid"])
+    .describe(
+      'Whether this shop sells products, offers services, or both.\nExisting shops default to \"products\".\n',
+    ),
+  serviceProvider: zod
+    .union([
+      zod.object({
+        firstName: zod.string().nullish(),
+        lastName: zod.string().nullish(),
+        age: zod
+          .number()
+          .min(setShopBrandPhotoResponseServiceProviderOneAgeMin)
+          .max(setShopBrandPhotoResponseServiceProviderOneAgeMax)
+          .nullish(),
+        hideAge: zod
+          .boolean()
+          .describe(
+            "When true, age must NOT be returned on public-facing\nendpoints (search, provider detail). Always returned on\nauthenticated owner endpoints.\n",
+          ),
+        bio: zod.string().nullish(),
+        photoUrl: zod.string().nullish(),
+        yearsExperience: zod
+          .number()
+          .min(setShopBrandPhotoResponseServiceProviderOneYearsExperienceMin)
+          .max(setShopBrandPhotoResponseServiceProviderOneYearsExperienceMax)
+          .nullish(),
+        certifications: zod.array(zod.string()),
+        serviceRadiusKm: zod
+          .number()
+          .min(1)
+          .max(setShopBrandPhotoResponseServiceProviderOneServiceRadiusKmMax),
+        portfolioPhotos: zod.array(zod.string()),
+        isVerified: zod.boolean(),
+        serviceLocation: zod
+          .enum(["at_shop", "at_customer", "both"])
+          .describe(
+            "Where a service is performed. `at_shop` = customer must come,\n`at_customer` = provider travels to the customer, `both` = either.\n",
+          ),
+      }),
+      zod.null(),
+    ])
+    .optional()
+    .describe(
+      'Embedded provider profile, only meaningful when kind is\n\"services\" or \"hybrid\". May be a near-empty object when the\nshop was just created and the profile not yet filled in.\n',
+    ),
+  ratingAvg: zod
+    .number()
+    .min(setShopBrandPhotoResponseRatingAvgMin)
+    .max(setShopBrandPhotoResponseRatingAvgMax)
+    .describe("Mean rating across all reviews (0 when none)."),
+  ratingCount: zod
+    .number()
+    .min(setShopBrandPhotoResponseRatingCountMin)
+    .describe("Number of reviews used for the average."),
+  kyc: zod
+    .object({
+      status: zod
+        .enum(["unsubmitted", "pending", "approved", "rejected"])
+        .describe(
+          "unsubmitted = no document uploaded yet, pending = awaiting admin\nreview, approved = visible to customers, rejected = needs resubmit.\n",
+        ),
+      submittedAt: zod.coerce.date().nullish(),
+      reviewedAt: zod.coerce.date().nullish(),
+      rejectionReason: zod.string().nullish(),
+    })
+    .optional()
+    .describe("Embedded KYC status on a shop. Image data lives elsewhere."),
+  fulfillment: zod
+    .enum(["pickup_only", "delivery_only", "both"])
+    .describe(
+      "How a product shop fulfils orders. `pickup_only` = customer must\ncome, `delivery_only` = shop only delivers, `both` = either.\n",
+    ),
+  deliveryRadiusKm: zod
+    .number()
+    .min(1)
+    .max(setShopBrandPhotoResponseDeliveryRadiusKmMax)
+    .nullish()
+    .describe(
+      'Optional delivery radius in km. Only meaningful when\nfulfillment is \"delivery_only\" or \"both\".\n',
+    ),
+  distanceKm: zod
+    .number()
+    .nullish()
+    .describe(
+      "Distance from the search origin in kilometers. Only present\non results returned by geo search endpoints.\n",
+    ),
+});
+
+/**
  * @summary Daily indicative exchange rates, relative to EUR
  */
 export const GetPublicExchangeRatesResponse = zod.object({
@@ -227,6 +398,7 @@ export const GetMeResponse = zod.object({
         sellerId: zod.string(),
         name: zod.string(),
         marketName: zod.string().nullish(),
+        brandPhotoUrl: zod.string().nullish(),
         stallInfo: zod.string().nullish(),
         countryCode: zod.string().nullish(),
         city: zod
@@ -553,6 +725,7 @@ export const ListShopsResponseItem = zod.object({
     sellerId: zod.string(),
     name: zod.string(),
     marketName: zod.string().nullish(),
+    brandPhotoUrl: zod.string().nullish(),
     stallInfo: zod.string().nullish(),
     countryCode: zod.string().nullish(),
     city: zod
@@ -736,6 +909,7 @@ export const CreateShopResponse = zod.object({
   sellerId: zod.string(),
   name: zod.string(),
   marketName: zod.string().nullish(),
+  brandPhotoUrl: zod.string().nullish(),
   stallInfo: zod.string().nullish(),
   countryCode: zod.string().nullish(),
   city: zod
@@ -880,6 +1054,7 @@ export const GetShopResponse = zod.object({
   sellerId: zod.string(),
   name: zod.string(),
   marketName: zod.string().nullish(),
+  brandPhotoUrl: zod.string().nullish(),
   stallInfo: zod.string().nullish(),
   countryCode: zod.string().nullish(),
   city: zod
@@ -1046,6 +1221,7 @@ export const UpdateShopResponse = zod.object({
   sellerId: zod.string(),
   name: zod.string(),
   marketName: zod.string().nullish(),
+  brandPhotoUrl: zod.string().nullish(),
   stallInfo: zod.string().nullish(),
   countryCode: zod.string().nullish(),
   city: zod
@@ -1194,6 +1370,7 @@ export const SetShopOpenResponse = zod.object({
   sellerId: zod.string(),
   name: zod.string(),
   marketName: zod.string().nullish(),
+  brandPhotoUrl: zod.string().nullish(),
   stallInfo: zod.string().nullish(),
   countryCode: zod.string().nullish(),
   city: zod
@@ -2356,6 +2533,7 @@ export const SearchServicesResponseItem = zod.object({
     sellerId: zod.string(),
     name: zod.string(),
     marketName: zod.string().nullish(),
+    brandPhotoUrl: zod.string().nullish(),
     stallInfo: zod.string().nullish(),
     countryCode: zod.string().nullish(),
     city: zod
@@ -2711,6 +2889,7 @@ export const AcceptInvitationResponse = zod.object({
     sellerId: zod.string(),
     name: zod.string(),
     marketName: zod.string().nullish(),
+    brandPhotoUrl: zod.string().nullish(),
     stallInfo: zod.string().nullish(),
     countryCode: zod.string().nullish(),
     city: zod

@@ -549,5 +549,22 @@
     "messageTooLong": "Please shorten your question. The message and item reference must fit within 2,000 characters.",
     "composerPlaceholder": "Your message…",
     "emptyThread": "Start the conversation: ask your question!"
+  },
+  "shopBrandPhoto": {
+    "title": "Shop photo",
+    "subtitle": "Shown to customers on the map and your shop page. This is your shop identity, not your personal account photo.",
+    "choose": "Choose photo",
+    "replace": "Replace photo",
+    "remove": "Remove photo",
+    "uploading": "Uploading photo...",
+    "removing": "Removing photo...",
+    "uploadError": "The photo could not be uploaded. Please try again.",
+    "removeError": "The photo could not be removed. Please try again.",
+    "removeConfirmTitle": "Remove shop photo?",
+    "removeConfirmBody": "Customers will see your shop initial instead.",
+    "removeConfirm": "Remove",
+    "cancel": "Cancel",
+    "helperReadOnly": "Only the shop owner can change this photo.",
+    "alt": "Photo of {{name}}"
   }
 }

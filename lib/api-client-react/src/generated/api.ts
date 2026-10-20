@@ -57,6 +57,8 @@ import type {
   PublicProductSearchPage,
   PushTokenInput,
   QrPayload,
+  RequestShopBrandPhotoUpload200,
+  RequestShopBrandPhotoUploadBody,
   ResolveCityInput,
   SearchPublicProductsParams,
   SearchServicesParams,
@@ -66,6 +68,7 @@ import type {
   ServiceProviderProfileInput,
   ServiceSearchResult,
   ServiceUpdateInput,
+  SetShopBrandPhotoBody,
   Shop,
   ShopCreateInput,
   ShopDashboard,
@@ -88,6 +91,184 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * @summary Request a direct upload URL for a shop brand photo (owner only)
+ */
+export const getRequestShopBrandPhotoUploadUrl = (shopId: string) => {
+  return `/api/shops/${shopId}/brand-photo/upload`;
+};
+
+export const requestShopBrandPhotoUpload = async (
+  shopId: string,
+  requestShopBrandPhotoUploadBody: RequestShopBrandPhotoUploadBody,
+  options?: RequestInit,
+): Promise<RequestShopBrandPhotoUpload200> => {
+  return customFetch<RequestShopBrandPhotoUpload200>(
+    getRequestShopBrandPhotoUploadUrl(shopId),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(requestShopBrandPhotoUploadBody),
+    },
+  );
+};
+
+export const getRequestShopBrandPhotoUploadMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof requestShopBrandPhotoUpload>>,
+    TError,
+    { shopId: string; data: BodyType<RequestShopBrandPhotoUploadBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof requestShopBrandPhotoUpload>>,
+  TError,
+  { shopId: string; data: BodyType<RequestShopBrandPhotoUploadBody> },
+  TContext
+> => {
+  const mutationKey = ["requestShopBrandPhotoUpload"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof requestShopBrandPhotoUpload>>,
+    { shopId: string; data: BodyType<RequestShopBrandPhotoUploadBody> }
+  > = (props) => {
+    const { shopId, data } = props ?? {};
+
+    return requestShopBrandPhotoUpload(shopId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RequestShopBrandPhotoUploadMutationResult = NonNullable<
+  Awaited<ReturnType<typeof requestShopBrandPhotoUpload>>
+>;
+export type RequestShopBrandPhotoUploadMutationBody =
+  BodyType<RequestShopBrandPhotoUploadBody>;
+export type RequestShopBrandPhotoUploadMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Request a direct upload URL for a shop brand photo (owner only)
+ */
+export const useRequestShopBrandPhotoUpload = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof requestShopBrandPhotoUpload>>,
+    TError,
+    { shopId: string; data: BodyType<RequestShopBrandPhotoUploadBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof requestShopBrandPhotoUpload>>,
+  TError,
+  { shopId: string; data: BodyType<RequestShopBrandPhotoUploadBody> },
+  TContext
+> => {
+  return useMutation(getRequestShopBrandPhotoUploadMutationOptions(options));
+};
+
+/**
+ * @summary Save a completed brand photo upload, or remove it with null (owner only)
+ */
+export const getSetShopBrandPhotoUrl = (shopId: string) => {
+  return `/api/shops/${shopId}/brand-photo`;
+};
+
+export const setShopBrandPhoto = async (
+  shopId: string,
+  setShopBrandPhotoBody: SetShopBrandPhotoBody,
+  options?: RequestInit,
+): Promise<Shop> => {
+  return customFetch<Shop>(getSetShopBrandPhotoUrl(shopId), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(setShopBrandPhotoBody),
+  });
+};
+
+export const getSetShopBrandPhotoMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setShopBrandPhoto>>,
+    TError,
+    { shopId: string; data: BodyType<SetShopBrandPhotoBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setShopBrandPhoto>>,
+  TError,
+  { shopId: string; data: BodyType<SetShopBrandPhotoBody> },
+  TContext
+> => {
+  const mutationKey = ["setShopBrandPhoto"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setShopBrandPhoto>>,
+    { shopId: string; data: BodyType<SetShopBrandPhotoBody> }
+  > = (props) => {
+    const { shopId, data } = props ?? {};
+
+    return setShopBrandPhoto(shopId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SetShopBrandPhotoMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setShopBrandPhoto>>
+>;
+export type SetShopBrandPhotoMutationBody = BodyType<SetShopBrandPhotoBody>;
+export type SetShopBrandPhotoMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Save a completed brand photo upload, or remove it with null (owner only)
+ */
+export const useSetShopBrandPhoto = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setShopBrandPhoto>>,
+    TError,
+    { shopId: string; data: BodyType<SetShopBrandPhotoBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof setShopBrandPhoto>>,
+  TError,
+  { shopId: string; data: BodyType<SetShopBrandPhotoBody> },
+  TContext
+> => {
+  return useMutation(getSetShopBrandPhotoMutationOptions(options));
+};
 
 /**
  * @summary Daily indicative exchange rates, relative to EUR

@@ -18,6 +18,54 @@ tags:
   - name: discounts
   - name: chat
 paths:
+  /shops/{shopId}/brand-photo/upload:
+    post:
+      operationId: requestShopBrandPhotoUpload
+      summary: Request a direct upload URL for a shop brand photo (owner only)
+      parameters:
+        - { name: shopId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contentType, size]
+              properties:
+                contentType: { type: string, enum: [image/jpeg, image/png, image/webp] }
+                size: { type: integer, minimum: 1, maximum: 5242880 }
+      responses:
+        "200":
+          description: Short-lived upload URL and object identifier; upload bytes before saving
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [uploadUrl, photoId]
+                properties:
+                  uploadUrl: { type: string }
+                  photoId: { type: string }
+  /shops/{shopId}/brand-photo:
+    put:
+      operationId: setShopBrandPhoto
+      summary: Save a completed brand photo upload, or remove it with null (owner only)
+      parameters:
+        - { name: shopId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [photoId]
+              properties:
+                photoId: { type: string, nullable: true }
+      responses:
+        "200":
+          description: Shop with updated photo
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Shop" }
   /public/exchange-rates:
     get:
       operationId: getPublicExchangeRates
@@ -1263,6 +1311,7 @@ components:
         sellerId: { type: string }
         name: { type: string }
         marketName: { type: string, nullable: true }
+        brandPhotoUrl: { type: string, nullable: true }
         stallInfo: { type: string, nullable: true }
         countryCode: { type: string, nullable: true }
         city:

@@ -28,6 +28,7 @@ import {
 import { getOrCreateConversation } from "@/lib/api/conversations";
 import { useTranslation } from "react-i18next";
 import { FulfillmentBadge } from "@/components/LocationBadge";
+import { BrandPhoto } from "@/components/BrandPhoto";
 
 type Props = {
   shop: PublicShop | null;
@@ -152,6 +153,7 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
           {shop && (
             <>
               <View style={styles.header}>
+                <BrandPhoto uri={data?.shop ? data.shop.brandPhotoUrl : shop.brandPhotoUrl} name={shop.name} size={48} />
                 <View style={{ flex: 1 }}>
                   <Text
                     style={[styles.title, { color: colors.foreground }]}

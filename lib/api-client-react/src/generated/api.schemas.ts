@@ -211,6 +211,7 @@ export interface Shop {
   sellerId: string;
   name: string;
   marketName?: string | null;
+  brandPhotoUrl?: string | null;
   stallInfo?: string | null;
   countryCode?: string | null;
   city?: City | null;
@@ -997,6 +998,33 @@ null) when the provider opted to hide it.
   /** Distance from the search origin in kilometers. */
   distanceKm: number;
 }
+
+export type RequestShopBrandPhotoUploadBodyContentType =
+  (typeof RequestShopBrandPhotoUploadBodyContentType)[keyof typeof RequestShopBrandPhotoUploadBodyContentType];
+
+export const RequestShopBrandPhotoUploadBodyContentType = {
+  "image/jpeg": "image/jpeg",
+  "image/png": "image/png",
+  "image/webp": "image/webp",
+} as const;
+
+export type RequestShopBrandPhotoUploadBody = {
+  contentType: RequestShopBrandPhotoUploadBodyContentType;
+  /**
+   * @minimum 1
+   * @maximum 5242880
+   */
+  size: number;
+};
+
+export type RequestShopBrandPhotoUpload200 = {
+  uploadUrl: string;
+  photoId: string;
+};
+
+export type SetShopBrandPhotoBody = {
+  photoId: string | null;
+};
 
 export type SearchPublicProductsParams = {
   q: string;

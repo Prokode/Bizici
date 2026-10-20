@@ -27,6 +27,7 @@ import { LocationBadge } from "@/components/LocationBadge";
 import { ShopReviewsSection } from "@/components/ShopReviewsSection";
 import { chatShopHref } from "@/lib/chatItemContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { BrandPhoto } from "@/components/BrandPhoto";
 
 function formatServicePrice(svc: PublicService, t: (k: string, o?: Record<string, unknown>) => string, money: (minor: number) => string): string {
   if (svc.pricingType === "quote") return t("search.onQuote");
@@ -112,6 +113,7 @@ export default function ProviderScreen() {
     provider?.firstName || provider?.lastName
       ? `${provider?.firstName ?? ""} ${provider?.lastName ?? ""}`.trim()
       : shop.name;
+  const brandPhoto = shop.brandPhotoUrl ?? null;
   const heroPhoto =
     provider?.photoUrl ?? provider?.portfolioPhotos?.[0] ?? null;
   const showAge =
@@ -123,7 +125,9 @@ export default function ProviderScreen() {
 
       {/* Hero */}
       <View style={{ position: "relative" }}>
-        {heroPhoto ? (
+        {brandPhoto ? (
+          <BrandPhoto uri={brandPhoto} name={shop.name} size={240} style={[styles.hero, { borderRadius: 0 }]} />
+        ) : heroPhoto ? (
           <Image source={{ uri: heroPhoto }} style={styles.hero} />
         ) : (
           <View

@@ -17,6 +17,7 @@ export interface Shop {
   sellerId: string;
   name: string;
   marketName?: string | null;
+  brandPhotoUrl?: string | null;
   stallInfo?: string | null;
   countryCode?: string | null;
   city?: City | null;

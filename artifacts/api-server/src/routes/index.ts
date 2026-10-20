@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
 import publicRouter from "./public";
+import shopBrandPhotoRouter from "./shop-brand-photo";
 import servicesPublicRouter from "./services-public";
 import meRouter from "./me";
 import shopsRouter from "./shops";
@@ -32,6 +33,7 @@ router.use(adminRouter);
 router.use(kycRouter);
 router.use(healthRouter);
 router.use(publicRouter);
+router.use(shopBrandPhotoRouter);
 router.use(countriesRouter);
 router.use(citiesRouter);
 router.use(servicesPublicRouter);

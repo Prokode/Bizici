@@ -29,6 +29,7 @@ export function serializeShop(
     sellerId: String(s.sellerId?._id ?? s.sellerId),
     name: s.name,
     marketName: s.marketName ?? null,
+    brandPhotoUrl: s.brandPhotoUrl ?? null,
     stallInfo: s.stallInfo ?? null,
     countryCode: s.countryCode ?? null,
     city,
