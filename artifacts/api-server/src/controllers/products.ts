@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import { Product, Category, Shop } from "@workspace/db";
 import { serializeProduct } from "../lib/serialize";
 import { analyzeProductPhoto } from "../lib/openai";
+import { validProductPhotos } from "../lib/productPhotos";
 
 function toObjectIds(ids: unknown): Types.ObjectId[] {
   if (!Array.isArray(ids)) return [];
@@ -25,6 +26,10 @@ export const productsController = {
 
   create: async (req: Request, res: Response) => {
     const body = req.body ?? {};
+    if (!validProductPhotos(body)) {
+      res.status(400).json({ error: "Product photos must be uploaded first; local device paths cannot be saved" });
+      return;
+    }
     if (!body.name) {
       res.status(400).json({ error: "name required" });
       return;
@@ -96,6 +101,10 @@ export const productsController = {
       return;
     }
     const body = req.body ?? {};
+    if (!validProductPhotos(body)) {
+      res.status(400).json({ error: "Product photos must be uploaded first; local device paths cannot be saved" });
+      return;
+    }
     const update: any = {};
     if (typeof body.name === "string") update.name = body.name;
     if (body.brand !== undefined) update.brand = body.brand;

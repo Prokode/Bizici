@@ -8,6 +8,44 @@
 import * as zod from "zod";
 
 /**
+ * @summary Request a direct image upload for an accessible shop
+ */
+export const RequestProductPhotoUploadParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const requestProductPhotoUploadBodySizeMax = 10485760;
+
+export const RequestProductPhotoUploadBody = zod.object({
+  contentType: zod.enum(["image/jpeg", "image/png", "image/webp", "image/gif"]),
+  size: zod.number().min(1).max(requestProductPhotoUploadBodySizeMax),
+});
+
+export const RequestProductPhotoUploadResponse = zod.object({
+  uploadId: zod.string(),
+  uploadURL: zod.string(),
+});
+
+/**
+ * @summary Verify uploaded bytes and make an immutable public product image
+ */
+export const CompleteProductPhotoUploadParams = zod.object({
+  shopId: zod.coerce.string(),
+  uploadId: zod.coerce.string(),
+});
+
+export const CompleteProductPhotoUploadResponse = zod.object({
+  photoPath: zod.string(),
+});
+
+/**
+ * @summary Public product image, no sign-in required
+ */
+export const GetPublicProductPhotoParams = zod.object({
+  photoId: zod.coerce.string(),
+});
+
+/**
  * @summary Request a direct upload URL for a shop brand photo (owner only)
  */
 export const RequestShopBrandPhotoUploadParams = zod.object({

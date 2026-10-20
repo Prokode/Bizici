@@ -159,6 +159,8 @@
     "missingShop": "Shop unavailable. Go back and open the shop again.",
     "invalidValues": "Enter a name, a valid non-negative price, and a whole-number quantity.",
     "saveError": "The product could not be saved. Your form has been kept. Please try again.",
+    "uploading": "Uploading photos…",
+    "uploadError": "A photo could not be uploaded. The product has not been saved. Check your connection and retry. Use JPEG, PNG, WebP or GIF files smaller than 10 MB. If an old photo is no longer on this device, remove it and select it again.",
     "screenTitle": "Add product",
     "howAdd": "How would you like to add a product?",
     "photoToInventory": "Photo to Inventory",

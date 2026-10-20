@@ -18,6 +18,75 @@ tags:
   - name: discounts
   - name: chat
 paths:
+  /shops/{shopId}/product-photos:
+    post:
+      operationId: requestProductPhotoUpload
+      tags: [products]
+      summary: Request a direct image upload for an accessible shop
+      parameters:
+        - { name: shopId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contentType, size]
+              properties:
+                contentType: { type: string, enum: [image/jpeg, image/png, image/webp, image/gif] }
+                size: { type: integer, minimum: 1, maximum: 10485760 }
+      responses:
+        "200":
+          description: Upload bytes to uploadURL, then complete the upload
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [uploadId, uploadURL]
+                properties:
+                  uploadId: { type: string }
+                  uploadURL: { type: string }
+        "400": { description: Invalid image metadata }
+        "401": { description: Authentication required }
+        "403": { description: Shop access required }
+        "503": { description: Storage unavailable }
+  /shops/{shopId}/product-photos/{uploadId}/complete:
+    post:
+      operationId: completeProductPhotoUpload
+      tags: [products]
+      summary: Verify uploaded bytes and make an immutable public product image
+      parameters:
+        - { name: shopId, in: path, required: true, schema: { type: string } }
+        - { name: uploadId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Permanent public image path (resolve against the API origin before saving)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [photoPath]
+                properties:
+                  photoPath: { type: string }
+        "400": { description: "Missing, expired, or invalid image upload" }
+        "401": { description: Authentication required }
+        "403": { description: Shop access required }
+        "404": { description: Upload not found }
+        "503": { description: Storage unavailable }
+  /product-photos/{photoId}:
+    get:
+      operationId: getPublicProductPhoto
+      tags: [products]
+      summary: Public product image, no sign-in required
+      parameters:
+        - { name: photoId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Verified image bytes
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        "404": { description: Image not found }
   /shops/{shopId}/brand-photo/upload:
     post:
       operationId: requestShopBrandPhotoUpload

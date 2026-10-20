@@ -159,6 +159,8 @@
     "missingShop": "Boutique indisponible. Revenez en arrière et ouvrez à nouveau la boutique.",
     "invalidValues": "Saisissez un nom, un prix positif ou nul et une quantité entière positive ou nulle.",
     "saveError": "Le produit n’a pas pu être enregistré. Votre formulaire est conservé. Veuillez réessayer.",
+    "uploading": "Envoi des photos…",
+    "uploadError": "Une photo n’a pas pu être envoyée. Le produit n’a pas été enregistré. Vérifiez votre connexion et réessayez. Utilisez des images JPEG, PNG, WebP ou GIF de moins de 10 Mo. Si une ancienne photo n’est plus sur cet appareil, retirez-la puis sélectionnez-la à nouveau.",
     "screenTitle": "Ajouter un produit",
     "howAdd": "Comment ajouter un produit ?",
     "photoToInventory": "Photo vers inventaire",

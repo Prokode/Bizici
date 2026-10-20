@@ -22,6 +22,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { CategoryPicker } from "@/components/CategoryPicker";
 import { useTranslation } from "react-i18next";
+import { prepareProductPhotos } from "@/lib/productPhotoPreparation";
+import { uploadProductPhoto } from "@/lib/uploadProductPhoto";
 
 export default function AddProductScreen() {
   const colors = useColors();
@@ -59,11 +61,14 @@ export default function AddProductScreen() {
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [photos, setPhotos] = useState<string[]>([]);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const saveLock = useRef(false);
+  const uploadedPhotos = useRef(new Map<string, string>());
 
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
   const analyzePhoto = useAnalyzeProductPhoto();
-  const isSaving = createProduct.isPending || updateProduct.isPending;
+  const isSaving = isUploading || createProduct.isPending || updateProduct.isPending;
 
   const initializedForId = useRef<string | null>(null);
   useEffect(() => {
@@ -109,6 +114,7 @@ export default function AddProductScreen() {
   };
 
   const handlePickImage = async () => {
+    if (isSaving) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -116,12 +122,13 @@ export default function AddProductScreen() {
       quality: 0.5,
       base64: true,
     });
-    if (!result.canceled && result.assets[0].base64) {
-      handlePhotoSelected(result.assets[0].uri, result.assets[0].base64);
+    if (!result.canceled && result.assets[0]) {
+      handlePhotoSelected(result.assets[0].uri, result.assets[0].base64 ?? undefined);
     }
   };
 
   const handleAddPhoto = async () => {
+    if (isSaving) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -134,11 +141,12 @@ export default function AddProductScreen() {
   };
 
   const handleRemovePhoto = (uri: string) => {
+    if (isSaving) return;
     setPhotos((prev) => prev.filter((p) => p !== uri));
   };
 
-  const handleSave = () => {
-    if (isSaving) return;
+  const handleSave = async () => {
+    if (saveLock.current || isSaving) return;
     setSaveError(null);
     const fail = (message: string) => {
       setSaveError(message);
@@ -152,8 +160,24 @@ export default function AddProductScreen() {
       fail(t("addProduct.invalidValues"));
       return;
     }
+    if (isEdit && (!productId || !editingProduct)) { fail(t("addProduct.notFound")); return; }
+    saveLock.current = true;
+    setIsUploading(true);
+    let resolvedPhotos: string[];
+    try {
+      resolvedPhotos = await prepareProductPhotos(
+        photos, (uri) => uploadProductPhoto(shopId, uri), uploadedPhotos.current,
+      );
+      setPhotos(resolvedPhotos);
+    } catch {
+      fail(t("addProduct.uploadError"));
+      setIsUploading(false);
+      saveLock.current = false;
+      return;
+    }
+    setIsUploading(false);
+    const releaseSave = () => { saveLock.current = false; };
     if (isEdit) {
-      if (!productId || !editingProduct) { fail(t("addProduct.notFound")); return; }
       // Only editable fields are sent; stockStatus, variations, weight, dimension,
       // applyDiscount and other metadata are left untouched on the server.
       updateProduct.mutate(
@@ -170,11 +194,12 @@ export default function AddProductScreen() {
             colors: colorsList,
             sizes: sizesList,
             categoryIds,
-            photos,
+            photos: resolvedPhotos,
           },
         },
         {
           onError: () => fail(t("addProduct.saveError")),
+          onSettled: releaseSave,
           onSuccess: (updated) => {
             queryClient.setQueryData(getListProductsQueryKey(shopId), (old: Product[] | undefined) =>
               old?.map((p) => (p.id === productId ? { ...p, ...updated } : p))
@@ -201,12 +226,13 @@ export default function AddProductScreen() {
           colors: colorsList,
           sizes: sizesList,
           categoryIds,
-          photos,
+          photos: resolvedPhotos,
           stockStatus: "in_stock",
         },
       },
       {
         onError: () => fail(t("addProduct.saveError")),
+        onSettled: releaseSave,
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListProductsQueryKey(shopId) });
           queryClient.invalidateQueries({ queryKey: getGetShopSummaryQueryKey(shopId) });
@@ -364,6 +390,8 @@ export default function AddProductScreen() {
               <View key={uri} style={[styles.photoChip, { borderRadius: colors.radius }]}>
                 <Image source={{ uri }} style={[styles.photoImage, { borderRadius: colors.radius }]} />
                 <TouchableOpacity
+                  testID="remove-product-photo"
+                  disabled={isSaving}
                   style={[styles.photoRemove, { backgroundColor: colors.background }]}
                   onPress={() => handleRemovePhoto(uri)}
                 >
@@ -384,6 +412,8 @@ export default function AddProductScreen() {
         title={t("addProduct.addPhoto")}
         variant="secondary"
         onPress={handleAddPhoto}
+        disabled={isSaving}
+        testID="add-product-photo"
         style={{ marginBottom: 16 }}
       />
 
@@ -418,7 +448,8 @@ export default function AddProductScreen() {
       <View style={{ flex: 1 }} />
 
       <Button
-        title={isEdit ? t("addProduct.update") : t("addProduct.save")}
+        title={isUploading ? t("addProduct.uploading") : isEdit ? t("addProduct.update") : t("addProduct.save")}
+        testID="save-product"
         size="lg"
         disabled={!name.trim() || analyzePhoto.isPending || isSaving}
         loading={isSaving}

@@ -19,6 +19,7 @@ import reviewsRouter from "./reviews";
 import appointmentsRouter from "./appointments";
 import adminRouter from "./admin";
 import kycRouter from "./kyc";
+import productPhotosRouter from "./product-photos";
 
 const router: IRouter = Router();
 
@@ -31,6 +32,7 @@ router.use(adminRouter);
 // adminRouter so its `/admin/kyc/*` paths are reached before any
 // `requireAuth`-mounted router would intercept them.
 router.use(kycRouter);
+router.use(productPhotosRouter);
 router.use(healthRouter);
 router.use(publicRouter);
 router.use(shopBrandPhotoRouter);

@@ -999,6 +999,34 @@ null) when the provider opted to hide it.
   distanceKm: number;
 }
 
+export type RequestProductPhotoUploadBodyContentType =
+  (typeof RequestProductPhotoUploadBodyContentType)[keyof typeof RequestProductPhotoUploadBodyContentType];
+
+export const RequestProductPhotoUploadBodyContentType = {
+  "image/jpeg": "image/jpeg",
+  "image/png": "image/png",
+  "image/webp": "image/webp",
+  "image/gif": "image/gif",
+} as const;
+
+export type RequestProductPhotoUploadBody = {
+  contentType: RequestProductPhotoUploadBodyContentType;
+  /**
+   * @minimum 1
+   * @maximum 10485760
+   */
+  size: number;
+};
+
+export type RequestProductPhotoUpload200 = {
+  uploadId: string;
+  uploadURL: string;
+};
+
+export type CompleteProductPhotoUpload200 = {
+  photoPath: string;
+};
+
 export type RequestShopBrandPhotoUploadBodyContentType =
   (typeof RequestShopBrandPhotoUploadBodyContentType)[keyof typeof RequestShopBrandPhotoUploadBodyContentType];
 

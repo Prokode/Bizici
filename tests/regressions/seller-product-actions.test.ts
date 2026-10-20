@@ -19,7 +19,7 @@ test("edit mode preloads the existing product and patches instead of creating du
   assert.match(source, /initializedForId\.current === editingProduct\.id/);
   assert.match(source, /setPriceStr\(p\.price != null \? \(p\.price \/ 100\)/);
   const update = source.slice(source.indexOf("updateProduct.mutate("), source.indexOf("createProduct.mutate("));
-  for (const field of ["name:", "brand:", "description:", "price:", "quantity,", "tags,", "colors:", "sizes:", "categoryIds,", "photos,"]) assert.ok(update.includes(field), field);
+  for (const field of ["name:", "brand:", "description:", "price:", "quantity,", "tags,", "colors:", "sizes:", "categoryIds,", "photos: resolvedPhotos"]) assert.ok(update.includes(field), field);
   assert.doesNotMatch(update, /stockStatus:|applyDiscount:|variations:/);
   assert.match(update, /return;/);
 });

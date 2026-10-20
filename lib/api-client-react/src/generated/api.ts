@@ -25,6 +25,7 @@ import type {
   ChatConversationCreateInput,
   ChatMessageCreateInput,
   City,
+  CompleteProductPhotoUpload200,
   Country,
   CoursePlan,
   CourseStartInput,
@@ -57,6 +58,8 @@ import type {
   PublicProductSearchPage,
   PushTokenInput,
   QrPayload,
+  RequestProductPhotoUpload200,
+  RequestProductPhotoUploadBody,
   RequestShopBrandPhotoUpload200,
   RequestShopBrandPhotoUploadBody,
   ResolveCityInput,
@@ -91,6 +94,277 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * @summary Request a direct image upload for an accessible shop
+ */
+export const getRequestProductPhotoUploadUrl = (shopId: string) => {
+  return `/api/shops/${shopId}/product-photos`;
+};
+
+export const requestProductPhotoUpload = async (
+  shopId: string,
+  requestProductPhotoUploadBody: RequestProductPhotoUploadBody,
+  options?: RequestInit,
+): Promise<RequestProductPhotoUpload200> => {
+  return customFetch<RequestProductPhotoUpload200>(
+    getRequestProductPhotoUploadUrl(shopId),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(requestProductPhotoUploadBody),
+    },
+  );
+};
+
+export const getRequestProductPhotoUploadMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof requestProductPhotoUpload>>,
+    TError,
+    { shopId: string; data: BodyType<RequestProductPhotoUploadBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof requestProductPhotoUpload>>,
+  TError,
+  { shopId: string; data: BodyType<RequestProductPhotoUploadBody> },
+  TContext
+> => {
+  const mutationKey = ["requestProductPhotoUpload"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof requestProductPhotoUpload>>,
+    { shopId: string; data: BodyType<RequestProductPhotoUploadBody> }
+  > = (props) => {
+    const { shopId, data } = props ?? {};
+
+    return requestProductPhotoUpload(shopId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RequestProductPhotoUploadMutationResult = NonNullable<
+  Awaited<ReturnType<typeof requestProductPhotoUpload>>
+>;
+export type RequestProductPhotoUploadMutationBody =
+  BodyType<RequestProductPhotoUploadBody>;
+export type RequestProductPhotoUploadMutationError = ErrorType<void>;
+
+/**
+ * @summary Request a direct image upload for an accessible shop
+ */
+export const useRequestProductPhotoUpload = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof requestProductPhotoUpload>>,
+    TError,
+    { shopId: string; data: BodyType<RequestProductPhotoUploadBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof requestProductPhotoUpload>>,
+  TError,
+  { shopId: string; data: BodyType<RequestProductPhotoUploadBody> },
+  TContext
+> => {
+  return useMutation(getRequestProductPhotoUploadMutationOptions(options));
+};
+
+/**
+ * @summary Verify uploaded bytes and make an immutable public product image
+ */
+export const getCompleteProductPhotoUploadUrl = (
+  shopId: string,
+  uploadId: string,
+) => {
+  return `/api/shops/${shopId}/product-photos/${uploadId}/complete`;
+};
+
+export const completeProductPhotoUpload = async (
+  shopId: string,
+  uploadId: string,
+  options?: RequestInit,
+): Promise<CompleteProductPhotoUpload200> => {
+  return customFetch<CompleteProductPhotoUpload200>(
+    getCompleteProductPhotoUploadUrl(shopId, uploadId),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
+};
+
+export const getCompleteProductPhotoUploadMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof completeProductPhotoUpload>>,
+    TError,
+    { shopId: string; uploadId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof completeProductPhotoUpload>>,
+  TError,
+  { shopId: string; uploadId: string },
+  TContext
+> => {
+  const mutationKey = ["completeProductPhotoUpload"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof completeProductPhotoUpload>>,
+    { shopId: string; uploadId: string }
+  > = (props) => {
+    const { shopId, uploadId } = props ?? {};
+
+    return completeProductPhotoUpload(shopId, uploadId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CompleteProductPhotoUploadMutationResult = NonNullable<
+  Awaited<ReturnType<typeof completeProductPhotoUpload>>
+>;
+
+export type CompleteProductPhotoUploadMutationError = ErrorType<void>;
+
+/**
+ * @summary Verify uploaded bytes and make an immutable public product image
+ */
+export const useCompleteProductPhotoUpload = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof completeProductPhotoUpload>>,
+    TError,
+    { shopId: string; uploadId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof completeProductPhotoUpload>>,
+  TError,
+  { shopId: string; uploadId: string },
+  TContext
+> => {
+  return useMutation(getCompleteProductPhotoUploadMutationOptions(options));
+};
+
+/**
+ * @summary Public product image, no sign-in required
+ */
+export const getGetPublicProductPhotoUrl = (photoId: string) => {
+  return `/api/product-photos/${photoId}`;
+};
+
+export const getPublicProductPhoto = async (
+  photoId: string,
+  options?: RequestInit,
+): Promise<Blob> => {
+  return customFetch<Blob>(getGetPublicProductPhotoUrl(photoId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetPublicProductPhotoQueryKey = (photoId: string) => {
+  return [`/api/product-photos/${photoId}`] as const;
+};
+
+export const getGetPublicProductPhotoQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPublicProductPhoto>>,
+  TError = ErrorType<void>,
+>(
+  photoId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPublicProductPhoto>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPublicProductPhotoQueryKey(photoId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPublicProductPhoto>>
+  > = ({ signal }) =>
+    getPublicProductPhoto(photoId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!photoId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPublicProductPhoto>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPublicProductPhotoQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPublicProductPhoto>>
+>;
+export type GetPublicProductPhotoQueryError = ErrorType<void>;
+
+/**
+ * @summary Public product image, no sign-in required
+ */
+
+export function useGetPublicProductPhoto<
+  TData = Awaited<ReturnType<typeof getPublicProductPhoto>>,
+  TError = ErrorType<void>,
+>(
+  photoId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPublicProductPhoto>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPublicProductPhotoQueryOptions(photoId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * @summary Request a direct upload URL for a shop brand photo (owner only)
