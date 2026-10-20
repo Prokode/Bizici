@@ -1,4 +1,14 @@
 {
+  "currency": {
+    "label": "Devise d'affichage",
+    "seller": "Devise du vendeur (prix d'origine)",
+    "unspecified": "devise non précisée",
+    "unavailableShort": "conversion indisponible",
+    "unavailable": "Conversion indisponible. Les prix restent dans la devise du vendeur.",
+    "estimate": "≈ Conversion indicative · taux du {{date}}. Le prix d'origine du vendeur s'applique.",
+    "attribution": "Taux fournis par ExchangeRate-API",
+    "saveError": "Impossible d'enregistrer votre devise. Veuillez réessayer."
+  },
   "shopDetails": {
     "open": "Voir les détails",
     "title": "Détails de l’établissement",

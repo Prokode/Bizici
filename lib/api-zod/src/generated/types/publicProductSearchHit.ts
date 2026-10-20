@@ -5,6 +5,7 @@
  * NearBuy Business API (MongoDB-backed)
  * OpenAPI spec version: 0.2.0
  */
+import type { CountryCurrency } from "./countryCurrency";
 
 export interface PublicProductSearchHit {
   id: string;
@@ -16,6 +17,7 @@ export interface PublicProductSearchHit {
   brand: string | null;
   description: string | null;
   price: number;
+  currency?: CountryCurrency | null;
   photo: string | null;
   distanceMeters: number;
 }

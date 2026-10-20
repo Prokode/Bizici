@@ -26,17 +26,19 @@ import { AppointmentBookingModal } from "@/components/AppointmentBookingModal";
 import { LocationBadge } from "@/components/LocationBadge";
 import { ShopReviewsSection } from "@/components/ShopReviewsSection";
 import { chatShopHref } from "@/lib/chatItemContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
-function formatPrice(svc: PublicService, t: (k: string, o?: Record<string, unknown>) => string): string {
+function formatServicePrice(svc: PublicService, t: (k: string, o?: Record<string, unknown>) => string, money: (minor: number) => string): string {
   if (svc.pricingType === "quote") return t("search.onQuote");
   if (svc.pricingType === "hourly")
     return t("search.hourlyPrice", {
-      price: svc.price != null ? `${svc.price} €` : "—",
+      price: svc.price != null ? money(svc.price * 100) : "—",
     });
-  return svc.price != null ? `${svc.price} €` : "—";
+  return svc.price != null ? money(svc.price * 100) : "—";
 }
 
 export default function ProviderScreen() {
+  const { formatPrice } = useCurrency();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
@@ -327,7 +329,7 @@ export default function ProviderScreen() {
                     <Text
                       style={[styles.servicePrice, { color: colors.primary }]}
                     >
-                      {formatPrice(s, t)}
+                      {formatServicePrice(s, t, (minor) => formatPrice(minor, shop.currency))}
                     </Text>
                     <LocationBadge
                       mode={s.effectiveServiceLocation}

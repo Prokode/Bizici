@@ -18,6 +18,19 @@ tags:
   - name: discounts
   - name: chat
 paths:
+  /public/exchange-rates:
+    get:
+      operationId: getPublicExchangeRates
+      summary: Daily indicative exchange rates, relative to EUR
+      responses:
+        "200":
+          description: Current daily reference rates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicExchangeRates"
+        "503":
+          description: Reference rates temporarily unavailable
   /public/search:
     get:
       operationId: searchPublicProducts
@@ -1055,8 +1068,21 @@ components:
         brand: { type: string, nullable: true }
         description: { type: string, nullable: true }
         price: { type: number }
+        currency:
+          oneOf:
+            - { $ref: "#/components/schemas/CountryCurrency" }
+            - { type: "null" }
         photo: { type: string, nullable: true }
         distanceMeters: { type: number }
+    PublicExchangeRates:
+      type: object
+      required: [base, updatedAt, rates]
+      properties:
+        base: { type: string }
+        updatedAt: { type: string }
+        rates:
+          type: object
+          additionalProperties: { type: number }
     PublicProductSearchPage:
       type: object
       required: [products, count, nextCursor, fuzzyFallback]

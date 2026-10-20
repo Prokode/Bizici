@@ -4,8 +4,10 @@
  * candidate products for each query. See `./basket.ts` for basket CRUD.
  */
 import { customFetch } from "@workspace/api-client-react";
+import type { ShopCurrency } from "../currency";
 
 export type CourseStopShop = {
+  currency?: ShopCurrency | null;
   id: string;
   name: string;
   marketName: string | null;

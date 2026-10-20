@@ -432,7 +432,7 @@ export const meController = {
         },
       },
     })
-      .select("_id name marketName location isOpen")
+      .select("_id name marketName location isOpen currency")
       .lean();
 
     const shopById = new Map(shopsInRadius.map((s) => [String(s._id), s]));
@@ -449,6 +449,7 @@ export const meController = {
         longitude: number;
         isOpen: boolean;
         distanceMeters: number;
+        currency: ReturnType<typeof serializeShop>["currency"];
       } | null;
       products: {
         id: string;
@@ -537,6 +538,7 @@ export const meController = {
             longitude: Number(best.shop.location?.coordinates?.[0] ?? 0),
             isOpen: !!best.shop.isOpen,
             distanceMeters: best.dist,
+            currency: serializeShop(best.shop).currency,
           },
           products: best.products.slice(0, 5).map((p) => ({
             id: String(p._id),

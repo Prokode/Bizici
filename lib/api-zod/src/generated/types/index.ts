@@ -61,6 +61,8 @@ export * from "./productSuggestion";
 export * from "./productUpdateInput";
 export * from "./productUpdateInputStockStatus";
 export * from "./productVariation";
+export * from "./publicExchangeRates";
+export * from "./publicExchangeRatesRates";
 export * from "./publicProductPhotoSearchInput";
 export * from "./publicProductPhotoSearchInputImageMimeType";
 export * from "./publicProductPhotoSearchInputScope";

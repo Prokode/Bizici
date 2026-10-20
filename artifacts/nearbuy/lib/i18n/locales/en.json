@@ -1,4 +1,14 @@
 {
+  "currency": {
+    "label": "Display currency",
+    "seller": "Seller's currency (original price)",
+    "unspecified": "currency not set",
+    "unavailableShort": "conversion unavailable",
+    "unavailable": "Conversion is unavailable. Prices remain in the seller's currency.",
+    "estimate": "≈ Estimated conversion · rates from {{date}}. The seller's original price applies.",
+    "attribution": "Rates by ExchangeRate-API",
+    "saveError": "Could not save your currency preference. Please try again."
+  },
   "shopDetails": {
     "open": "View details",
     "title": "Business details",

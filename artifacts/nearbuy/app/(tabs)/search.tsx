@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { useColors } from "@/hooks/useColors";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { fetchSearchPage, type PublicSearchHit } from "@/lib/api/search";
 import { type PublicShop } from "@/lib/api/shops";
 import { ShopBottomSheet } from "@/components/ShopBottomSheet";
@@ -39,10 +40,6 @@ const FALLBACK = { lat: 48.8566, lng: 2.3522 };
 
 type Mode = "products" | "services";
 
-function formatPriceCents(cents: number): string {
-  return `${(cents / 100).toFixed(2).replace(".", ",")} €`;
-}
-
 function formatDistance(m: number): string {
   if (m < 1000) return `${m} m`;
   return `${(m / 1000).toFixed(1)} km`;
@@ -54,6 +51,7 @@ function formatKm(km: number): string {
 }
 
 export default function SearchTab() {
+  const { formatPrice } = useCurrency();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
@@ -218,6 +216,7 @@ export default function SearchTab() {
       {
         shopId: string;
         shopName: string;
+        currency: ServiceSearchResult["shop"]["currency"];
         distanceKm: number;
         provider: ServiceSearchResult["provider"];
         services: ServiceSearchResult["service"][];
@@ -231,6 +230,7 @@ export default function SearchTab() {
         byShop.set(hit.shop.id, {
           shopId: hit.shop.id,
           shopName: hit.shop.name,
+          currency: hit.shop.currency,
           distanceKm: hit.distanceKm,
           provider: hit.provider ?? null,
           services: [hit.service],
@@ -265,6 +265,7 @@ export default function SearchTab() {
   const onPressProduct = async (hit: PublicSearchHit) => {
     const stub: PublicShop = {
       id: hit.shopId,
+      currency: hit.currency,
       sellerId: "",
       name: hit.shopName,
       marketName: hit.shopMarketName,
@@ -486,7 +487,7 @@ export default function SearchTab() {
                   </Text>
                   <View style={styles.rowMetaLine}>
                     <Text style={[styles.price, { color: colors.primary }]}>
-                      {formatPriceCents(item.price)}
+                      {formatPrice(item.price, item.currency)}
                     </Text>
                     <Text
                       style={[styles.dotSep, { color: colors.mutedForeground }]}
@@ -764,6 +765,7 @@ function ProviderRow({
   card: {
     shopId: string;
     shopName: string;
+    currency: ServiceSearchResult["shop"]["currency"];
     distanceKm: number;
     provider: ServiceSearchResult["provider"];
     services: ServiceSearchResult["service"][];
@@ -772,6 +774,7 @@ function ProviderRow({
   t: (key: string, opts?: Record<string, unknown>) => string;
   colors: ColorTokens;
 }) {
+  const { formatPrice } = useCurrency();
   const provider = card.provider;
   const displayName =
     provider?.firstName || provider?.lastName
@@ -784,10 +787,10 @@ function ProviderRow({
       ? t("search.onQuote")
       : firstSvc?.pricingType === "hourly"
         ? t("search.hourlyPrice", {
-            price: firstSvc.price != null ? `${firstSvc.price} €` : "—",
+            price: firstSvc.price != null ? formatPrice(firstSvc.price * 100, card.currency) : "—",
           })
         : firstSvc?.price != null
-          ? `${firstSvc.price} €`
+          ? formatPrice(firstSvc.price * 100, card.currency)
           : "—";
 
   return (

@@ -8,6 +8,15 @@
 import * as zod from "zod";
 
 /**
+ * @summary Daily indicative exchange rates, relative to EUR
+ */
+export const GetPublicExchangeRatesResponse = zod.object({
+  base: zod.string(),
+  updatedAt: zod.string(),
+  rates: zod.record(zod.string(), zod.number()),
+});
+
+/**
  * @summary Search available public products nearby or outside the selected radius
  */
 export const searchPublicProductsQueryLatMin = -90;
@@ -50,6 +59,9 @@ export const SearchPublicProductsQueryParams = zod.object({
     .default(searchPublicProductsQueryLimitDefault),
 });
 
+export const searchPublicProductsResponseProductsItemCurrencyOneCodeMin = 3;
+export const searchPublicProductsResponseProductsItemCurrencyOneCodeMax = 3;
+
 export const SearchPublicProductsResponse = zod.object({
   products: zod.array(
     zod.object({
@@ -62,6 +74,19 @@ export const SearchPublicProductsResponse = zod.object({
       brand: zod.string().nullable(),
       description: zod.string().nullable(),
       price: zod.number(),
+      currency: zod
+        .union([
+          zod.object({
+            code: zod
+              .string()
+              .min(searchPublicProductsResponseProductsItemCurrencyOneCodeMin)
+              .max(searchPublicProductsResponseProductsItemCurrencyOneCodeMax),
+            name: zod.string(),
+            symbol: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
       photo: zod.string().nullable(),
       distanceMeters: zod.number(),
     }),
@@ -106,6 +131,9 @@ export const SearchPublicProductPhotosBody = zod.object({
   imageMimeType: zod.enum(["image/jpeg", "image/png", "image/webp"]),
 });
 
+export const searchPublicProductPhotosResponseMatchesItemOneCurrencyOneCodeMin = 3;
+export const searchPublicProductPhotosResponseMatchesItemOneCurrencyOneCodeMax = 3;
+
 export const searchPublicProductPhotosResponseMatchesItemTwoConfidenceMin = 0;
 export const searchPublicProductPhotosResponseMatchesItemTwoConfidenceMax = 1;
 
@@ -122,6 +150,23 @@ export const SearchPublicProductPhotosResponse = zod.object({
         brand: zod.string().nullable(),
         description: zod.string().nullable(),
         price: zod.number(),
+        currency: zod
+          .union([
+            zod.object({
+              code: zod
+                .string()
+                .min(
+                  searchPublicProductPhotosResponseMatchesItemOneCurrencyOneCodeMin,
+                )
+                .max(
+                  searchPublicProductPhotosResponseMatchesItemOneCurrencyOneCodeMax,
+                ),
+              name: zod.string(),
+              symbol: zod.string(),
+            }),
+            zod.null(),
+          ])
+          .optional(),
         photo: zod.string().nullable(),
         distanceMeters: zod.number(),
       })

@@ -96,6 +96,7 @@ export default function ShopConfigurationScreen() {
             variant="secondary"
             icon={<Feather name="edit-2" size={18} color={colors.secondaryForeground} />}
             style={styles.actionBtn}
+            numberOfLines={2}
             onPress={() => router.push(`/(home)/shops/${shopId}/edit`)}
           />
         )}
@@ -104,6 +105,7 @@ export default function ShopConfigurationScreen() {
           variant="primary"
           icon={<Feather name="maximize" size={18} color={colors.primaryForeground} />}
           style={styles.actionBtn}
+          numberOfLines={2}
           onPress={() => setShowQr(true)}
         />
       </View>
@@ -215,8 +217,8 @@ const styles = StyleSheet.create({
   headerInfo: { flex: 1 },
   shopName: { fontSize: 24, marginBottom: 4 },
   shopCategory: { fontSize: 16 },
-  actions: { flexDirection: "row", gap: 12, marginBottom: 24 },
-  actionBtn: { flex: 1 },
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginBottom: 24 },
+  actionBtn: { flexGrow: 1, flexShrink: 1, flexBasis: 150, minWidth: 0, minHeight: 48 },
   detailsCard: { marginBottom: 24 },
   detailRow: { flexDirection: "row", justifyContent: "space-between", padding: 16 },
   detailLabel: { fontSize: 16 },

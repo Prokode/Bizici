@@ -5,6 +5,7 @@
  * of the OpenAPI surface (public, anonymous, single-shot screen).
  */
 import { getApiBase } from "./_base";
+import type { ShopCurrency } from "../currency";
 
 export type PublicServiceCategory = {
   id: string;
@@ -49,6 +50,7 @@ export type PublicProviderProfile = {
 
 export type PublicProviderDetail = {
   shop: {
+    currency?: ShopCurrency | null;
     id: string;
     sellerId: string;
     name: string;

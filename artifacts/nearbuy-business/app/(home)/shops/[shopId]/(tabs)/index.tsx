@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Switch,
   Platform,
+  Alert,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
@@ -19,12 +20,15 @@ import {
   getGetShopQueryOptions,
   getGetShopSummaryQueryKey,
   useUpdateProduct,
+  useDeleteProduct,
   type Product,
 } from "@workspace/api-client-react";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
+import { useShopId } from "@/hooks/useShopId";
 import { Feather } from "@expo/vector-icons";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { HeaderSummary } from "@/components/HeaderSummary";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -36,7 +40,7 @@ export default function InventoryScreen() {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
-  const { shopId } = useLocalSearchParams<{ shopId: string }>();
+  const shopId = useShopId();
 
   const {
     data: products,
@@ -53,6 +57,51 @@ export default function InventoryScreen() {
   });
 
   const updateProduct = useUpdateProduct();
+  const deleteProduct = useDeleteProduct();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteErrorId, setDeleteErrorId] = useState<string | null>(null);
+
+  const handleEdit = (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push({ pathname: "/(home)/shops/[shopId]/add-product", params: { shopId: shopId as string, productId: id } });
+  };
+
+  const performDelete = (item: Product) => {
+    if (deletingId) return;
+    setDeletingId(item.id);
+    setDeleteErrorId(null);
+    const queryKey = getListProductsQueryKey(shopId as string);
+    deleteProduct.mutate(
+      { shopId: shopId as string, id: item.id },
+      {
+        onSuccess: () => {
+          queryClient.setQueryData(queryKey, (old: Product[] | undefined) => old?.filter((p) => p.id !== item.id));
+          queryClient.invalidateQueries({ queryKey });
+          queryClient.invalidateQueries({ queryKey: getGetShopSummaryQueryKey(shopId as string) });
+        },
+        onError: () => {
+          setDeleteErrorId(item.id);
+          Alert.alert(t("common.error"), t("inventory.deleteError"));
+        },
+        onSettled: () => setDeletingId(null),
+      }
+    );
+  };
+
+  const confirmDelete = (item: Product) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const title = t("inventory.deleteTitle");
+    const message = t("inventory.deleteMessage", { name: item.name });
+    if (Platform.OS === "web") {
+      // eslint-disable-next-line no-alert
+      if (typeof window !== "undefined" && window.confirm(`${title}\n\n${message}`)) performDelete(item);
+      return;
+    }
+    Alert.alert(title, message, [
+      { text: t("inventory.cancel"), style: "cancel" },
+      { text: t("inventory.delete"), style: "destructive", onPress: () => performDelete(item) },
+    ]);
+  };
 
   const handleToggleStock = (id: string, currentStock: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -140,7 +189,38 @@ export default function InventoryScreen() {
             {item.stockStatus === "in_stock" ? t("inventory.inStock") : t("inventory.outOfStock")}
           </Badge>
         </View>
+        <View style={styles.itemActions}>
+          <Button
+            title={t("inventory.edit")}
+            variant="secondary"
+            size="sm"
+            numberOfLines={1}
+            accessibilityLabel={t("inventory.editA11y", { name: item.name })}
+            icon={<Feather name="edit-2" size={16} color={colors.secondaryForeground} />}
+            disabled={deletingId === item.id}
+            onPress={() => handleEdit(item.id)}
+            style={styles.itemActionBtn}
+          />
+          <Button
+            title={t("inventory.delete")}
+            variant="outline"
+            size="sm"
+            numberOfLines={1}
+            accessibilityLabel={t("inventory.deleteA11y", { name: item.name })}
+            icon={<Feather name="trash-2" size={16} color={colors.destructive} />}
+            textStyle={{ color: colors.destructive }}
+            loading={deletingId === item.id}
+            disabled={!!deletingId && deletingId !== item.id}
+            onPress={() => confirmDelete(item)}
+            style={{ ...styles.itemActionBtn, borderColor: colors.destructive }}
+          />
+        </View>
       </View>
+      {deleteErrorId === item.id && (
+        <Text accessibilityRole="alert" style={{ color: colors.destructive, marginTop: 8, fontSize: 13 }}>
+          {t("inventory.deleteError")}
+        </Text>
+      )}
     </Card>
     );
   };
@@ -165,6 +245,7 @@ export default function InventoryScreen() {
         data={products || []}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
+        extraData={`${deletingId}:${deleteErrorId}`}
         contentContainerStyle={[
           styles.content,
           Platform.OS === "web" && { paddingTop: 67, paddingBottom: 84 + 100 },
@@ -215,7 +296,9 @@ const styles = StyleSheet.create({
   productName: { fontSize: 18, marginBottom: 4 },
   productCategory: { fontSize: 14 },
   productPrice: { fontSize: 18 },
-  cardFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  cardFooter: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", rowGap: 12, columnGap: 8 },
+  itemActions: { flexDirection: "row", gap: 8, flexGrow: 1, justifyContent: "flex-end" },
+  itemActionBtn: { minHeight: 40, minWidth: 96, flexShrink: 1 },
   stockToggle: { flexDirection: "row", alignItems: "center" },
   emptyContainer: { alignItems: "center", justifyContent: "center", paddingVertical: 64, paddingHorizontal: 32 },
   emptyTitle: { fontSize: 20, marginBottom: 8, textAlign: "center" },

@@ -1,4 +1,6 @@
 import React from "react";
+import { useCurrency } from "@/contexts/CurrencyContext";
+import { CurrencyPreference } from "@/components/CurrencyPreference";
 import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { Stack, router, useLocalSearchParams } from "expo-router";
@@ -31,7 +33,7 @@ export default function ShopDetails() {
     enabled: !!shopId && hasServices,
   });
   const profile = provider.data?.provider;
-  const money = (cents: number) => `${(cents / 100).toFixed(2)} €`;
+  const { formatPrice } = useCurrency();
   const text = { color: colors.foreground };
   const muted = { color: colors.mutedForeground };
   const card = [styles.card, { backgroundColor: colors.card, borderColor: colors.border }];
@@ -121,7 +123,7 @@ export default function ShopDetails() {
                             {service.photos.map(uri => <Image key={uri} source={{ uri }} style={styles.photo} />)}
                             {!!service.description && <Text style={text}>{service.description}</Text>}
                             <Text style={{ color: colors.primary }}>{service.pricingType === "quote" ? t("search.onQuote") :
-                              service.pricingType === "hourly" ? t("search.hourlyPrice", { price: `${service.price ?? "—"} €` }) : `${service.price ?? "—"} €`}</Text>
+                              service.price == null ? "—" : service.pricingType === "hourly" ? t("search.hourlyPrice", { price: formatPrice(service.price * 100, shop.currency) }) : formatPrice(service.price * 100, shop.currency)}</Text>
                             {service.durationMinutes != null && <Text style={muted}>{t("shopDetails.duration", { minutes: service.durationMinutes })}</Text>}
                             <LocationBadge mode={service.effectiveServiceLocation} colors={colors} t={t} />
                             <Button
@@ -139,6 +141,7 @@ export default function ShopDetails() {
               {(shop.kind !== "services" || !!detail.data?.products.length) && (
                 <>
                   <Text style={[styles.section, text]}>{t("shopDetails.products")}</Text>
+                  <CurrencyPreference />
                   {!detail.data?.products.length && <Text style={muted}>{t("shopDetails.noProducts")}</Text>}
                   {detail.data?.products.map(product => (
                     <View key={product.id} style={card}>
@@ -146,7 +149,7 @@ export default function ShopDetails() {
                       <Text style={[styles.heading, text]}>{product.name}</Text>
                       {!!product.brand && <Text style={muted}>{product.brand}</Text>}
                       {!!product.description && <Text style={text}>{product.description}</Text>}
-                      <Text style={[styles.price, { color: colors.primary }]}>{money(product.price)}</Text>
+                      <Text style={[styles.price, { color: colors.primary }]}>{formatPrice(product.price, shop.currency)}</Text>
                       <Text style={muted}>{t(product.stockStatus === "in_stock" ? "shopDetails.inStock" : "shopDetails.outOfStock")}</Text>
                       <Button
                         title={t("askItem.askProduct")}

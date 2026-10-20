@@ -1,7 +1,15 @@
 import express, { Router, type IRouter } from "express";
 import { publicController } from "../controllers/public";
+import { getExchangeRates } from "../lib/exchange-rates";
 
 const router: IRouter = Router();
+router.get("/public/exchange-rates", async (_req, res) => {
+  try {
+    res.json(await getExchangeRates());
+  } catch {
+    res.status(503).json({ error: "Exchange rates temporarily unavailable" });
+  }
+});
 
 // Larger body parser used ONLY by the visual-search route below so we can
 // accept a base64-encoded photo without widening the global 100kb limit

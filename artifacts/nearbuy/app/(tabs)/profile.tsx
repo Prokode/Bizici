@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/Button";
 import { useColors } from "@/hooks/useColors";
 import { fetchMyKarma, type KarmaEvent } from "@/lib/api/karma";
 import { OnboardingPreferences } from "@/components/OnboardingPreferences";
+import { CurrencyPreference } from "@/components/CurrencyPreference";
 import { ONBOARDING_SEEN_KEY } from "@/app/onboarding";
 
 const API_BASE = process.env.EXPO_PUBLIC_DOMAIN
@@ -118,6 +119,7 @@ export default function ProfileTab() {
         </Pressable>
         <View style={{ marginTop: 24 }}>
           <OnboardingPreferences testIDPrefix="profile" />
+          <CurrencyPreference />
         </View>
       </ScrollView>
     );
@@ -308,6 +310,7 @@ export default function ProfileTab() {
 
       <View style={{ marginBottom: 16 }}>
         <OnboardingPreferences testIDPrefix="profile" />
+        <CurrencyPreference />
       </View>
 
       <Pressable

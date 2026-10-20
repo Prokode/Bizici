@@ -17,6 +17,7 @@ import React, { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { ClerkProvider, ClerkLoaded, useAuth } from "@clerk/expo";
@@ -220,6 +221,7 @@ export default function RootLayout() {
             <QueryClientProvider client={queryClient}>
               <GestureHandlerRootView style={{ flex: 1 }}>
                 <KeyboardProvider>
+                  <CurrencyProvider>
                   <AuthTokenBridge />
                   <PendingSignupLocationBridge />
                   <PushRegistrationBridge />
@@ -228,6 +230,7 @@ export default function RootLayout() {
                   {!animationDone && (
                     <AnimatedSplash onFinish={() => setAnimationDone(true)} />
                   )}
+                  </CurrencyProvider>
                 </KeyboardProvider>
               </GestureHandlerRootView>
             </QueryClientProvider>

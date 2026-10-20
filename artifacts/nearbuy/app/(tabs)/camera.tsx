@@ -24,6 +24,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { useColors } from "@/hooks/useColors";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import {
   fetchVisualSearch,
   VisualSearchError,
@@ -35,9 +36,6 @@ import { ShopBottomSheet } from "@/components/ShopBottomSheet";
 
 const FALLBACK = { lat: 48.8566, lng: 2.3522 };
 
-function formatPriceCents(cents: number): string {
-  return `${(cents / 100).toFixed(2).replace(".", ",")} €`;
-}
 function formatDistance(m: number): string {
   if (m < 1000) return `${m} m`;
   return `${(m / 1000).toFixed(1)} km`;
@@ -80,6 +78,7 @@ async function prepareWebPhoto(file: File): Promise<{
 }
 
 export default function CameraTab() {
+  const { formatPrice } = useCurrency();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
@@ -629,7 +628,7 @@ export default function CameraTab() {
                 </Text>
                 <View style={styles.matchMetaRow}>
                   <Text style={[styles.matchPrice, { color: colors.primary }]}>
-                    {formatPriceCents(item.price)}
+                    {formatPrice(item.price, item.currency)}
                   </Text>
                   <Text
                     style={[styles.dotSep, { color: colors.mutedForeground }]}

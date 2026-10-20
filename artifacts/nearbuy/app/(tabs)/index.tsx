@@ -20,6 +20,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { useColors } from "@/hooks/useColors";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { fetchNearbyShops, type PublicShop } from "@/lib/api/shops";
 import { getMapPinImage } from "@/lib/map-pin-images";
 import { ShopBottomSheet } from "@/components/ShopBottomSheet";
@@ -50,11 +51,8 @@ function formatDistance(m: number): string {
   return `${(m / 1000).toFixed(1)} km`;
 }
 
-function formatPriceCents(cents: number): string {
-  return `${(cents / 100).toFixed(2).replace(".", ",")} €`;
-}
-
 export default function MapTab() {
+  const { formatPrice } = useCurrency();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -608,7 +606,7 @@ export default function MapTab() {
                       <Text
                         style={[styles.previewPrice, { color: colors.primary }]}
                       >
-                        {formatPriceCents(p.price)}
+                        {formatPrice(p.price, item.currency)}
                       </Text>
                     </View>
                   ))}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Alert, StyleSheet, Text, View, Platform, Image, TouchableOpacity, ScrollView } from "react-native";
 import { useColors } from "@/hooks/useColors";
 import { useShopId } from "@/hooks/useShopId";
@@ -6,10 +6,13 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { Feather } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, Stack } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import {
   useCreateProduct,
+  useUpdateProduct,
+  getListProductsQueryOptions,
+  type Product,
   useAnalyzeProductPhoto,
   getListProductsQueryKey,
   getGetShopQueryOptions,
@@ -24,14 +27,23 @@ export default function AddProductScreen() {
   const colors = useColors();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  const params = useLocalSearchParams<{ shopId: string; photoUri?: string; base64?: string }>();
+  const params = useLocalSearchParams<{ shopId: string; photoUri?: string; base64?: string; productId?: string }>();
   const shopId = useShopId();
+  const productId = typeof params.productId === "string" && params.productId ? params.productId : null;
+  const isEdit = !!productId;
+  const productsQuery = useQuery({
+    ...getListProductsQueryOptions(shopId as string),
+    enabled: !!shopId && isEdit,
+  });
+  const editingProduct: Product | undefined = isEdit
+    ? productsQuery.data?.find((p) => p.id === productId)
+    : undefined;
   const { data: shop } = useQuery({
     ...getGetShopQueryOptions(shopId as string),
     enabled: !!shopId,
   });
 
-  const [mode, setMode] = useState<"choose" | "form">("choose");
+  const [mode, setMode] = useState<"choose" | "form">(isEdit ? "form" : "choose");
   const [name, setName] = useState("");
   const [brand, setBrand] = useState("");
   const [description, setDescription] = useState("");
@@ -49,7 +61,27 @@ export default function AddProductScreen() {
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const createProduct = useCreateProduct();
+  const updateProduct = useUpdateProduct();
   const analyzePhoto = useAnalyzeProductPhoto();
+  const isSaving = createProduct.isPending || updateProduct.isPending;
+
+  const initializedForId = useRef<string | null>(null);
+  useEffect(() => {
+    if (!editingProduct || initializedForId.current === editingProduct.id) return;
+    initializedForId.current = editingProduct.id;
+    const p = editingProduct;
+    setName(p.name ?? "");
+    setBrand(p.brand ?? "");
+    setDescription(p.description ?? "");
+    setCategory(p.category ?? "");
+    setPriceStr(p.price != null ? (p.price / 100).toFixed(2) : "");
+    setQuantityStr(p.quantity != null ? String(p.quantity) : "");
+    setTags(p.tags ?? []);
+    setColorsList(p.colors ?? []);
+    setSizesList(p.sizes ?? []);
+    setCategoryIds((p.categories ?? []).map((c) => c.id));
+    setPhotos(p.photos && p.photos.length > 0 ? p.photos : p.imageUrl ? [p.imageUrl] : []);
+  }, [editingProduct]);
 
   useEffect(() => {
     if (params.photoUri) {
@@ -61,7 +93,7 @@ export default function AddProductScreen() {
   const handlePhotoSelected = (uri: string, base64?: string) => {
     setPhotos((prev) => (prev.includes(uri) ? prev : [...prev, uri]));
     setMode("form");
-    if (base64 && shopId && photos.length === 0) {
+    if (!isEdit && base64 && shopId && photos.length === 0) {
       analyzePhoto.mutate(
         { shopId, data: { imageBase64: base64 } },
         {
@@ -106,7 +138,7 @@ export default function AddProductScreen() {
   };
 
   const handleSave = () => {
-    if (createProduct.isPending) return;
+    if (isSaving) return;
     setSaveError(null);
     const fail = (message: string) => {
       setSaveError(message);
@@ -118,6 +150,41 @@ export default function AddProductScreen() {
     if (!name.trim() || !Number.isSafeInteger(priceCents) || priceCents < 0 ||
         !Number.isSafeInteger(quantity) || quantity < 0) {
       fail(t("addProduct.invalidValues"));
+      return;
+    }
+    if (isEdit) {
+      if (!productId || !editingProduct) { fail(t("addProduct.notFound")); return; }
+      // Only editable fields are sent; stockStatus, variations, weight, dimension,
+      // applyDiscount and other metadata are left untouched on the server.
+      updateProduct.mutate(
+        {
+          shopId,
+          id: productId,
+          data: {
+            name: name.trim(),
+            brand: brand.trim() || null,
+            description: description.trim() || null,
+            price: priceCents,
+            quantity,
+            tags,
+            colors: colorsList,
+            sizes: sizesList,
+            categoryIds,
+            photos,
+          },
+        },
+        {
+          onError: () => fail(t("addProduct.saveError")),
+          onSuccess: (updated) => {
+            queryClient.setQueryData(getListProductsQueryKey(shopId), (old: Product[] | undefined) =>
+              old?.map((p) => (p.id === productId ? { ...p, ...updated } : p))
+            );
+            queryClient.invalidateQueries({ queryKey: getListProductsQueryKey(shopId) });
+            queryClient.invalidateQueries({ queryKey: getGetShopSummaryQueryKey(shopId) });
+            router.back();
+          },
+        }
+      );
       return;
     }
     createProduct.mutate(
@@ -206,6 +273,27 @@ export default function AddProductScreen() {
     </View>
   );
 
+  if (isEdit && !editingProduct) {
+    return (
+      <View style={[styles.container, styles.stateBox, { backgroundColor: colors.background }]}>
+        <Stack.Screen options={{ title: t("addProduct.editTitle") }} />
+        {productsQuery.isLoading ? (
+          <Text style={{ color: colors.foreground }}>{t("common.loading")}</Text>
+        ) : (
+          <>
+            <Text style={{ color: colors.foreground, textAlign: "center", marginBottom: 16 }}>
+              {productsQuery.isError ? t("common.error") : t("addProduct.notFound")}
+            </Text>
+            {productsQuery.isError && (
+              <Button title={t("common.retry")} loading={productsQuery.isFetching} onPress={() => void productsQuery.refetch()} style={{ marginBottom: 8 }} />
+            )}
+            <Button title={t("common.back")} variant="ghost" onPress={() => router.back()} />
+          </>
+        )}
+      </View>
+    );
+  }
+
   if (mode === "choose") {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -268,6 +356,7 @@ export default function AddProductScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.formContent}
     >
+      {isEdit && <Stack.Screen options={{ title: t("addProduct.editTitle") }} />}
       {photos.length > 0 && (
         <View style={{ marginBottom: 16 }}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
@@ -309,7 +398,7 @@ export default function AddProductScreen() {
         numberOfLines={3}
         style={{ minHeight: 80, textAlignVertical: "top" }}
       />
-      <Input label={t("addProduct.legacyCategory")} placeholder={t("addProduct.legacyCategoryPlaceholder")} value={category} onChangeText={setCategory} />
+      {!isEdit && <Input label={t("addProduct.legacyCategory")} placeholder={t("addProduct.legacyCategoryPlaceholder")} value={category} onChangeText={setCategory} />}
 
       <CategoryPicker selectedIds={categoryIds} onChange={setCategoryIds} label={t("addProduct.categories")} />
 
@@ -329,10 +418,10 @@ export default function AddProductScreen() {
       <View style={{ flex: 1 }} />
 
       <Button
-        title={t("addProduct.save")}
+        title={isEdit ? t("addProduct.update") : t("addProduct.save")}
         size="lg"
-        disabled={!name.trim() || analyzePhoto.isPending || createProduct.isPending}
-        loading={createProduct.isPending}
+        disabled={!name.trim() || analyzePhoto.isPending || isSaving}
+        loading={isSaving}
         onPress={handleSave}
         style={{ marginTop: 24 }}
       />
@@ -343,6 +432,7 @@ export default function AddProductScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  stateBox: { alignItems: "center", justifyContent: "center", padding: 24 },
   chooseContent: { padding: 24, flex: 1, justifyContent: "center" },
   title: { fontSize: 24, marginBottom: 32, textAlign: "center" },
   optionCard: { marginBottom: 16 },

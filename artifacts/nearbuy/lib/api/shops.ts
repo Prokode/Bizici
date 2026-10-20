@@ -4,6 +4,7 @@
  * token is required (and the customer browses the map before sign-in).
  */
 import { getApiBase } from "./_base";
+import type { ShopCurrency } from "../currency";
 
 export type PublicProductPreview = {
   id: string;
@@ -13,6 +14,7 @@ export type PublicProductPreview = {
 };
 
 export type PublicShop = {
+  currency?: ShopCurrency | null;
   id: string;
   sellerId: string;
   name: string;

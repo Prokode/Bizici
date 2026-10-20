@@ -105,7 +105,15 @@
     "outOfStock": "Out of stock",
     "noCategory": "No category",
     "addProduct": "Add product",
-    "priceNotSet": "Price not set"
+    "priceNotSet": "Price not set",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteTitle": "Delete this product?",
+    "deleteMessage": "\"{{name}}\" will be removed from your inventory. This cannot be undone.",
+    "cancel": "Cancel",
+    "deleteError": "The product could not be deleted. Please try again.",
+    "editA11y": "Edit {{name}}",
+    "deleteA11y": "Delete {{name}}"
   },
   "messages": {
     "customer": "Customer",
@@ -178,7 +186,10 @@
     "colorsPlaceholder": "e.g. red, blue (comma separated)",
     "sizes": "Sizes",
     "sizesPlaceholder": "e.g. S, M, L (comma separated)",
-    "save": "Save product"
+    "save": "Save product",
+    "editTitle": "Edit product",
+    "update": "Save changes",
+    "notFound": "This product could not be found. It may have been deleted."
   },
   "camera": {
     "permTitle": "Camera access required",

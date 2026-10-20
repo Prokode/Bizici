@@ -105,7 +105,15 @@
     "outOfStock": "Rupture",
     "noCategory": "Sans catégorie",
     "addProduct": "Ajouter un produit",
-    "priceNotSet": "Prix non défini"
+    "priceNotSet": "Prix non défini",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "deleteTitle": "Supprimer ce produit ?",
+    "deleteMessage": "« {{name}} » sera retiré de votre inventaire. Cette action est définitive.",
+    "cancel": "Annuler",
+    "deleteError": "Le produit n’a pas pu être supprimé. Veuillez réessayer.",
+    "editA11y": "Modifier {{name}}",
+    "deleteA11y": "Supprimer {{name}}"
   },
   "messages": {
     "customer": "Client",
@@ -178,7 +186,10 @@
     "colorsPlaceholder": "ex. rouge, bleu (séparées par des virgules)",
     "sizes": "Tailles",
     "sizesPlaceholder": "ex. S, M, L (séparées par des virgules)",
-    "save": "Enregistrer le produit"
+    "save": "Enregistrer le produit",
+    "editTitle": "Modifier le produit",
+    "update": "Enregistrer les modifications",
+    "notFound": "Ce produit est introuvable. Il a peut-être été supprimé."
   },
   "camera": {
     "permTitle": "Accès à la caméra requis",

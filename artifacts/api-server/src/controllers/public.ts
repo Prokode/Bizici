@@ -218,7 +218,7 @@ export const publicController = {
     const shopsInRadius = await Shop.find(
       productSearchShopFilter(lat, lng, radiusKm, expanded),
     )
-      .select("_id name marketName location isOpen")
+      .select("_id name marketName location isOpen currency")
       .lean();
 
     if (shopsInRadius.length === 0) {
@@ -287,6 +287,7 @@ export const publicController = {
         brand: p.brand ?? null,
         description: p.description ?? null,
         price: Number(p.price ?? 0),
+        currency: s ? serializeShop(s).currency : null,
         photo: p.photos?.[0] ?? null,
         distanceMeters: distanceMeters(lng, lat, sLng, sLat),
       };
@@ -325,7 +326,7 @@ export const publicController = {
     const shopsInRadius = await Shop.find(
       productSearchShopFilter(lat, lng, radiusKm, expanded),
     )
-      .select("_id name marketName location isOpen")
+      .select("_id name marketName location isOpen currency")
       .lean();
 
     if (shopsInRadius.length === 0) {
@@ -393,6 +394,7 @@ export const publicController = {
         brand: product.brand ?? null,
         description: product.description ?? null,
         price: Number(product.price ?? 0),
+        currency: s ? serializeShop(s).currency : null,
         photo: product.photos?.[0] ?? null,
         distanceMeters: distanceMeters(lng, lat, sLng, sLat),
         confidence: Math.round(confidence * 100) / 100,

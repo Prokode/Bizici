@@ -15,6 +15,8 @@ interface ButtonProps {
   textStyle?: TextStyle;
   fullWidth?: boolean;
   testID?: string;
+  accessibilityLabel?: string;
+  numberOfLines?: number;
 }
 
 export function Button({
@@ -29,6 +31,8 @@ export function Button({
   textStyle,
   fullWidth,
   testID,
+  accessibilityLabel,
+  numberOfLines,
 }: ButtonProps) {
   const colors = useColors();
 
@@ -84,6 +88,9 @@ export function Button({
       onPress={handlePress}
       disabled={disabled || loading}
       testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? title}
+      accessibilityState={{ disabled: !!(disabled || loading), busy: !!loading }}
       style={[
         styles.button,
         {
@@ -101,9 +108,10 @@ export function Button({
         <ActivityIndicator color={getTextColor()} />
       ) : (
         <View style={styles.content}>
-          {icon && <View style={title ? styles.iconRight : null}>{icon}</View>}
+          {icon && <View style={title ? styles.iconRight : styles.iconOnly}>{icon}</View>}
           {title && (
             <Text
+              numberOfLines={numberOfLines}
               style={[
                 styles.text,
                 { color: getTextColor(), fontFamily: "PlusJakartaSans_600SemiBold" },
@@ -131,11 +139,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    flexShrink: 1,
+    maxWidth: "100%",
   },
   iconRight: {
     marginRight: 8,
+    flexShrink: 0,
+  },
+  iconOnly: {
+    flexShrink: 0,
   },
   text: {
+    flexShrink: 1,
     fontSize: 16,
     textAlign: "center",
   },

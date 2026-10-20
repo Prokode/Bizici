@@ -1,4 +1,5 @@
 import React from "react";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import {
   Alert,
   Image,
@@ -47,6 +48,7 @@ async function openMaps(lat: number, lng: number) {
 }
 
 export default function CourseRunScreen() {
+  const { formatPrice } = useCurrency();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -348,7 +350,7 @@ export default function CourseRunScreen() {
                           { color: colors.primary },
                         ]}
                       >
-                        {p.price.toFixed(2)} €
+                        {formatPrice(p.price, stop.nearestShop?.currency)}
                       </Text>
                     </View>
                   </View>

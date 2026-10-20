@@ -51,6 +51,7 @@ import type {
   ProductCreateInput,
   ProductSuggestion,
   ProductUpdateInput,
+  PublicExchangeRates,
   PublicProductPhotoSearchInput,
   PublicProductPhotoSearchPage,
   PublicProductSearchPage,
@@ -87,6 +88,82 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * @summary Daily indicative exchange rates, relative to EUR
+ */
+export const getGetPublicExchangeRatesUrl = () => {
+  return `/api/public/exchange-rates`;
+};
+
+export const getPublicExchangeRates = async (
+  options?: RequestInit,
+): Promise<PublicExchangeRates> => {
+  return customFetch<PublicExchangeRates>(getGetPublicExchangeRatesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetPublicExchangeRatesQueryKey = () => {
+  return [`/api/public/exchange-rates`] as const;
+};
+
+export const getGetPublicExchangeRatesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPublicExchangeRates>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getPublicExchangeRates>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPublicExchangeRatesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPublicExchangeRates>>
+  > = ({ signal }) => getPublicExchangeRates({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPublicExchangeRates>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPublicExchangeRatesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPublicExchangeRates>>
+>;
+export type GetPublicExchangeRatesQueryError = ErrorType<void>;
+
+/**
+ * @summary Daily indicative exchange rates, relative to EUR
+ */
+
+export function useGetPublicExchangeRates<
+  TData = Awaited<ReturnType<typeof getPublicExchangeRates>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getPublicExchangeRates>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPublicExchangeRatesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * @summary Search available public products nearby or outside the selected radius

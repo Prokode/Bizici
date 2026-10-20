@@ -5,6 +5,16 @@
  * NearBuy Business API (MongoDB-backed)
  * OpenAPI spec version: 0.2.0
  */
+export interface CountryCurrency {
+  /**
+   * @minLength 3
+   * @maxLength 3
+   */
+  code: string;
+  name: string;
+  symbol: string;
+}
+
 export interface PublicProductSearchHit {
   id: string;
   shopId: string;
@@ -15,8 +25,17 @@ export interface PublicProductSearchHit {
   brand: string | null;
   description: string | null;
   price: number;
+  currency?: CountryCurrency | null;
   photo: string | null;
   distanceMeters: number;
+}
+
+export type PublicExchangeRatesRates = { [key: string]: number };
+
+export interface PublicExchangeRates {
+  base: string;
+  updatedAt: string;
+  rates: PublicExchangeRatesRates;
 }
 
 export interface PublicProductSearchPage {
@@ -89,16 +108,6 @@ export interface City {
   name: string;
   /** ISO 3166-1 alpha-2, e.g. FR */
   countryCode: string;
-}
-
-export interface CountryCurrency {
-  /**
-   * @minLength 3
-   * @maxLength 3
-   */
-  code: string;
-  name: string;
-  symbol: string;
 }
 
 /**

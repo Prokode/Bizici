@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import {
   ActivityIndicator,
   Alert,
@@ -38,11 +39,8 @@ function formatDistance(meters: number): string {
   return `${(meters / 1000).toFixed(1)} km`;
 }
 
-function formatPrice(cents: number): string {
-  return `${(cents / 100).toFixed(2)} €`;
-}
-
 export function ShopBottomSheet({ shop, onClose }: Props) {
+  const { formatPrice } = useCurrency();
   const { t } = useTranslation();
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -334,7 +332,7 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                       <Text
                         style={[styles.price, { color: colors.primary }]}
                       >
-                        {formatPrice(item.price)}
+                        {formatPrice(item.price, data?.shop.currency ?? shop?.currency)}
                       </Text>
                     </View>
                   )}
