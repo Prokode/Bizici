@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter, type Href } from "expo-router";
 import { useAuth } from "@clerk/expo";
@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
-import { getOrCreateConversation } from "@/lib/api/conversations";
+import { openShopConversation } from "@/lib/chatStart";
 import { chatStartFailure, type ChatStartFailure } from "@/lib/chatStartError";
 import {
   chatShopHref,
@@ -39,40 +39,46 @@ export default function ChatShopResolver() {
   const colors = useColors();
   const router = useRouter();
   const { t } = useTranslation();
-  const { isSignedIn, isLoaded, getToken } = useAuth();
+  const { isSignedIn, isLoaded, getToken, sessionId } = useAuth();
+  const current = useRef({ getToken, router });
+  current.current = { getToken, router };
   const [failed, setFailed] = useState<ChatStartFailure | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
+    setFailed(null);
+    if (isLoaded) return;
+    // Session hydration itself can stall while a device is offline.
+    const timer = setTimeout(() => setFailed({ reason: "session", retryable: true }), 20_000);
+    return () => clearTimeout(timer);
+  }, [shopId, attempt, isLoaded]);
+
+  useEffect(() => {
     if (!isLoaded || !shopId) return;
     if (!isSignedIn) {
-      router.replace(
+      current.current.router.replace(
         `/(auth)/sign-in?next=${encodeURIComponent(chatShopHref(shopId, ctx))}` as Href,
       );
       return;
     }
     let cancelled = false;
+    const controller = new AbortController();
     setFailed(null);
     (async () => {
       try {
         // Do not depend on the root token bridge's effect having run first.
-        const token = await getToken();
+        const conv = await openShopConversation(shopId, () => current.current.getToken(), { signal: controller.signal });
         if (cancelled) return;
-        if (!token) {
-          setFailed({ reason: "session", retryable: true });
-          return;
-        }
-        const conv = await getOrCreateConversation(shopId, token);
-        if (cancelled) return;
-        router.replace(chatThreadHref(conv.id, ctx) as Href);
+        current.current.router.replace(chatThreadHref(conv.id, ctx) as Href);
       } catch (error) {
         if (!cancelled) setFailed(chatStartFailure(error));
       }
     })();
     return () => {
       cancelled = true;
+      controller.abort();
     };
-  }, [shopId, ctx, isSignedIn, isLoaded, getToken, router, attempt]);
+  }, [shopId, ctx, isSignedIn, isLoaded, sessionId, attempt]);
 
   const goBack = () =>
     router.canGoBack() ? router.back() : router.replace("/(tabs)/messages" as Href);

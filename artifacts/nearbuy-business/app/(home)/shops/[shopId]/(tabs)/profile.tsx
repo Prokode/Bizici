@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View, ScrollView, Platform, Modal, Switch, ActivityIndicator } from "react-native";
+import { StyleSheet, Text, View, ScrollView, Platform, Modal, Switch, ActivityIndicator, Linking } from "react-native";
 import { useColors } from "@/hooks/useColors";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -14,15 +14,24 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Feather } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, type ErrorBoundaryProps } from "expo-router";
 import { useShopId } from "@/hooks/useShopId";
-import { ShopMapPreview } from "@/components/ShopMapPreview";
 import QRCode from "react-native-qrcode-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HelpersSection } from "@/components/HelpersSection";
 import { useTranslation } from "react-i18next";
 import { BrandPhoto } from "@/components/BrandPhoto";
 import { ShopBrandPhotoSettings } from "@/components/ShopBrandPhotoSettings";
+
+export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
+  const colors = useColors();
+  const { t } = useTranslation();
+  return <View style={{ flex: 1, justifyContent: "center", padding: 24, gap: 16, backgroundColor: colors.background }}>
+    <Text style={{ color: colors.foreground, textAlign: "center" }}>{t("shopConfiguration.loadError")}</Text>
+    <Button title={t("common.retry")} onPress={retry} />
+    <Button title={t("profile.switchShop")} variant="ghost" onPress={() => router.replace("/(home)")} />
+  </View>;
+}
 
 export default function ShopConfigurationScreen() {
   const colors = useColors();
@@ -43,7 +52,7 @@ export default function ShopConfigurationScreen() {
     retry: false,
   });
   const shops = rolesQuery.data;
-  const myRole = shops?.find((s) => s.shop.id === shopId)?.role;
+  const myRole = Array.isArray(shops) ? shops.find((s) => s?.shop?.id === shopId)?.role : undefined;
   const isSeller = myRole === "seller";
   const [showQr, setShowQr] = useState(false);
 
@@ -55,6 +64,9 @@ export default function ShopConfigurationScreen() {
 
   const setShopOpen = useSetShopOpen();
   const [statusError, setStatusError] = useState(false);
+  const [mapError, setMapError] = useState(false);
+  const validLocation = !!shop && Number.isFinite(shop.latitude) && Number.isFinite(shop.longitude)
+    && Math.abs(shop.latitude) <= 90 && Math.abs(shop.longitude) <= 180;
 
   if (shopQuery.isLoading || rolesQuery.isLoading) {
     return <View style={[styles.state, { backgroundColor: colors.background }]}><ActivityIndicator color={colors.primary} /><Text style={{ color: colors.foreground }}>{t("common.loading")}</Text></View>;
@@ -152,8 +164,19 @@ export default function ShopConfigurationScreen() {
       </Text>
 
       <View style={[styles.mapContainer, { borderColor: colors.border, borderRadius: colors.radius }]}>
-        <ShopMapPreview key={`${shop.latitude}:${shop.longitude}`} latitude={shop.latitude} longitude={shop.longitude} />
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 12, gap: 8 }}>
+          <Feather name="map-pin" size={26} color={colors.primary} />
+          {validLocation ? <>
+            <Text style={{ color: colors.foreground }}>{shop.latitude.toFixed(5)}, {shop.longitude.toFixed(5)}</Text>
+            <Button title={t("shopConfiguration.openMap")} variant="secondary" onPress={() => {
+              setMapError(false);
+              void Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${shop.latitude},${shop.longitude}`)
+                .catch(() => setMapError(true));
+            }} />
+          </> : <Text style={{ color: colors.mutedForeground }}>{t("shopConfiguration.locationUnavailable")}</Text>}
+        </View>
       </View>
+      {mapError && <Text accessibilityRole="alert" style={{ color: colors.destructive }}>{t("shopConfiguration.mapError")}</Text>}
       {isSeller && <Button title={t("editShop.updateLocation")} variant="secondary" onPress={() => router.push({ pathname: "/shops/[shopId]/edit", params: { shopId, section: "location" } })} />}
 
       {isSeller && <HelpersSection shopId={shopId as string} />}

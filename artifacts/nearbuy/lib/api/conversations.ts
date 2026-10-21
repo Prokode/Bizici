@@ -49,6 +49,7 @@ export async function getConversation(
 export async function getOrCreateConversation(
   shopId: string,
   token?: string,
+  options: { signal?: AbortSignal; timeoutMs?: number } = {},
 ): Promise<ConversationSummary> {
   const data = await customFetch<{ conversation: ConversationSummary }>(
     "/api/conversations",
@@ -59,6 +60,8 @@ export async function getOrCreateConversation(
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({ shopId }),
+      signal: options.signal,
+      timeoutMs: options.timeoutMs ?? 15_000,
     },
   );
   return data.conversation;

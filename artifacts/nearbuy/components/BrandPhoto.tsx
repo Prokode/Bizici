@@ -27,7 +27,7 @@ export function BrandPhoto({ uri, name, size = 64, style }: {
         />
       ) : (
         <Text style={{ color: colors.primary, fontFamily: "PlusJakartaSans_700Bold", fontSize: Math.min(size * 0.45, 56) }}>
-          {name.trim().charAt(0).toUpperCase() || "?"}
+          {(typeof name === "string" ? name.trim().charAt(0).toUpperCase() : "") || "?"}
         </Text>
       )}
     </View>

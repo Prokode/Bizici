@@ -10,7 +10,10 @@
     "tab": "Settings",
     "title": "Shop configuration",
     "loadError": "Unable to load this shop. Check your connection and shop access, then retry.",
-    "readOnly": "Only the shop owner can update this configuration."
+    "readOnly": "Only the shop owner can update this configuration.",
+    "openMap": "View on map",
+    "locationUnavailable": "No valid shop location is available.",
+    "mapError": "Could not open the map. Please try again."
   },
   "nav": {
     "inventory": "Inventory",
@@ -20,6 +23,7 @@
     "profile": "Profile"
   },
   "common": {
+    "signIn": "Sign in",
     "loading": "Loading…",
     "retry": "Tap to retry",
     "save": "Save",

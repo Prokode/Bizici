@@ -10,7 +10,10 @@
     "tab": "Réglages",
     "title": "Configuration boutique",
     "loadError": "Impossible de charger cette boutique. Vérifiez votre connexion et votre accès, puis réessayez.",
-    "readOnly": "Seul le propriétaire peut modifier cette configuration."
+    "readOnly": "Seul le propriétaire peut modifier cette configuration.",
+    "openMap": "Voir sur la carte",
+    "locationUnavailable": "Aucune localisation valide n’est disponible.",
+    "mapError": "Impossible d’ouvrir la carte. Veuillez réessayer."
   },
   "nav": {
     "inventory": "Inventaire",
@@ -20,6 +23,7 @@
     "profile": "Profil"
   },
   "common": {
+    "signIn": "Se connecter",
     "loading": "Chargement…",
     "retry": "Toucher pour réessayer",
     "save": "Enregistrer",

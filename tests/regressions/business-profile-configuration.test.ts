@@ -26,7 +26,8 @@ test("personal profile is outside shop routes and reads the authenticated identi
 
 test("shop configuration excludes personal account controls", () => {
   assert.match(configuration, /ShopConfigurationScreen/);
-  assert.match(configuration, /ShopMapPreview/);
+  assert.match(configuration, /Linking\.openURL/);
+  assert.match(configuration, /shopConfiguration\.openMap/);
   assert.match(configuration, /HelpersSection/);
   assert.match(configuration, /profile.editDetails/);
   assert.match(configuration, /section: "location"/);

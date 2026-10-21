@@ -1,5 +1,4 @@
 import * as ImagePicker from "expo-image-picker";
-import { fetch as uploadFetch } from "expo/fetch";
 import { requestShopBrandPhotoUpload, setShopBrandPhoto, type Shop } from "@workspace/api-client-react";
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -33,6 +32,8 @@ export async function chooseAndUploadShopBrandPhoto(shopId: string): Promise<Sho
     : null;
   if (!contentType) throw new Error("Unsupported photo type");
   const { uploadUrl, photoId } = await requestShopBrandPhotoUpload(shopId, { contentType, size: bytes.length });
+  // Loading settings must not initialize the native binary-upload module.
+  const { fetch: uploadFetch } = await import("expo/fetch");
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 90_000);
   try {
