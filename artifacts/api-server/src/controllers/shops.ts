@@ -297,9 +297,10 @@ export const shopsController = {
       activeRequestsCount = await BroadcastRequest.countDocuments({
         status: "active",
         location: {
-          $nearSphere: {
-            $geometry: shop.location as any,
-            $maxDistance: 5000,
+          // countDocuments uses aggregation, where $nearSphere is forbidden.
+          // $centerSphere takes radians, not metres (Earth radius: 6378.1 km).
+          $geoWithin: {
+            $centerSphere: [shop.location.coordinates, 5 / 6378.1],
           },
         },
       });
@@ -359,9 +360,8 @@ export const shopsController = {
       activeRequestsCount = await BroadcastRequest.countDocuments({
         status: "active",
         location: {
-          $nearSphere: {
-            $geometry: shop.location as any,
-            $maxDistance: 5000,
+          $geoWithin: {
+            $centerSphere: [shop.location.coordinates, 5 / 6378.1],
           },
         },
       });

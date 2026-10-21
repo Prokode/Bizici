@@ -19,13 +19,19 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PricingTypeSelector } from "@/components/PricingTypeSelector";
 import { ServiceLocationOverrideSelector } from "@/components/ServiceLocationSelector";
+import { useShopId } from "@/hooks/useShopId";
+import { ServiceAccessGate } from "@/components/ServiceAccessGate";
 
 export default function EditServiceScreen() {
+  return <ServiceAccessGate><EditServiceContent /></ServiceAccessGate>;
+}
+
+function EditServiceContent() {
   const colors = useColors();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  const { shopId, serviceId } = useLocalSearchParams<{
-    shopId: string;
+  const shopId = useShopId();
+  const { serviceId } = useLocalSearchParams<{
     serviceId: string;
   }>();
 

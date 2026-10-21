@@ -288,8 +288,9 @@
     "duration": "{{minutes}} min",
     "byCategory": "{{category}}",
     "convertPromptTitle": "Activer les services",
-    "convertPromptBody": "Cette boutique ne propose que des produits. Activez les services pour publier vos premières prestations.",
-    "convertPromptCta": "Convertir en hybride",
+    "convertPromptBody": "Cette boutique ne vend que des produits. Pour créer des services ou utiliser leurs fonctionnalités, changez le type de boutique en Services ou Produits et services dans les paramètres.",
+    "convertPromptCta": "Changer le type de boutique",
+    "shopLoadFailed": "Impossible de charger la boutique. Réessayez pour accéder aux services.",
     "loadError": "Chargement des services impossible"
   },
   "newService": {

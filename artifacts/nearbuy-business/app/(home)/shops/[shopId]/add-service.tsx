@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { StyleSheet, Switch, Text, View } from "react-native";
-import { router, useLocalSearchParams, Stack } from "expo-router";
+import { router, Stack } from "expo-router";
+import { useShopId } from "@/hooks/useShopId";
+import { ServiceAccessGate } from "@/components/ServiceAccessGate";
 import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
@@ -18,10 +20,14 @@ import { PricingTypeSelector } from "@/components/PricingTypeSelector";
 import { ServiceLocationOverrideSelector } from "@/components/ServiceLocationSelector";
 
 export default function AddServiceScreen() {
+  return <ServiceAccessGate><AddServiceContent /></ServiceAccessGate>;
+}
+
+function AddServiceContent() {
   const colors = useColors();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  const { shopId } = useLocalSearchParams<{ shopId: string }>();
+  const shopId = useShopId();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");

@@ -288,8 +288,9 @@
     "duration": "{{minutes}} min",
     "byCategory": "{{category}}",
     "convertPromptTitle": "Enable services",
-    "convertPromptBody": "This shop only sells products. Enable services to publish your first offerings.",
-    "convertPromptCta": "Convert to hybrid",
+    "convertPromptBody": "This shop only sells products. To create services or use service features, change the shop type to Services or Products & services in shop settings.",
+    "convertPromptCta": "Change shop type",
+    "shopLoadFailed": "Could not load the shop. Please retry to access services.",
     "loadError": "Failed to load services"
   },
   "newService": {

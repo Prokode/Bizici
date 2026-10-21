@@ -12,10 +12,11 @@ import { useColors } from "@/hooks/useColors";
 import { useQuery } from "@tanstack/react-query";
 import {
   getListShopServicesQueryOptions,
-  getGetShopQueryOptions,
   type Service,
 } from "@workspace/api-client-react";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
+import { useShopId } from "@/hooks/useShopId";
+import { ServiceAccessGate } from "@/components/ServiceAccessGate";
 import { Feather } from "@expo/vector-icons";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -43,15 +44,14 @@ function pricingLabel(
 }
 
 export default function ServicesScreen() {
+  return <ServiceAccessGate><ServicesContent /></ServiceAccessGate>;
+}
+
+function ServicesContent() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
-  const { shopId } = useLocalSearchParams<{ shopId: string }>();
-
-  const { data: shop } = useQuery({
-    ...getGetShopQueryOptions(shopId as string),
-    enabled: !!shopId,
-  });
+  const shopId = useShopId();
 
   const {
     data: services,
@@ -60,53 +60,8 @@ export default function ServicesScreen() {
     isRefetching,
   } = useQuery({
     ...getListShopServicesQueryOptions(shopId as string),
-    enabled: !!shopId && shop?.kind !== "products",
+    enabled: !!shopId,
   });
-
-  // Shop is products-only — surface a friendly conversion prompt instead of an
-  // empty list. The convert action just routes to the edit screen where the
-  // owner can flip the kind to "hybrid" or "services".
-  if (shop && shop.kind === "products") {
-    return (
-      <View
-        style={[
-          styles.container,
-          { backgroundColor: colors.background, paddingTop: insets.top + 24 },
-        ]}
-      >
-        <Card style={[styles.promptCard, { backgroundColor: colors.card }]}>
-          <Feather name="briefcase" size={32} color={colors.primary} />
-          <Text
-            style={[
-              styles.promptTitle,
-              {
-                color: colors.foreground,
-                fontFamily: "PlusJakartaSans_700Bold",
-              },
-            ]}
-          >
-            {t("services.convertPromptTitle")}
-          </Text>
-          <Text
-            style={[
-              styles.promptBody,
-              {
-                color: colors.mutedForeground,
-                fontFamily: "PlusJakartaSans_400Regular",
-              },
-            ]}
-          >
-            {t("services.convertPromptBody")}
-          </Text>
-          <Button
-            title={t("services.convertPromptCta")}
-            onPress={() => router.push(`/(home)/shops/${shopId}/edit`)}
-            style={{ marginTop: 12 }}
-          />
-        </Card>
-      </View>
-    );
-  }
 
   const renderItem = ({ item }: { item: Service }) => {
     const categoryLabel =

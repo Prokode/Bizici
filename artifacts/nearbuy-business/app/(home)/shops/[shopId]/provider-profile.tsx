@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
-import { Stack, useLocalSearchParams, router } from "expo-router";
+import { Stack, router } from "expo-router";
+import { useShopId } from "@/hooks/useShopId";
+import { ServiceAccessGate } from "@/components/ServiceAccessGate";
 import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
@@ -18,10 +20,14 @@ import { ServiceLocationSelector } from "@/components/ServiceLocationSelector";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function ProviderProfileScreen() {
+  return <ServiceAccessGate><ProviderProfileContent /></ServiceAccessGate>;
+}
+
+function ProviderProfileContent() {
   const colors = useColors();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  const { shopId } = useLocalSearchParams<{ shopId: string }>();
+  const shopId = useShopId();
 
   const { data: profile } = useQuery({
     ...getGetProviderProfileQueryOptions(shopId as string),

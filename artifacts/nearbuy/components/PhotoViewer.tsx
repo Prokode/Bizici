@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, Modal, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
@@ -125,7 +125,8 @@ export function PhotoViewer({ photos, initialIndex, label, onClose }: Props) {
     setIndex(value => clamp(value, 0, photos.length - 1));
   }, [photos.length]);
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    // React Native defines window too, but it does not provide DOM events.
+    if (Platform.OS !== "web" || typeof window?.addEventListener !== "function") return;
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") { event.preventDefault(); onClose(); }
       if (event.key === "ArrowLeft") setIndex(value => Math.max(0, value - 1));

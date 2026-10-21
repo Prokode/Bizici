@@ -72,7 +72,8 @@ export const servicesController = {
     }
 
     if (shopDoc.kind === "products") {
-      await Shop.updateOne({ _id: shopDoc._id }, { $set: { kind: "hybrid" } });
+      res.status(403).json({ error: "Change the shop type to services or hybrid in shop settings before creating services." });
+      return;
     }
 
     const serviceLocation =

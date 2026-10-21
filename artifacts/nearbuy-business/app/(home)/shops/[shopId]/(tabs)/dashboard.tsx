@@ -7,7 +7,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useShopId } from "@/hooks/useShopId";
 import { useQuery } from "@tanstack/react-query";
 import { getGetShopDashboardQueryOptions } from "@workspace/api-client-react";
 import { Feather } from "@expo/vector-icons";
@@ -88,7 +88,7 @@ export default function DashboardScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { t, i18n } = useTranslation();
-  const { shopId } = useLocalSearchParams<{ shopId: string }>();
+  const shopId = useShopId();
 
   const { data, isLoading, isError, refetch, isRefetching, error } = useQuery({
     ...getGetShopDashboardQueryOptions(shopId as string),
@@ -131,7 +131,7 @@ export default function DashboardScreen() {
           {t("dashboard.loadFailed")}
         </Text>
         <Text
-          onPress={() => refetch()}
+          onPress={() => { if (shopId) void refetch(); }}
           style={[
             styles.retry,
             { color: colors.primary, fontFamily: "PlusJakartaSans_600SemiBold" },
