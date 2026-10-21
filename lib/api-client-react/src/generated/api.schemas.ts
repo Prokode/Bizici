@@ -999,6 +999,27 @@ null) when the provider opted to hide it.
   distanceKm: number;
 }
 
+export type UploadLocalPhotoParams = {
+  expires: string;
+  type: UploadLocalPhotoType;
+  /**
+   * @minimum 1
+   * @maximum 10485760
+   */
+  size: number;
+  signature: string;
+};
+
+export type UploadLocalPhotoType =
+  (typeof UploadLocalPhotoType)[keyof typeof UploadLocalPhotoType];
+
+export const UploadLocalPhotoType = {
+  "image/jpeg": "image/jpeg",
+  "image/png": "image/png",
+  "image/webp": "image/webp",
+  "image/gif": "image/gif",
+} as const;
+
 export type RequestProductPhotoUploadBodyContentType =
   (typeof RequestProductPhotoUploadBodyContentType)[keyof typeof RequestProductPhotoUploadBodyContentType];
 

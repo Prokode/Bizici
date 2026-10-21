@@ -83,6 +83,7 @@ import type {
   ShopUpdateInput,
   ShopWithRole,
   UnregisterPushTokenBody,
+  UploadLocalPhotoParams,
   UserLocationInput,
 } from "./api.schemas";
 
@@ -94,6 +95,109 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * @summary Upload photo bytes using a short-lived signed capability
+ */
+export const getUploadLocalPhotoUrl = (
+  uploadId: string,
+  params: UploadLocalPhotoParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/photo-uploads/${uploadId}?${stringifiedParams}`
+    : `/api/photo-uploads/${uploadId}`;
+};
+
+export const uploadLocalPhoto = async (
+  uploadId: string,
+  uploadLocalPhotoBody: Blob,
+  params: UploadLocalPhotoParams,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getUploadLocalPhotoUrl(uploadId, params), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "image/jpeg", ...options?.headers },
+    body: JSON.stringify(uploadLocalPhotoBody),
+  });
+};
+
+export const getUploadLocalPhotoMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof uploadLocalPhoto>>,
+    TError,
+    { uploadId: string; data: BodyType<Blob>; params: UploadLocalPhotoParams },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof uploadLocalPhoto>>,
+  TError,
+  { uploadId: string; data: BodyType<Blob>; params: UploadLocalPhotoParams },
+  TContext
+> => {
+  const mutationKey = ["uploadLocalPhoto"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof uploadLocalPhoto>>,
+    { uploadId: string; data: BodyType<Blob>; params: UploadLocalPhotoParams }
+  > = (props) => {
+    const { uploadId, data, params } = props ?? {};
+
+    return uploadLocalPhoto(uploadId, data, params, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UploadLocalPhotoMutationResult = NonNullable<
+  Awaited<ReturnType<typeof uploadLocalPhoto>>
+>;
+export type UploadLocalPhotoMutationBody = BodyType<Blob>;
+export type UploadLocalPhotoMutationError = ErrorType<void>;
+
+/**
+ * @summary Upload photo bytes using a short-lived signed capability
+ */
+export const useUploadLocalPhoto = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof uploadLocalPhoto>>,
+    TError,
+    { uploadId: string; data: BodyType<Blob>; params: UploadLocalPhotoParams },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof uploadLocalPhoto>>,
+  TError,
+  { uploadId: string; data: BodyType<Blob>; params: UploadLocalPhotoParams },
+  TContext
+> => {
+  return useMutation(getUploadLocalPhotoMutationOptions(options));
+};
 
 /**
  * @summary Request a direct image upload for an accessible shop

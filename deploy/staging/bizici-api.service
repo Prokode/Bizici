@@ -11,6 +11,12 @@ User=bizici
 Group=bizici
 WorkingDirectory=/opt/bizici/current/api
 EnvironmentFile=/etc/bizici/api.env
+Environment=PHOTO_STORAGE_PROVIDER=local
+Environment=PHOTO_STORAGE_DIR=/var/lib/bizici/photos
+Environment=PHOTO_PUBLIC_ORIGIN=https://api-bizici.run.place
+StateDirectory=bizici/photos
+StateDirectoryMode=0750
+ReadWritePaths=/var/lib/bizici/photos
 ExecStart=/usr/bin/node --enable-source-maps /opt/bizici/current/api/index.mjs
 Restart=on-failure
 RestartSec=5

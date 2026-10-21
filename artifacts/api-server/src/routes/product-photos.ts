@@ -6,6 +6,7 @@ import { ObjectNotFoundError, ObjectStorageService, objectStorageClient } from "
 import { setObjectAclPolicy } from "../lib/objectAcl";
 import { ProductPhotoUpload, MAX_PRODUCT_PHOTO_BYTES, PRODUCT_PHOTO_TYPES, imageTypeFromBytes } from "../lib/productPhotos";
 import { RequestProductPhotoUploadBody } from "@workspace/api-zod";
+import { createLocalPhotoUpload, isLocalPhotoPath, localPhotoFile, localPhotosEnabled, publishLocalPhoto, LocalPhotoError } from "../lib/localPhotoStorage";
 
 const router: IRouter = Router();
 const storage = new ObjectStorageService();
@@ -21,7 +22,9 @@ router.get("/product-photos/:photoId", async (req, res) => {
   if (!upload) { res.status(404).end(); return; }
   try {
     if (!upload.finalObjectPath) { res.status(404).end(); return; }
-    const file = await storage.getObjectEntityFile(upload.finalObjectPath);
+    const file = isLocalPhotoPath(upload.finalObjectPath)
+      ? await localPhotoFile(upload.finalObjectPath)
+      : await storage.getObjectEntityFile(upload.finalObjectPath);
     const [metadata] = await file.getMetadata();
     if (Number(metadata.size) > MAX_PRODUCT_PHOTO_BYTES) { res.status(404).end(); return; }
     res.set({
@@ -36,7 +39,7 @@ router.get("/product-photos/:photoId", async (req, res) => {
     }).pipe(res);
   } catch (err) {
     req.log.warn({ err }, "Product photo unavailable");
-    res.status(err instanceof ObjectNotFoundError ? 404 : 503).end();
+    res.status(err instanceof ObjectNotFoundError || (err as NodeJS.ErrnoException).code === "ENOENT" ? 404 : 503).end();
   }
 });
 
@@ -44,8 +47,9 @@ router.post("/shops/:shopId/product-photos", requireAuth, requireShopAccess, asy
   const parsed = RequestProductPhotoUploadBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Invalid image metadata (maximum 10 MB)" }); return; }
   try {
-    const uploadURL = await storage.getObjectEntityUploadURL();
-    const objectPath = storage.normalizeObjectEntityPath(uploadURL);
+    const local = localPhotosEnabled() ? createLocalPhotoUpload(parsed.data.contentType, parsed.data.size) : null;
+    const uploadURL = local?.uploadURL ?? await storage.getObjectEntityUploadURL();
+    const objectPath = local?.objectPath ?? storage.normalizeObjectEntityPath(uploadURL);
     const upload = await ProductPhotoUpload.create({
       shopId: String(req.params.shopId), userId: req.userId, objectPath, ...parsed.data,
     });
@@ -69,6 +73,24 @@ router.post("/shops/:shopId/product-photos/:uploadId/complete", requireAuth, req
     res.status(400).json({ error: "Upload expired; select the photo again" }); return;
   }
   try {
+    if (isLocalPhotoPath(upload.objectPath)) {
+      const publishedPhoto = await publishLocalPhoto(upload.objectPath, {
+        maxBytes: MAX_PRODUCT_PHOTO_BYTES, allowedTypes: PRODUCT_PHOTO_TYPES,
+        size: upload.size, contentType: upload.contentType,
+      });
+      try {
+        const published = await ProductPhotoUpload.updateOne(
+          { _id: upload._id, completedAt: null },
+          { $set: { completedAt: new Date(), finalObjectPath: publishedPhoto.finalPath } },
+        );
+        if (published.modifiedCount === 0) await publishedPhoto.file.delete();
+      } catch (error) {
+        await publishedPhoto.file.delete().catch(() => {});
+        throw error;
+      }
+      res.json({ photoPath: photoPath(String(upload._id)) });
+      return;
+    }
     const source = await storage.getObjectEntityFile(upload.objectPath);
     // Copy to a non-presigned path before verification: the PUT URL must never
     // be able to overwrite a published image (including during completion).
@@ -97,7 +119,8 @@ router.post("/shops/:shopId/product-photos/:uploadId/complete", requireAuth, req
     res.json({ photoPath: photoPath(String(upload._id)) });
   } catch (err) {
     req.log.warn({ err }, "Product photo upload completion failed");
-    res.status(err instanceof ObjectNotFoundError ? 400 : 503).json({ error: "Photo upload could not be verified" });
+    const invalid = err instanceof ObjectNotFoundError || err instanceof LocalPhotoError || (err as NodeJS.ErrnoException).code === "ENOENT";
+    res.status(invalid ? 400 : 503).json({ error: "Photo upload could not be verified" });
   }
 });
 

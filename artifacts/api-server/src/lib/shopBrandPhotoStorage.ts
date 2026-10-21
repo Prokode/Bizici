@@ -1,10 +1,11 @@
 import { Readable } from "node:stream";
 import type { Response as ExpressResponse } from "express";
+import { localPhotoFile } from "./localPhotoStorage";
 
 export const MAX_BRAND_PHOTO_BYTES = 5 * 1024 * 1024;
 export const BRAND_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 export const validBrandPhotoId = (id: unknown): id is string =>
-  typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(id);
+  typeof id === "string" && /^(?:local-)?[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(id);
 
 export function brandPhotoPath(shopId: string, photoId: string) {
   return `/api/public/shops/${shopId}/brand-photo/${photoId}`;
@@ -56,6 +57,21 @@ export async function verifyBrandPhoto(shopId: string, photoId: string) {
 }
 
 export async function serveBrandPhoto(shopId: string, photoId: string, res: ExpressResponse) {
+  if (photoId.startsWith("local-")) {
+    const file = await localPhotoFile(`local:published/${photoId.slice("local-".length)}`);
+    const [metadata] = await file.getMetadata();
+    const [bytes] = await file.download({ start: 0, end: 15 });
+    const mime = detectBrandPhotoType(bytes);
+    if (!mime || metadata.size <= 0 || metadata.size > MAX_BRAND_PHOTO_BYTES) { res.status(404).end(); return; }
+    res.set({
+      "Content-Type": mime, "Content-Length": String(metadata.size),
+      "Cache-Control": "public, max-age=60", "X-Content-Type-Options": "nosniff",
+    });
+    const stream = file.createReadStream();
+    res.on("close", () => stream.destroy());
+    stream.on("error", () => res.destroy()).pipe(res);
+    return;
+  }
   const response = await fetch(await signBrandPhoto(shopId, photoId, "GET"), { signal: AbortSignal.timeout(20_000) });
   if (!response.ok || !response.body) {
     res.status(response.status === 404 ? 404 : 503).end();

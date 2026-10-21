@@ -117,4 +117,6 @@ export * from "./shopUpdateInputKind";
 export * from "./shopWithRole";
 export * from "./shopWithRoleRole";
 export * from "./unregisterPushTokenBody";
+export * from "./uploadLocalPhotoParams";
+export * from "./uploadLocalPhotoType";
 export * from "./userLocationInput";

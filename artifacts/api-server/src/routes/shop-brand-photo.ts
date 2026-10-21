@@ -3,6 +3,7 @@ import { Router, type IRouter } from "express";
 import { Shop } from "@workspace/db";
 import { requireAuth, requireSeller, requireShopAccess } from "../lib/auth";
 import { serializeShop } from "../lib/serialize";
+import { createLocalPhotoUpload, localPhotosEnabled, publishLocalPhoto, localBrandPhotoId, localBrandUploadPath, LocalPhotoError } from "../lib/localPhotoStorage";
 import {
   brandPhotoPath, BRAND_PHOTO_TYPES, MAX_BRAND_PHOTO_BYTES,
   validBrandPhotoId, signBrandPhoto, verifyBrandPhoto, serveBrandPhoto,
@@ -28,6 +29,11 @@ router.post("/shops/:shopId/brand-photo/upload", requireAuth, requireShopAccess,
     res.status(400).json({ error: "Choose a JPEG, PNG or WebP image up to 5 MB" }); return;
   }
   try {
+    if (localPhotosEnabled()) {
+      const upload = createLocalPhotoUpload(contentType, size);
+      res.json({ photoId: localBrandPhotoId(shopId, upload.id), uploadUrl: upload.uploadURL });
+      return;
+    }
     const photoId = randomUUID();
     res.json({ photoId, uploadUrl: await signBrandPhoto(shopId, photoId, "PUT") });
   } catch {
@@ -38,18 +44,26 @@ router.post("/shops/:shopId/brand-photo/upload", requireAuth, requireShopAccess,
 router.put("/shops/:shopId/brand-photo", requireAuth, requireShopAccess, requireSeller, async (req, res) => {
   const shopId = req.params.shopId as string;
   const photoId: unknown = req.body?.photoId;
-  if (photoId !== null && !validBrandPhotoId(photoId)) { res.status(400).json({ error: "Invalid uploaded photo" }); return; }
+  const localTicket = typeof photoId === "string" && photoId.startsWith("local-upload-");
+  if (photoId !== null && !localTicket && (!validBrandPhotoId(photoId) || photoId.startsWith("local-"))) { res.status(400).json({ error: "Invalid uploaded photo" }); return; }
   try {
-    if (photoId !== null && !(await verifyBrandPhoto(shopId, photoId as string))) {
+    let savedPhotoId = photoId as string | null;
+    if (localTicket) {
+      const photo = await publishLocalPhoto(localBrandUploadPath(shopId, photoId as string), {
+        maxBytes: MAX_BRAND_PHOTO_BYTES, allowedTypes: BRAND_PHOTO_TYPES,
+      });
+      savedPhotoId = `local-${photo.finalPath.slice("local:published/".length)}`;
+    } else if (photoId !== null && !(await verifyBrandPhoto(shopId, photoId as string))) {
       res.status(400).json({ error: "Upload a valid JPEG, PNG or WebP image up to 5 MB before saving" }); return;
     }
     const shop = await Shop.findByIdAndUpdate(shopId, {
-      brandPhotoUrl: photoId === null ? null : brandPhotoPath(shopId, photoId as string),
-    }, { new: true }).lean();
+      brandPhotoUrl: photoId === null ? null : brandPhotoPath(shopId, savedPhotoId as string),
+    }, { returnDocument: "after" }).lean();
     if (!shop) { res.status(404).json({ error: "Shop not found" }); return; }
     res.json(serializeShop(shop, { viewerIsOwner: true }));
-  } catch {
-    res.status(503).json({ error: "Could not save shop photo. Please try again" });
+  } catch (error) {
+    const invalid = error instanceof LocalPhotoError || (error as NodeJS.ErrnoException).code === "ENOENT";
+    res.status(invalid ? 400 : 503).json({ error: "Could not save shop photo. Please try again" });
   }
 });
 

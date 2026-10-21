@@ -8,6 +8,22 @@
 import * as zod from "zod";
 
 /**
+ * @summary Upload photo bytes using a short-lived signed capability
+ */
+export const UploadLocalPhotoParams = zod.object({
+  uploadId: zod.coerce.string(),
+});
+
+export const uploadLocalPhotoQuerySizeMax = 10485760;
+
+export const UploadLocalPhotoQueryParams = zod.object({
+  expires: zod.coerce.string(),
+  type: zod.enum(["image/jpeg", "image/png", "image/webp", "image/gif"]),
+  size: zod.coerce.number().min(1).max(uploadLocalPhotoQuerySizeMax),
+  signature: zod.coerce.string(),
+});
+
+/**
  * @summary Request a direct image upload for an accessible shop
  */
 export const RequestProductPhotoUploadParams = zod.object({
