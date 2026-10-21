@@ -1,4 +1,16 @@
 {
+  "photoViewer": {
+    "open": "Voir la photo en plein écran",
+    "photo": "Photo",
+    "zoomIn": "Agrandir",
+    "zoomOut": "Réduire",
+    "reset": "Réinitialiser le zoom",
+    "previous": "Photo précédente",
+    "next": "Photo suivante",
+    "count": "{{current}} sur {{total}}",
+    "hint": "Pincez ou touchez deux fois pour zoomer. Faites glisser pour explorer. Balayez les photos sans zoom.",
+    "loadError": "Impossible de charger cette photo. Veuillez réessayer."
+  },
   "currency": {
     "label": "Devise d'affichage",
     "seller": "Devise du vendeur (prix d'origine)",

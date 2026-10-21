@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Image, Text, View, type StyleProp, type ViewStyle } from "react-native";
+import { Text, View, type StyleProp, type ViewStyle } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { resolveBrandPhotoUrl } from "@/lib/brandPhoto";
+import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 
 export function BrandPhoto({ uri, name, size = 64, style }: {
   uri?: string | null; name: string; size?: number; style?: StyleProp<ViewStyle>;
@@ -18,7 +19,7 @@ export function BrandPhoto({ uri, name, size = 64, style }: {
       backgroundColor: colors.muted, alignItems: "center", justifyContent: "center",
     }, style]}>
       {url && !failed ? (
-        <Image
+        <ZoomablePhoto
           source={{ uri: url }}
           accessibilityLabel={t("shopBrandPhoto.alt", { name })}
           style={{ width: "100%", height: "100%" }}

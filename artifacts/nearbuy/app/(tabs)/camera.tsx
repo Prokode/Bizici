@@ -32,6 +32,7 @@ import {
   type VisualSearchErrorCode,
 } from "@/lib/api/visualSearch";
 import { fetchShopDetail, type PublicShop } from "@/lib/api/shops";
+import { ProductPhoto } from "@/components/ProductPhoto";
 import { ShopBottomSheet } from "@/components/ShopBottomSheet";
 
 const FALLBACK = { lat: 48.8566, lng: 2.3522 };
@@ -575,7 +576,7 @@ export default function CameraTab() {
               ]}
             >
               {item.photo ? (
-                <Image source={{ uri: item.photo }} style={styles.matchThumb} />
+                <ProductPhoto shopId={item.shopId} productId={item.id} source={{ uri: item.photo }} style={styles.matchThumb} />
               ) : (
                 <View
                   style={[

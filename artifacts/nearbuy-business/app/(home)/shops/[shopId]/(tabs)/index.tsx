@@ -1,10 +1,10 @@
 import React, { useState } from "react";
+import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 import {
   StyleSheet,
   Text,
   View,
   FlatList,
-  Image,
   RefreshControl,
   TouchableOpacity,
   Switch,
@@ -133,8 +133,9 @@ export default function InventoryScreen() {
     <Card style={styles.card}>
       <View style={styles.cardHeader}>
         {firstPhoto ? (
-          <Image
+          <ZoomablePhoto
             source={{ uri: firstPhoto }}
+            photos={item.photos ?? (item.imageUrl ? [item.imageUrl] : [])}
             style={[styles.thumb, { borderRadius: colors.radius, backgroundColor: colors.muted }]}
           />
         ) : null}

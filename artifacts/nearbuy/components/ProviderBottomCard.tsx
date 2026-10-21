@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "react-i18next";
@@ -7,6 +7,7 @@ import { useColors } from "@/hooks/useColors";
 import type { PublicShop } from "@/lib/api/shops";
 import { LocationBadge } from "@/components/LocationBadge";
 import { BrandPhoto } from "@/components/BrandPhoto";
+import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 
 type Props = {
   shop: PublicShop;
@@ -46,7 +47,7 @@ export function ProviderBottomCard({ shop, onClose, onOpenProfile }: Props) {
         {shop.brandPhotoUrl ? (
           <BrandPhoto uri={shop.brandPhotoUrl} name={shop.name} size={52} style={{ borderRadius: 26 }} />
         ) : provider?.photoUrl ? (
-          <Image source={{ uri: provider.photoUrl }} style={styles.avatar} />
+          <ZoomablePhoto source={{ uri: provider.photoUrl }} style={styles.avatar} />
         ) : (
           <LinearGradient
             colors={["#8B5CF6", "#6366F1"]}

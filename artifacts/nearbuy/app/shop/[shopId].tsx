@@ -1,7 +1,7 @@
 import React from "react";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { CurrencyPreference } from "@/components/CurrencyPreference";
-import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,6 +15,7 @@ import { LocationBadge } from "@/components/LocationBadge";
 import { ShopReviewsSection } from "@/components/ShopReviewsSection";
 import { chatShopHref } from "@/lib/chatItemContext";
 import { BrandPhoto } from "@/components/BrandPhoto";
+import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 
 export default function ShopDetails() {
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
@@ -109,19 +110,19 @@ export default function ShopDetails() {
                   {provider.isLoading ? <ActivityIndicator color={colors.primary} /> :
                     provider.isError ? <Button title={t("common.retry")} onPress={() => provider.refetch()} /> : (
                       <>
-                        {!!profile?.photoUrl && <Image source={{ uri: profile.photoUrl }} style={styles.photo} />}
+                        {!!profile?.photoUrl && <ZoomablePhoto source={{ uri: profile.photoUrl }} photos={profile.portfolioPhotos} style={styles.photo} />}
                         <Text style={text}>{profile?.bio || t("provider.noBio")}</Text>
                         {profile?.yearsExperience != null && <Text style={muted}>{t("provider.yearsExperience", { count: profile.yearsExperience })}</Text>}
                         {profile?.serviceRadiusKm != null && <Text style={muted}>{t("provider.radiusLabel", { km: profile.serviceRadiusKm })}</Text>}
                         {!!profile?.certifications.length && <Text style={text}>{profile.certifications.join(" · ")}</Text>}
-                        {profile?.portfolioPhotos.map(uri => <Image key={uri} source={{ uri }} style={styles.photo} />)}
+                        {profile?.portfolioPhotos.map(uri => <ZoomablePhoto key={uri} source={{ uri }} photos={profile.portfolioPhotos} style={styles.photo} />)}
                         <Button title={t("provider.openProfile")} variant="outline" onPress={() => router.push(`/provider/${shop.id}`)} />
                         <Text style={[styles.heading, text]}>{t("shopDetails.services")}</Text>
                         {!provider.data?.services.length && <Text style={muted}>{t("shopDetails.noServices")}</Text>}
                         {provider.data?.services.map(service => (
                           <View key={service.id} style={card}>
                             <Text style={[styles.heading, text]}>{service.title}</Text>
-                            {service.photos.map(uri => <Image key={uri} source={{ uri }} style={styles.photo} />)}
+                            {service.photos.map(uri => <ZoomablePhoto key={uri} source={{ uri }} photos={service.photos} accessibilityLabel={service.title} style={styles.photo} />)}
                             {!!service.description && <Text style={text}>{service.description}</Text>}
                             <Text style={{ color: colors.primary }}>{service.pricingType === "quote" ? t("search.onQuote") :
                               service.price == null ? "—" : service.pricingType === "hourly" ? t("search.hourlyPrice", { price: formatPrice(service.price * 100, shop.currency) }) : formatPrice(service.price * 100, shop.currency)}</Text>
@@ -146,7 +147,7 @@ export default function ShopDetails() {
                   {!detail.data?.products.length && <Text style={muted}>{t("shopDetails.noProducts")}</Text>}
                   {detail.data?.products.map(product => (
                     <View key={product.id} style={card}>
-                      {product.photos.map(uri => <Image key={uri} source={{ uri }} style={styles.photo} />)}
+                      {product.photos.map(uri => <ZoomablePhoto key={uri} source={{ uri }} photos={product.photos} accessibilityLabel={product.name} style={styles.photo} />)}
                       <Text style={[styles.heading, text]}>{product.name}</Text>
                       {!!product.brand && <Text style={muted}>{product.brand}</Text>}
                       {!!product.description && <Text style={text}>{product.description}</Text>}

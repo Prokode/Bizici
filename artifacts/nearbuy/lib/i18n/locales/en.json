@@ -1,4 +1,16 @@
 {
+  "photoViewer": {
+    "open": "View full photo",
+    "photo": "Photo",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "reset": "Reset zoom",
+    "previous": "Previous photo",
+    "next": "Next photo",
+    "count": "{{current}} of {{total}}",
+    "hint": "Pinch or double-tap to zoom. Drag to explore. Swipe for more photos when zoomed out.",
+    "loadError": "This photo could not be loaded. Please try again."
+  },
   "currency": {
     "label": "Display currency",
     "seller": "Seller's currency (original price)",

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -28,6 +27,7 @@ import { ShopReviewsSection } from "@/components/ShopReviewsSection";
 import { chatShopHref } from "@/lib/chatItemContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { BrandPhoto } from "@/components/BrandPhoto";
+import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 
 function formatServicePrice(svc: PublicService, t: (k: string, o?: Record<string, unknown>) => string, money: (minor: number) => string): string {
   if (svc.pricingType === "quote") return t("search.onQuote");
@@ -128,7 +128,7 @@ export default function ProviderScreen() {
         {brandPhoto ? (
           <BrandPhoto uri={brandPhoto} name={shop.name} size={240} style={[styles.hero, { borderRadius: 0 }]} />
         ) : heroPhoto ? (
-          <Image source={{ uri: heroPhoto }} style={styles.hero} />
+          <ZoomablePhoto source={{ uri: heroPhoto }} photos={provider?.portfolioPhotos} style={styles.hero} />
         ) : (
           <View
             style={[
@@ -372,7 +372,7 @@ export default function ProviderScreen() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ gap: 10, paddingHorizontal: 4 }}
               renderItem={({ item }) => (
-                <Image source={{ uri: item }} style={styles.portfolioImg} />
+                <ZoomablePhoto source={{ uri: item }} photos={provider?.portfolioPhotos} style={styles.portfolioImg} />
               )}
             />
           ) : (

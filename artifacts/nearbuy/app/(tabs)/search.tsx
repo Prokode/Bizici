@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   Platform,
   Pressable,
   ScrollView,
@@ -24,6 +23,8 @@ import { Select } from "@/components/ui/Select";
 import { useColors } from "@/hooks/useColors";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { fetchSearchPage, type PublicSearchHit } from "@/lib/api/search";
+import { ProductPhoto } from "@/components/ProductPhoto";
+import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 import { type PublicShop } from "@/lib/api/shops";
 import { ShopBottomSheet } from "@/components/ShopBottomSheet";
 import {
@@ -454,7 +455,7 @@ export default function SearchTab() {
                 ]}
               >
                 {item.photo ? (
-                  <Image source={{ uri: item.photo }} style={styles.thumb} />
+                  <ProductPhoto shopId={item.shopId} productId={item.id} source={{ uri: item.photo }} style={styles.thumb} />
                 ) : (
                   <View
                     style={[
@@ -806,7 +807,7 @@ function ProviderRow({
       ]}
     >
       {photo ? (
-        <Image source={{ uri: photo }} style={styles.thumb} />
+        <ZoomablePhoto source={{ uri: photo }} photos={card.services[0]?.photos} style={styles.thumb} />
       ) : (
         <View
           style={[

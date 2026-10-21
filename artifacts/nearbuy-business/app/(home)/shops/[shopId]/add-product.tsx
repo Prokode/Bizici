@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Alert, StyleSheet, Text, View, Platform, Image, TouchableOpacity, ScrollView } from "react-native";
+import { Alert, StyleSheet, Text, View, Platform, TouchableOpacity, ScrollView } from "react-native";
 import { useColors } from "@/hooks/useColors";
 import { useShopId } from "@/hooks/useShopId";
 import { Button } from "@/components/ui/Button";
@@ -23,6 +23,7 @@ import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollV
 import { CategoryPicker } from "@/components/CategoryPicker";
 import { useTranslation } from "react-i18next";
 import { prepareProductPhotos } from "@/lib/productPhotoPreparation";
+import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 import { uploadProductPhoto } from "@/lib/uploadProductPhoto";
 
 export default function AddProductScreen() {
@@ -388,7 +389,7 @@ export default function AddProductScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
             {photos.map((uri) => (
               <View key={uri} style={[styles.photoChip, { borderRadius: colors.radius }]}>
-                <Image source={{ uri }} style={[styles.photoImage, { borderRadius: colors.radius }]} />
+                <ZoomablePhoto source={{ uri }} photos={photos} style={[styles.photoImage, { borderRadius: colors.radius }]} />
                 <TouchableOpacity
                   testID="remove-product-photo"
                   disabled={isSaving}

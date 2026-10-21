@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { fetchNearbyShops, type PublicShop } from "@/lib/api/shops";
+import { ProductPhoto } from "@/components/ProductPhoto";
 import { getMapPinImage } from "@/lib/map-pin-images";
 import { ShopBottomSheet } from "@/components/ShopBottomSheet";
 import { ProviderBottomCard } from "@/components/ProviderBottomCard";
@@ -575,7 +576,7 @@ export default function MapTab() {
                       ]}
                     >
                       {p.photo ? (
-                        <Image
+                        <ProductPhoto shopId={item.id} productId={p.id}
                           source={{ uri: p.photo }}
                           style={styles.previewThumb}
                         />

@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   Linking,
   Modal,
   Platform,
@@ -29,6 +28,7 @@ import { getOrCreateConversation } from "@/lib/api/conversations";
 import { useTranslation } from "react-i18next";
 import { FulfillmentBadge } from "@/components/LocationBadge";
 import { BrandPhoto } from "@/components/BrandPhoto";
+import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 
 type Props = {
   shop: PublicShop | null;
@@ -291,8 +291,9 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                       ]}
                     >
                       {item.photos?.[0] ? (
-                        <Image
+                        <ZoomablePhoto
                           source={{ uri: item.photos[0] }}
+                          photos={item.photos}
                           style={styles.productPhoto}
                         />
                       ) : (
