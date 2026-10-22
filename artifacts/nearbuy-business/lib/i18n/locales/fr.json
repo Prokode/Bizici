@@ -194,7 +194,7 @@
     "legacyCategory": "Catégorie libre (facultatif)",
     "legacyCategoryPlaceholder": "ex. Fruits",
     "categories": "Catégories",
-    "price": "Prix (€) (facultatif)",
+    "price": "Prix (facultatif)",
     "pricePlaceholder": "0,00",
     "quantity": "Quantité (facultatif)",
     "quantityPlaceholder": "1",
@@ -301,7 +301,7 @@
     "descriptionPlaceholder": "Décrivez ce que vous proposez…",
     "categories": "Catégories",
     "pricingType": "Type de tarification *",
-    "price": "Prix (€)",
+    "price": "Prix",
     "pricePlaceholder": "30",
     "durationMinutes": "Durée (minutes)",
     "durationPlaceholder": "45",
@@ -409,6 +409,10 @@
     "goHome": "Aller à l'accueil"
   },
   "auth": {
+    "chooseSignupMethod": "Choisissez comment créer votre compte",
+    "signupSocialGoogle": "Utiliser Google",
+    "signupSocial": "Utiliser Google ou Apple",
+    "signupEmail": "Utiliser un e-mail et un mot de passe",
     "signInTitle": "Bon retour",
     "signInSubtitle": "Connectez-vous pour gérer vos boutiques",
     "signUpTitle": "Créez votre compte",

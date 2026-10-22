@@ -194,7 +194,7 @@
     "legacyCategory": "Legacy category (optional)",
     "legacyCategoryPlaceholder": "e.g. Fruits",
     "categories": "Categories",
-    "price": "Price ($) (optional)",
+    "price": "Price (optional)",
     "pricePlaceholder": "0.00",
     "quantity": "Quantity (optional)",
     "quantityPlaceholder": "1",
@@ -301,7 +301,7 @@
     "descriptionPlaceholder": "Describe what you offer…",
     "categories": "Categories",
     "pricingType": "Pricing type *",
-    "price": "Price ($)",
+    "price": "Price",
     "pricePlaceholder": "30",
     "durationMinutes": "Duration (minutes)",
     "durationPlaceholder": "45",
@@ -409,6 +409,10 @@
     "goHome": "Go to home screen"
   },
   "auth": {
+    "chooseSignupMethod": "Choose how to create your account",
+    "signupSocialGoogle": "Use Google",
+    "signupSocial": "Use Google or Apple",
+    "signupEmail": "Use email and password",
     "signInTitle": "Welcome back",
     "signInSubtitle": "Sign in to manage your shops",
     "signUpTitle": "Create your account",

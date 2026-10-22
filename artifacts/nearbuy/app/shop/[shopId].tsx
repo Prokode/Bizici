@@ -16,6 +16,8 @@ import { ShopReviewsSection } from "@/components/ShopReviewsSection";
 import { chatShopHref } from "@/lib/chatItemContext";
 import { BrandPhoto } from "@/components/BrandPhoto";
 import { ZoomablePhoto } from "@/components/ZoomablePhoto";
+import { ProductGallery } from "@/components/ProductGallery";
+import { ShopProductFilters, useShopProductFilters } from "@/components/ShopProductFilters";
 
 export default function ShopDetails() {
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
@@ -28,6 +30,7 @@ export default function ShopDetails() {
     enabled: !!shopId,
   });
   const shop = detail.data?.shop;
+  const productFilters = useShopProductFilters(detail.data?.products ?? [], shopId);
   const hasServices = shop?.kind === "services" || shop?.kind === "hybrid";
   const provider = useQuery({
     queryKey: ["provider-detail", shopId],
@@ -144,10 +147,12 @@ export default function ShopDetails() {
                 <>
                   <Text style={[styles.section, text]}>{t("shopDetails.products")}</Text>
                   <CurrencyPreference />
+                  <ShopProductFilters key={shop.id} products={detail.data?.products ?? []} {...productFilters} />
                   {!detail.data?.products.length && <Text style={muted}>{t("shopDetails.noProducts")}</Text>}
-                  {detail.data?.products.map(product => (
+                  {!!detail.data?.products.length && !productFilters.filtered.length && <Text style={muted}>{t("shopProductFilters.noMatches")}</Text>}
+                  {productFilters.filtered.map(product => (
                     <View key={product.id} style={card}>
-                      {product.photos.map(uri => <ZoomablePhoto key={uri} source={{ uri }} photos={product.photos} accessibilityLabel={product.name} style={styles.photo} />)}
+                      <ProductGallery photos={product.photos} label={product.name} />
                       <Text style={[styles.heading, text]}>{product.name}</Text>
                       {!!product.brand && <Text style={muted}>{product.brand}</Text>}
                       {!!product.description && <Text style={text}>{product.description}</Text>}

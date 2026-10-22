@@ -28,7 +28,8 @@ import { getOrCreateConversation } from "@/lib/api/conversations";
 import { useTranslation } from "react-i18next";
 import { FulfillmentBadge } from "@/components/LocationBadge";
 import { BrandPhoto } from "@/components/BrandPhoto";
-import { ZoomablePhoto } from "@/components/ZoomablePhoto";
+import { ProductGallery } from "@/components/ProductGallery";
+import { ShopProductFilters, useShopProductFilters } from "@/components/ShopProductFilters";
 
 type Props = {
   shop: PublicShop | null;
@@ -55,6 +56,8 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
     queryFn: () => fetchShopDetail(shop!.id),
     enabled: !!shop,
   });
+
+  const productFilters = useShopProductFilters(data?.products ?? [], shop?.id);
 
   // Live count from the server-side aggregate (kept in sync by review CUD).
   // Falls back to whatever was on the shop object passed in (from the map
@@ -266,7 +269,8 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                 </View>
               ) : (
                 <FlatList
-                  data={data?.products ?? []}
+                  data={productFilters.filtered}
+                  ListHeaderComponent={<ShopProductFilters key={shop.id} products={data?.products ?? []} {...productFilters} />}
                   keyExtractor={(p) => p.id}
                   contentContainerStyle={{ paddingVertical: 12 }}
                   ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
@@ -277,7 +281,7 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                         { color: colors.mutedForeground },
                       ]}
                     >
-                      {t("shopDetails.noProducts")}
+                      {t(data?.products.length ? "shopProductFilters.noMatches" : "shopDetails.noProducts")}
                     </Text>
                   }
                   renderItem={({ item }) => (
@@ -291,11 +295,11 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                       ]}
                     >
                       {item.photos?.[0] ? (
-                        <ZoomablePhoto
-                          source={{ uri: item.photos[0] }}
+                        <View style={styles.productPhoto}><ProductGallery
                           photos={item.photos}
-                          style={styles.productPhoto}
-                        />
+                          label={item.name}
+                          height={56}
+                        /></View>
                       ) : (
                         <View
                           style={[

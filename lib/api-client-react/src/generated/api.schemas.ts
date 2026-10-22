@@ -1089,7 +1089,7 @@ export type SearchPublicProductsParams = {
   lng: number;
   /**
    * @minimum 0.1
-   * @maximum 50
+   * @maximum 400
    */
   radiusKm?: number;
   /**
@@ -1122,7 +1122,7 @@ export type SearchServicesParams = {
   /**
    * Search radius in kilometers (defaults to 10).
    * @minimum 0.1
-   * @maximum 100
+   * @maximum 400
    */
   radiusKm?: number;
   categoryId?: string;

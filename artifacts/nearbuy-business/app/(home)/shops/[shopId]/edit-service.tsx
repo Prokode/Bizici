@@ -12,6 +12,7 @@ import {
   useDeleteService,
   getListShopServicesQueryOptions,
   getListShopServicesQueryKey,
+  getGetShopQueryOptions,
   type Service,
   type ServiceUpdateInputPricingType,
   type ServiceLocationOverride,
@@ -31,6 +32,7 @@ function EditServiceContent() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const shopId = useShopId();
+  const { data: shop } = useQuery({ ...getGetShopQueryOptions(shopId ?? ""), enabled: !!shopId });
   const { serviceId } = useLocalSearchParams<{
     serviceId: string;
   }>();
@@ -200,7 +202,7 @@ function EditServiceContent() {
 
         {pricingType !== "quote" ? (
           <Input
-            label={t("newService.price")}
+            label={`${t("newService.price")}${shop?.currency?.code ? ` (${shop.currency.code})` : ""}`}
             value={priceStr}
             onChangeText={setPriceStr}
             keyboardType="decimal-pad"

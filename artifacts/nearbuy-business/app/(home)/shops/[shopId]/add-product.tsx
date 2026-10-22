@@ -25,6 +25,7 @@ import { useTranslation } from "react-i18next";
 import { prepareProductPhotos } from "@/lib/productPhotoPreparation";
 import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 import { uploadProductPhoto } from "@/lib/uploadProductPhoto";
+import { optionValues, optionDraft } from "@/lib/optionValues";
 
 export default function AddProductScreen() {
   const colors = useColors();
@@ -83,8 +84,8 @@ export default function AddProductScreen() {
     setPriceStr(p.price != null ? (p.price / 100).toFixed(2) : "");
     setQuantityStr(p.quantity != null ? String(p.quantity) : "");
     setTags(p.tags ?? []);
-    setColorsList(p.colors ?? []);
-    setSizesList(p.sizes ?? []);
+    setColorsList(optionValues(p.colors ?? []));
+    setSizesList(optionValues(p.sizes ?? []));
     setCategoryIds((p.categories ?? []).map((c) => c.id));
     setPhotos(p.photos && p.photos.length > 0 ? p.photos : p.imageUrl ? [p.imageUrl] : []);
   }, [editingProduct]);
@@ -192,8 +193,8 @@ export default function AddProductScreen() {
             price: priceCents,
             quantity,
             tags,
-            colors: colorsList,
-            sizes: sizesList,
+            colors: optionValues(colorsList, colorInput),
+            sizes: optionValues(sizesList, sizeInput),
             categoryIds,
             photos: resolvedPhotos,
           },
@@ -224,8 +225,8 @@ export default function AddProductScreen() {
           price: priceCents,
           quantity,
           tags,
-          colors: colorsList,
-          sizes: sizesList,
+          colors: optionValues(colorsList, colorInput),
+          sizes: optionValues(sizesList, sizeInput),
           categoryIds,
           photos: resolvedPhotos,
           stockStatus: "in_stock",
@@ -249,25 +250,21 @@ export default function AddProductScreen() {
     value: string,
     setValue: (v: string) => void,
     list: string[],
-    setList: (l: string[]) => void
+    setList: React.Dispatch<React.SetStateAction<string[]>>
   ) => (
     <View style={{ marginBottom: 16 }}>
       <Input
         label={label}
         placeholder={placeholder}
         value={value}
+        autoCorrect={false}
         onChangeText={(text) => {
-          if (text.endsWith(",")) {
-            const newItem = text.slice(0, -1).trim();
-            if (newItem && !list.includes(newItem)) setList([...list, newItem]);
-            setValue("");
-          } else {
-            setValue(text);
-          }
+          const { complete, draft } = optionDraft(text);
+          if (complete.length) setList(current => optionValues([...current, ...complete]));
+          setValue(draft);
         }}
         onSubmitEditing={() => {
-          const newItem = value.trim();
-          if (newItem && !list.includes(newItem)) setList([...list, newItem]);
+          setList(current => optionValues(current, value));
           setValue("");
         }}
       />
@@ -434,7 +431,7 @@ export default function AddProductScreen() {
       <CategoryPicker selectedIds={categoryIds} onChange={setCategoryIds} label={t("addProduct.categories")} />
 
       <Input
-        label={`${t("addProduct.price")} (${shop?.currency?.code ?? "USD"})`}
+        label={`${t("addProduct.price")}${shop?.currency?.code ? ` (${shop.currency.code})` : ""}`}
         placeholder={t("addProduct.pricePlaceholder")}
         value={priceStr}
         onChangeText={setPriceStr}

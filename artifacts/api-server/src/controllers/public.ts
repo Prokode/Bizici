@@ -200,7 +200,7 @@ export const publicController = {
     const q = String(req.query.q ?? "").trim();
     const lat = Number(req.query.lat);
     const lng = Number(req.query.lng);
-    const radiusKm = clamp(Number(req.query.radiusKm ?? 5), 0.1, 50);
+    const radiusKm = clamp(Number(req.query.radiusKm ?? 5), 0.1, 400);
     const limit = clamp(Number(req.query.limit ?? 60), 1, 200);
     const expanded = req.query.scope === "all";
     const cursor = typeof req.query.cursor === "string" ? req.query.cursor : "";
@@ -420,8 +420,8 @@ export const publicController = {
       shop: shop._id,
       deletedAt: null,
     })
+      .populate("categories")
       .sort({ updatedAt: -1 })
-      .limit(50)
       .lean();
 
     res.json({

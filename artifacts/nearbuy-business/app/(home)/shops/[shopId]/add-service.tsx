@@ -12,10 +12,11 @@ import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollV
 import {
   useCreateService,
   getListShopServicesQueryKey,
+  getGetShopQueryOptions,
   type ServiceCreateInputPricingType,
   type ServiceLocationOverride,
 } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PricingTypeSelector } from "@/components/PricingTypeSelector";
 import { ServiceLocationOverrideSelector } from "@/components/ServiceLocationSelector";
 
@@ -28,6 +29,7 @@ function AddServiceContent() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const shopId = useShopId();
+  const { data: shop } = useQuery({ ...getGetShopQueryOptions(shopId ?? ""), enabled: !!shopId });
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -135,7 +137,7 @@ function AddServiceContent() {
 
         {pricingType !== "quote" ? (
           <Input
-            label={t("newService.price")}
+            label={`${t("newService.price")}${shop?.currency?.code ? ` (${shop.currency.code})` : ""}`}
             placeholder={t("newService.pricePlaceholder")}
             value={priceStr}
             onChangeText={setPriceStr}

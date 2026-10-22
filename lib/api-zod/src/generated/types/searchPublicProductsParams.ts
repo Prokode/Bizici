@@ -21,7 +21,7 @@ export type SearchPublicProductsParams = {
   lng: number;
   /**
    * @minimum 0.1
-   * @maximum 50
+   * @maximum 400
    */
   radiusKm?: number;
   /**

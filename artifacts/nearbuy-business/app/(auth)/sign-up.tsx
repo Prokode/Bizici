@@ -62,6 +62,7 @@ export default function SignUpScreen() {
   const [code, setCode] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [signupMethod, setSignupMethod] = useState<"social" | "email" | null>(null);
   const [countryCode, setCountryCode] = useState<string | null>(null);
   const [city, setCity] = useState<City | null>(null);
 
@@ -282,6 +283,20 @@ export default function SignUpScreen() {
           </Card>
         ) : (
           <Card style={styles.card}>
+            <Text style={{ color: colors.foreground, marginBottom: 12, fontFamily: "PlusJakartaSans_600SemiBold" }}>
+              {t("auth.chooseSignupMethod")}
+            </Text>
+            <View style={{ gap: 10, marginBottom: 20 }}>
+              <Button title={t(Platform.OS === "android" ? "auth.signupSocialGoogle" : "auth.signupSocial")}
+                variant={signupMethod === "social" ? "primary" : "outline"}
+                testID="signup-method-social"
+                onPress={() => { setSignupMethod("social"); setSubmitError(null); }} />
+              <Button title={t("auth.signupEmail")}
+                variant={signupMethod === "email" ? "primary" : "outline"}
+                testID="signup-method-email"
+                onPress={() => { setSignupMethod("email"); setSubmitError(null); }} />
+            </View>
+            {signupMethod !== null && <>
             <CountrySelector
               value={countryCode}
               onChange={(nextCountryCode) => {
@@ -294,13 +309,20 @@ export default function SignUpScreen() {
               value={city}
               onChange={setCity}
             />
+            <ConsentCheckbox
+              accepted={acceptedTerms}
+              onToggle={() => setAcceptedTerms((v) => !v)}
+              colors={colors}
+              t={t}
+            />
+            {signupMethod === "social" && <>
             <Button
               title={t("auth.continueGoogle")}
               variant="secondary"
               icon={<Feather name="chrome" size={18} color={colors.secondaryForeground} />}
               onPress={onGoogle}
-              disabled={!hasLocation}
-              style={{ marginBottom: 12 }}
+              disabled={!hasLocation || !acceptedTerms}
+              style={{ marginBottom: 12, marginTop: 16 }}
             />
             {/*
               Apple Sign-In: hidden on Android per Apple HIG (only required
@@ -315,7 +337,7 @@ export default function SignUpScreen() {
                 title={t("auth.continueApple")}
                 icon={<FontAwesome name="apple" size={18} color="#FFFFFF" />}
                 onPress={onApple}
-                disabled={!hasLocation}
+                disabled={!hasLocation || !acceptedTerms}
                 style={{
                   backgroundColor: "#000000",
                   borderColor: "#000000",
@@ -324,13 +346,8 @@ export default function SignUpScreen() {
                 textStyle={{ color: "#FFFFFF" }}
               />
             )}
-
-            <View style={styles.dividerRow}>
-              <View style={[styles.divider, { backgroundColor: colors.border }]} />
-              <Text style={[styles.dividerText, { color: colors.mutedForeground }]}>{t("common.or")}</Text>
-              <View style={[styles.divider, { backgroundColor: colors.border }]} />
-            </View>
-
+            </>}
+            {signupMethod === "email" && <>
             <Input
               label={t("auth.email")}
               value={emailAddress}
@@ -359,6 +376,7 @@ export default function SignUpScreen() {
                 {errors.fields.password.message}
               </Text>
             )}
+            </>}
 
             {submitError && (
               <Text style={[styles.error, { color: colors.destructive }]}>
@@ -366,13 +384,7 @@ export default function SignUpScreen() {
               </Text>
             )}
 
-            <ConsentCheckbox
-              accepted={acceptedTerms}
-              onToggle={() => setAcceptedTerms((v) => !v)}
-              colors={colors}
-              t={t}
-            />
-
+            {signupMethod === "email" &&
             <Button
               title={t("auth.signUpButton")}
               size="lg"
@@ -387,8 +399,10 @@ export default function SignUpScreen() {
               onPress={handleSubmit}
               style={{ marginTop: 12 }}
             />
+            }
 
             <View nativeID="clerk-captcha" />
+            </>}
           </Card>
         )}
 

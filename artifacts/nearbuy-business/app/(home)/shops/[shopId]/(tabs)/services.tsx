@@ -12,6 +12,7 @@ import { useColors } from "@/hooks/useColors";
 import { useQuery } from "@tanstack/react-query";
 import {
   getListShopServicesQueryOptions,
+  getGetShopQueryOptions,
   type Service,
 } from "@workspace/api-client-react";
 import { router } from "expo-router";
@@ -22,19 +23,25 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { formatShopPrice, type ShopCurrency } from "@/lib/currency";
 
 function pricingLabel(
   service: Service,
   t: (k: string, opts?: any) => string,
+  currency: ShopCurrency | null | undefined,
+  locale: string,
 ): string {
+  const amount = service.price != null
+    ? currency ? formatShopPrice(service.price, currency, locale) : (service.price / 100).toFixed(2)
+    : "";
   switch (service.pricingType) {
     case "fixed":
       return service.price != null
-        ? `${(service.price / 100).toFixed(2)} €`
+        ? amount
         : t("services.pricingFixed");
     case "hourly":
       return service.price != null
-        ? `${(service.price / 100).toFixed(2)} €/h`
+        ? `${amount}/h`
         : t("services.pricingHourly");
     case "quote":
       return t("services.pricingQuote");
@@ -50,8 +57,9 @@ export default function ServicesScreen() {
 function ServicesContent() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const shopId = useShopId();
+  const { data: shop } = useQuery({ ...getGetShopQueryOptions(shopId ?? ""), enabled: !!shopId });
 
   const {
     data: services,
@@ -113,7 +121,7 @@ function ServicesContent() {
                     },
                   ]}
                 >
-                  {pricingLabel(item, t)}
+                  {pricingLabel(item, t, shop?.currency, i18n.language)}
                 </Text>
                 {item.durationMinutes ? (
                   <Text

@@ -15,7 +15,7 @@ export const servicesPublicController = {
     const lng = Number(req.query.longitude);
     const radiusKm = Math.min(
       Math.max(Number(req.query.radiusKm) || 10, 0.1),
-      100,
+      400,
     );
     if (Number.isNaN(lat) || Number.isNaN(lng)) {
       res.status(400).json({ error: "latitude and longitude required" });

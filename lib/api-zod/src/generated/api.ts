@@ -252,7 +252,7 @@ export const searchPublicProductsQueryLngMax = 180;
 
 export const searchPublicProductsQueryRadiusKmDefault = 5;
 export const searchPublicProductsQueryRadiusKmMin = 0.1;
-export const searchPublicProductsQueryRadiusKmMax = 50;
+export const searchPublicProductsQueryRadiusKmMax = 400;
 
 export const searchPublicProductsQueryLimitDefault = 60;
 export const searchPublicProductsQueryLimitMax = 200;
@@ -2484,7 +2484,7 @@ export const UpdateProviderProfileResponse = zod.object({
 });
 
 export const searchServicesQueryRadiusKmMin = 0.1;
-export const searchServicesQueryRadiusKmMax = 100;
+export const searchServicesQueryRadiusKmMax = 400;
 
 export const searchServicesQueryQMax = 120;
 

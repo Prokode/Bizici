@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ZoomablePhoto } from "@/components/ZoomablePhoto";
+import { ProductGallery } from "@/components/ProductGallery";
 import {
   StyleSheet,
   Text,
@@ -133,11 +133,9 @@ export default function InventoryScreen() {
     <Card style={styles.card}>
       <View style={styles.cardHeader}>
         {firstPhoto ? (
-          <ZoomablePhoto
-            source={{ uri: firstPhoto }}
-            photos={item.photos ?? (item.imageUrl ? [item.imageUrl] : [])}
-            style={[styles.thumb, { borderRadius: colors.radius, backgroundColor: colors.muted }]}
-          />
+          <View style={[styles.thumb, { borderRadius: colors.radius, backgroundColor: colors.muted }]}>
+            <ProductGallery photos={item.photos?.length ? item.photos : [firstPhoto]} label={item.name} height={56} />
+          </View>
         ) : null}
         <View style={styles.cardTitleArea}>
           {item.brand ? (

@@ -61,6 +61,9 @@ export type PublicProduct = {
   quantity: number;
   photos: string[];
   stockStatus: "in_stock" | "out_of_stock";
+  colors?: string[];
+  sizes?: string[];
+  categories?: { id: string; name: string }[];
 };
 
 export type PublicShopDetail = {

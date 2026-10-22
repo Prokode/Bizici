@@ -21,6 +21,16 @@
     "attribution": "Rates by ExchangeRate-API",
     "saveError": "Could not save your currency preference. Please try again."
   },
+  "shopProductFilters": {
+    "toggle": "Search and filter products",
+    "name": "Product name or brand",
+    "category": "Category",
+    "color": "Color",
+    "size": "Size",
+    "all": "All",
+    "reset": "Clear filters",
+    "noMatches": "No products match these filters."
+  },
   "shopDetails": {
     "open": "View details",
     "title": "Business details",
@@ -578,5 +588,19 @@
     "cancel": "Cancel",
     "helperReadOnly": "Only the shop owner can change this photo.",
     "alt": "Photo of {{name}}"
+  },
+  "marketplaceSearch": {
+    "distance": "Distance",
+    "suggested": "Suggested ({{km}} km)",
+    "reset": "Reset",
+    "seeItems": "See items",
+    "custom": "Custom distance",
+    "customHint": "Only show items within this distance (up to {{max}} km).",
+    "close": "Close",
+    "products": "Products",
+    "services": "Services",
+    "withinKm": "{{km}} km",
+    "wider": "Everywhere",
+    "atCustomer": "At home"
   }
 }

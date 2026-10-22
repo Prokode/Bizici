@@ -19,7 +19,7 @@ import Fuse from "fuse.js";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Select";
+import { MarketplaceDistanceSheet, MARKETPLACE_SUGGESTED_KM } from "@/components/MarketplaceDistanceSheet";
 import { useColors } from "@/hooks/useColors";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { fetchSearchPage, type PublicSearchHit } from "@/lib/api/search";
@@ -69,7 +69,8 @@ export default function SearchTab() {
   const [openShop, setOpenShop] = useState<PublicShop | null>(null);
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const [atCustomerOnly, setAtCustomerOnly] = useState(false);
-  const [radiusKm, setRadiusKm] = useState(5);
+  const [radiusKm, setRadiusKm] = useState(MARKETPLACE_SUGGESTED_KM);
+  const [distanceOpen, setDistanceOpen] = useState(false);
   const [expandedFor, setExpandedFor] = useState<string | null>(null);
   const searchKey = JSON.stringify([debouncedQ, center?.lat, center?.lng, radiusKm]);
   const expanded = expandedFor === searchKey;
@@ -196,7 +197,7 @@ export default function SearchTab() {
   const servicesParams: SearchServicesParams = {
     latitude: center?.lat ?? 0,
     longitude: center?.lng ?? 0,
-    radiusKm: 10,
+    radiusKm,
     ...(selectedCatId ? { categoryId: selectedCatId } : {}),
     ...(debouncedQ.length >= 2 ? { q: debouncedQ } : {}),
     ...(atCustomerOnly ? { serviceLocation: "at_customer" as const } : {}),
@@ -369,14 +370,33 @@ export default function SearchTab() {
         </>
       ) : null}
 
-      {mode === "products" && (
-        <Select
-          label={t("camera.searchRadius")}
-          value={String(radiusKm)}
-          options={[5, 10, 20, 50].map((km) => ({ label: `${km} km`, value: String(km) }))}
-          onChange={(value) => setRadiusKm(Number(value))}
-        />
-      )}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsScroll} contentContainerStyle={styles.chipsRow}>
+        <Pressable
+          testID="marketplace-distance-button"
+          onPress={() => setDistanceOpen(true)}
+          style={[styles.chip, { backgroundColor: colors.muted, borderColor: colors.border }]}
+        >
+          <Feather name="map-pin" size={14} color={colors.primary} />
+          <Text style={[styles.chipLabel, { color: colors.foreground }]}>
+            {mode === "products" && expanded
+              ? t("marketplaceSearch.wider")
+              : radiusKm === MARKETPLACE_SUGGESTED_KM
+                ? t("marketplaceSearch.suggested", { km: radiusKm })
+                : t("marketplaceSearch.withinKm", { km: radiusKm })}
+          </Text>
+          <Feather name="chevron-down" size={14} color={colors.mutedForeground} />
+        </Pressable>
+      </ScrollView>
+      <MarketplaceDistanceSheet
+        visible={distanceOpen}
+        radiusKm={radiusKm}
+        onClose={() => setDistanceOpen(false)}
+        onApply={(km) => {
+          setRadiusKm(km);
+          setExpandedFor(null);
+          setDistanceOpen(false);
+        }}
+      />
       {mode === "products" && expanded && (
         <View style={{ gap: 8, marginBottom: 12 }}>
           <Text style={{ color: colors.foreground, fontWeight: "700" }}>
@@ -442,80 +462,31 @@ export default function SearchTab() {
                 </Text>
               ) : null
             }
+            numColumns={2}
+            columnWrapperStyle={styles.gridRow}
             renderItem={({ item }) => (
               <Pressable
                 onPress={() => onPressProduct(item)}
-                style={({ pressed }) => [
-                  styles.row,
-                  {
-                    backgroundColor: colors.card,
-                    borderColor: colors.border,
-                    opacity: pressed ? 0.7 : 1,
-                  },
-                ]}
+                style={({ pressed }) => [styles.tile, { opacity: pressed ? 0.75 : 1 }]}
+                testID={`marketplace-item-${item.id}`}
               >
                 {item.photo ? (
-                  <ProductPhoto shopId={item.shopId} productId={item.id} source={{ uri: item.photo }} style={styles.thumb} />
+                  <ProductPhoto shopId={item.shopId} productId={item.id} source={{ uri: item.photo }} style={[styles.tilePhoto, { backgroundColor: colors.muted }]} />
                 ) : (
-                  <View
-                    style={[
-                      styles.thumb,
-                      styles.thumbFallback,
-                      { backgroundColor: colors.muted },
-                    ]}
-                  >
-                    <Feather
-                      name="package"
-                      size={24}
-                      color={colors.mutedForeground}
-                    />
+                  <View style={[styles.tilePhoto, styles.thumbFallback, { backgroundColor: colors.muted }]}>
+                    <Feather name="package" size={28} color={colors.mutedForeground} />
                   </View>
                 )}
-                <View style={{ flex: 1 }}>
-                  {item.brand && (
-                    <Text
-                      style={[styles.brand, { color: colors.mutedForeground }]}
-                      numberOfLines={1}
-                    >
-                      {item.brand}
-                    </Text>
-                  )}
-                  <Text
-                    style={[styles.rowTitle, { color: colors.foreground }]}
-                    numberOfLines={2}
-                  >
-                    {item.name}
-                  </Text>
-                  <View style={styles.rowMetaLine}>
-                    <Text style={[styles.price, { color: colors.primary }]}>
-                      {formatPrice(item.price, item.currency)}
-                    </Text>
-                    <Text
-                      style={[styles.dotSep, { color: colors.mutedForeground }]}
-                    >
-                      ·
-                    </Text>
-                    <Text
-                      style={[styles.shopLine, { color: colors.foreground }]}
-                      numberOfLines={1}
-                    >
-                      {item.shopName}
-                    </Text>
-                  </View>
-                  <Text
-                    style={[styles.distance, { color: colors.mutedForeground }]}
-                  >
-                    {formatDistance(item.distanceMeters)}
-                    {item.shopIsOpen
-                      ? `  ·  ${t("shop.openNow")}`
-                      : `  ·  ${t("shop.closed")}`}
-                  </Text>
-                </View>
-                <Feather
-                  name="chevron-right"
-                  size={20}
-                  color={colors.mutedForeground}
-                />
+                <Text style={[styles.price, { color: colors.foreground, marginTop: 6 }]} numberOfLines={1}>
+                  {formatPrice(item.price, item.currency)}
+                </Text>
+                <Text style={[styles.shopLine, { color: colors.foreground }]} numberOfLines={1}>
+                  {item.brand ? `${item.brand} ` : ""}{item.name}
+                </Text>
+                <Text style={[styles.distance, { color: colors.mutedForeground }]} numberOfLines={1}>
+                  {item.shopName} · {formatDistance(item.distanceMeters)}
+                  {item.shopIsOpen ? "" : ` · ${t("shop.closed")}`}
+                </Text>
               </Pressable>
             )}
           />
@@ -961,4 +932,7 @@ const styles = StyleSheet.create({
   dotSep: { fontSize: 14 },
   shopLine: { fontSize: 13, flexShrink: 1 },
   distance: { fontSize: 12, marginTop: 2 },
+  gridRow: { gap: 10 },
+  tile: { flex: 1, maxWidth: "50%", marginBottom: 14 },
+  tilePhoto: { width: "100%", aspectRatio: 1, borderRadius: 10 },
 });

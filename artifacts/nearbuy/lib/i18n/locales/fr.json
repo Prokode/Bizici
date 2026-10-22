@@ -21,6 +21,16 @@
     "attribution": "Taux fournis par ExchangeRate-API",
     "saveError": "Impossible d'enregistrer votre devise. Veuillez réessayer."
   },
+  "shopProductFilters": {
+    "toggle": "Rechercher et filtrer les produits",
+    "name": "Nom du produit ou marque",
+    "category": "Catégorie",
+    "color": "Couleur",
+    "size": "Taille",
+    "all": "Tous",
+    "reset": "Effacer les filtres",
+    "noMatches": "Aucun produit ne correspond à ces filtres."
+  },
   "shopDetails": {
     "open": "Voir les détails",
     "title": "Détails de l’établissement",
@@ -578,5 +588,19 @@
     "cancel": "Annuler",
     "helperReadOnly": "Seul le propriétaire de la boutique peut modifier cette photo.",
     "alt": "Photo de {{name}}"
+  },
+  "marketplaceSearch": {
+    "distance": "Distance",
+    "suggested": "Suggéré ({{km}} km)",
+    "reset": "Réinitialiser",
+    "seeItems": "Voir les articles",
+    "custom": "Distance personnalisée",
+    "customHint": "Afficher uniquement les articles dans ce rayon (jusqu'à {{max}} km).",
+    "close": "Fermer",
+    "products": "Produits",
+    "services": "Services",
+    "withinKm": "{{km}} km",
+    "wider": "Partout",
+    "atCustomer": "À domicile"
   }
 }
