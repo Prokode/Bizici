@@ -9,11 +9,12 @@ import {
   View,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-import { useLocalSearchParams, useRouter, type Href } from "expo-router";
+import { useRouter, type Href } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
 import { useColors } from "@/hooks/useColors";
+import { useShopId } from "@/hooks/useShopId";
 import { listConversations, type ConversationSummary } from "@/lib/api/conversations";
 
 function useFormatRelative() {
@@ -48,11 +49,12 @@ export default function ShopMessagesScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const formatRelative = useFormatRelative();
-  const { shopId } = useLocalSearchParams<{ shopId: string }>();
+  const shopId = useShopId();
 
   const query = useQuery({
     queryKey: ["chat-conv-list"],
     queryFn: () => listConversations(),
+    enabled: !!shopId,
     refetchInterval: 5000,
     refetchIntervalInBackground: false,
   });
@@ -144,7 +146,9 @@ export default function ShopMessagesScreen() {
         refreshControl={
           <RefreshControl
             refreshing={query.isRefetching && !query.isLoading}
-            onRefresh={() => query.refetch()}
+            onRefresh={() => {
+              if (shopId) void query.refetch();
+            }}
             tintColor={colors.primary}
           />
         }
@@ -152,6 +156,24 @@ export default function ShopMessagesScreen() {
           query.isLoading ? (
             <View style={{ paddingVertical: 64, alignItems: "center" }}>
               <ActivityIndicator color={colors.primary} />
+            </View>
+          ) : query.isError || !shopId ? (
+            <View style={styles.empty}>
+              <Feather name="alert-circle" size={32} color={colors.mutedForeground} />
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                {t("common.error")}
+              </Text>
+              {!!shopId && (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => {
+                    if (shopId) void query.refetch();
+                  }}
+                  style={{ padding: 12 }}
+                >
+                  <Text style={{ color: colors.primary }}>{t("common.retry")}</Text>
+                </Pressable>
+              )}
             </View>
           ) : (
             <View style={styles.empty}>
