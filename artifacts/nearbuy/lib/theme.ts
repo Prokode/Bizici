@@ -5,7 +5,7 @@ export const THEME_PREFS = ["light", "dark", "system"] as const;
 export type ThemePreference = (typeof THEME_PREFS)[number];
 
 const STORAGE_KEY = "nearbuy_customer_theme";
-let current: ThemePreference = "system";
+let current: ThemePreference = "light";
 // Set once the user picks a theme this session, so a late storage read
 // never overrides an explicit selection.
 let userSelected = false;

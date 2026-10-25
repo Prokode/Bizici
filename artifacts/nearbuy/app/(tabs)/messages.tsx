@@ -61,12 +61,12 @@ function SignedOutHero() {
       ]}
     >
       <LinearGradient
-        colors={["#F58220", "#E26A0A"]}
+        colors={[colors.primary, colors.primary]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.heroIcon}
       >
-        <Feather name="message-circle" size={32} color="#ffffff" />
+        <Feather name="message-circle" size={32} color={colors.primaryForeground} />
       </LinearGradient>
       <Text style={[styles.heroTitle, { color: colors.foreground }]}>
         {t("messages.heroTitle")}
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
   },
   avatar: {

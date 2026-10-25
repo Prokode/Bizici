@@ -29,7 +29,7 @@ function StarRow({ rating, size = 12 }: { rating: number; size?: number }) {
           key={n}
           name="star"
           size={size}
-          color={n <= Math.round(rating) ? "#F59E0B" : colors.border}
+          color={n <= Math.round(rating) ? colors.warning : colors.border}
         />
       ))}
     </View>

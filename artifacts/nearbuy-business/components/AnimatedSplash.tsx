@@ -12,6 +12,7 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Ellipse, G, Path, Rect } from "react-native-svg";
 import { useTranslation } from "react-i18next";
+import { useColors } from "@/hooks/useColors";
 
 /**
  * BizIci Pro animated splash.
@@ -27,11 +28,6 @@ import { useTranslation } from "react-i18next";
  * On web the animation is skipped.
  */
 
-const ORANGE = "#F58220";
-const NAVY = "#1B2A5C";
-const GREEN = "#7FB927";
-const AWNING = "#8FCB2E";
-
 const PIN_W = 220;
 const PIN_H = 280;
 
@@ -41,6 +37,7 @@ type Props = {
 
 export function AnimatedSplash({ onFinish }: Props) {
   const { t } = useTranslation();
+  const colors = useColors();
   const pinOpacity = useSharedValue(0);
   const pinTranslate = useSharedValue(-60);
   const storeOpacity = useSharedValue(0);
@@ -174,28 +171,28 @@ export function AnimatedSplash({ onFinish }: Props) {
   return (
     <Animated.View
       pointerEvents="none"
-      style={[styles.container, containerStyle]}
+      style={[styles.container, { backgroundColor: colors.background }, containerStyle]}
     >
       <Animated.View style={[styles.wordmarkWrap, wordStyle]}>
         <View style={styles.wordmarkRow}>
           <Text style={styles.wordmark}>
-            <Text style={{ color: NAVY }}>Biz</Text>
-            <Text style={{ color: GREEN }}>Ici</Text>
+            <Text style={{ color: colors.foreground }}>Biz</Text>
+            <Text style={{ color: colors.primary }}>Ici</Text>
           </Text>
-          <View style={styles.proBadge}>
-            <Text style={styles.proBadgeText}>PRO</Text>
+          <View style={[styles.proBadge, { backgroundColor: colors.primary }]}>
+            <Text style={[styles.proBadgeText, { color: colors.primaryForeground }]}>PRO</Text>
           </View>
         </View>
         <Text style={styles.tagline}>
-          <Text style={{ color: NAVY }}>{t("onboarding.splashTaglineFirst")}</Text>
-          <Text style={{ color: ORANGE }}>{t("onboarding.splashTaglineSecond")}</Text>
+          <Text style={{ color: colors.foreground }}>{t("onboarding.splashTaglineFirst")}</Text>
+          <Text style={{ color: colors.primary }}>{t("onboarding.splashTaglineSecond")}</Text>
         </Text>
       </Animated.View>
 
       <Animated.View style={[styles.group, groupStyle]}>
         <Animated.View style={[styles.layer, baseStyle]}>
           <Svg width={PIN_W} height={PIN_H} viewBox="0 0 100 130">
-            <Ellipse cx="50" cy="120" rx="18" ry="5" fill={NAVY} />
+            <Ellipse cx="50" cy="120" rx="18" ry="5" fill={colors.foreground} />
           </Svg>
         </Animated.View>
 
@@ -207,7 +204,7 @@ export function AnimatedSplash({ onFinish }: Props) {
                  C 8 75 50 118 50 118
                  C 50 118 92 75 92 47
                  C 92 24 74 6 50 6 Z"
-              fill={ORANGE}
+              fill={colors.primary}
             />
             <Path
               d="M 50 16
@@ -215,7 +212,7 @@ export function AnimatedSplash({ onFinish }: Props) {
                  C 18 64 32 78 50 78
                  C 68 78 82 64 82 47
                  C 82 30 68 16 50 16 Z"
-              fill="#ffffff"
+              fill={colors.background}
             />
           </Svg>
         </Animated.View>
@@ -229,14 +226,14 @@ export function AnimatedSplash({ onFinish }: Props) {
                    Q 55.5 43 50 38
                    Q 44.5 43 39 38
                    Q 33.5 43 28 38 Z"
-                fill={GREEN}
+                fill={colors.primary}
               />
-              <Rect x="33" y="31" width="6" height="7" fill={AWNING} />
-              <Rect x="44" y="31" width="6" height="7" fill={AWNING} />
-              <Rect x="55" y="31" width="6" height="7" fill={AWNING} />
-              <Rect x="66" y="31" width="6" height="7" fill={AWNING} />
+              <Rect x="33" y="31" width="6" height="7" fill={colors.primaryForeground} />
+              <Rect x="44" y="31" width="6" height="7" fill={colors.primaryForeground} />
+              <Rect x="55" y="31" width="6" height="7" fill={colors.primaryForeground} />
+              <Rect x="66" y="31" width="6" height="7" fill={colors.primaryForeground} />
 
-              <Path d="M 30 41 H 70 V 70 H 30 Z" fill={NAVY} />
+              <Path d="M 30 41 H 70 V 70 H 30 Z" fill={colors.foreground} />
 
               <Rect
                 x="34"
@@ -244,9 +241,9 @@ export function AnimatedSplash({ onFinish }: Props) {
                 width="13"
                 height="22"
                 rx="1.2"
-                fill="#0E1530"
+                fill={colors.background}
               />
-              <Rect x="36" y="51" width="3" height="4" fill={GREEN} />
+              <Rect x="36" y="51" width="3" height="4" fill={colors.accent} />
 
               <Rect
                 x="52"
@@ -254,11 +251,11 @@ export function AnimatedSplash({ onFinish }: Props) {
                 width="13"
                 height="15"
                 rx="1.5"
-                fill={GREEN}
+                fill={colors.accent}
               />
               <Path
                 d="M 55 53 Q 55 48 58.5 48 Q 62 48 62 53"
-                stroke={GREEN}
+                stroke={colors.accent}
                 strokeWidth={1.6}
                 fill="none"
                 strokeLinecap="round"
@@ -269,7 +266,7 @@ export function AnimatedSplash({ onFinish }: Props) {
 
         <Animated.View style={[styles.layer, sparksStyle]}>
           <Svg width={PIN_W} height={PIN_H} viewBox="0 0 100 130">
-            <G stroke={GREEN} strokeWidth={2.4} strokeLinecap="round">
+            <G stroke={colors.accent} strokeWidth={2.4} strokeLinecap="round">
               <Path d="M 14 24 L 6 18" />
               <Path d="M 22 12 L 18 4" />
               <Path d="M 33 10 L 33 2" />
@@ -284,7 +281,6 @@ export function AnimatedSplash({ onFinish }: Props) {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#ffffff",
     alignItems: "center",
     justifyContent: "center",
     zIndex: 9999,
@@ -317,13 +313,11 @@ const styles = StyleSheet.create({
   proBadge: {
     marginLeft: 8,
     marginTop: 10,
-    backgroundColor: ORANGE,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
   },
   proBadgeText: {
-    color: "#ffffff",
     fontSize: 12,
     fontWeight: "800",
     letterSpacing: 1,

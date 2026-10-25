@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    borderRadius: 14,
+    borderRadius: 20,
     borderWidth: 1,
   },
   avatar: {

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle } from "react-native";
-import { useColors } from "@/hooks/useColors";
+import { useColors, useThemeScheme } from "@/hooks/useColors";
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -10,6 +10,7 @@ interface InputProps extends TextInputProps {
 
 export function Input({ label, error, containerStyle, style, ...props }: InputProps) {
   const colors = useColors();
+  const scheme = useThemeScheme();
   const [isFocused, setIsFocused] = useState(false);
 
   return (
@@ -23,7 +24,7 @@ export function Input({ label, error, containerStyle, style, ...props }: InputPr
         style={[
           styles.input,
           {
-            backgroundColor: colors.background,
+            backgroundColor: colors.card,
             borderColor: error ? colors.destructive : isFocused ? colors.primary : colors.input,
             color: colors.foreground,
             borderRadius: colors.radius,
@@ -32,6 +33,7 @@ export function Input({ label, error, containerStyle, style, ...props }: InputPr
           style,
         ]}
         placeholderTextColor={colors.mutedForeground}
+        keyboardAppearance={scheme}
         onFocus={(e) => {
           setIsFocused(true);
           props.onFocus?.(e);
@@ -60,6 +62,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
+    minHeight: 50,
     borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 12,

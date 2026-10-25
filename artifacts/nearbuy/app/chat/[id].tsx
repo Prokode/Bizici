@@ -647,7 +647,7 @@ const styles = StyleSheet.create({
     maxWidth: "80%",
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 16,
+     borderRadius: 20,
   },
   bubbleTime: { fontSize: 10, marginTop: 4, alignSelf: "flex-end" },
   ctxWrap: { paddingHorizontal: 12, paddingTop: 10, gap: 6, borderTopWidth: 1 },

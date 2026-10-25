@@ -242,7 +242,7 @@ function ActionBtn({
         ? colors.destructive
         : colors.muted;
   const fg =
-    tone === "muted" ? colors.foreground : colors.primaryForeground ?? "#fff";
+    tone === "muted" ? colors.foreground : colors.primaryForeground;
   return (
     <Pressable
       onPress={onPress}

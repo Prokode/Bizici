@@ -284,7 +284,7 @@ export default function KycSubmitScreen() {
             ]}
           >
             {consent ? (
-              <Feather name="check" size={14} color="#fff" />
+              <Feather name="check" size={14} color={colors.primaryForeground} />
             ) : null}
           </View>
           <Text

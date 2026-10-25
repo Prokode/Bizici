@@ -121,6 +121,9 @@
     "selfReviewError": "Vous ne pouvez pas noter votre propre boutique."
   },
   "map": {
+    "nearbyEyebrow": "À deux pas",
+    "nearbyTitle": "Autour de vous",
+    "photoSearch": "Recherche par photo",
     "searchPlaceholder": "Cherchez un produit (ex : jeans bleus)",
     "webHint": "Carte interactive disponible sur mobile (Expo Go). Voici les boutiques proches.",
     "locating": "Recherche de votre position…",

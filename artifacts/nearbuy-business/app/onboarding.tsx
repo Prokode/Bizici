@@ -47,7 +47,7 @@ type Slide = {
   descriptionKey: string;
   visual: "logo" | "icon";
   iconName?: keyof typeof Feather.glyphMap;
-  gradient: [string, string];
+  tone: "primary" | "secondary" | "success";
   bullets?: FeatureBullet[];
 };
 
@@ -57,7 +57,7 @@ const slides: Slide[] = [
     titleKey: "onboarding.slide1Title",
     descriptionKey: "onboarding.slide1Body",
     visual: "logo",
-    gradient: ["#F58220", "#E26A0A"],
+    tone: "primary",
   },
   {
     key: "setup",
@@ -65,7 +65,7 @@ const slides: Slide[] = [
     descriptionKey: "onboarding.slide2Body",
     visual: "icon",
     iconName: "shield",
-    gradient: ["#1B2A5C", "#3A4F8A"],
+    tone: "secondary",
     bullets: [
       { icon: "map-pin", labelKey: "onboarding.slide2Bullet1" },
       { icon: "clock", labelKey: "onboarding.slide2Bullet2" },
@@ -78,7 +78,7 @@ const slides: Slide[] = [
     descriptionKey: "onboarding.slide3Body",
     visual: "icon",
     iconName: "camera",
-    gradient: ["#7FB927", "#5C9618"],
+    tone: "success",
     bullets: [
       { icon: "image", labelKey: "onboarding.slide3Bullet1" },
       { icon: "tag", labelKey: "onboarding.slide3Bullet2" },
@@ -91,7 +91,7 @@ const slides: Slide[] = [
     descriptionKey: "onboarding.slide4Body",
     visual: "icon",
     iconName: "calendar",
-    gradient: ["#F58220", "#C8520A"],
+    tone: "primary",
     bullets: [
       { icon: "list", labelKey: "onboarding.slide4Bullet1" },
       { icon: "clock", labelKey: "onboarding.slide4Bullet2" },
@@ -104,7 +104,7 @@ const slides: Slide[] = [
     descriptionKey: "onboarding.slide5Body",
     visual: "icon",
     iconName: "message-circle",
-    gradient: ["#1B2A5C", "#2E4280"],
+    tone: "secondary",
     bullets: [
       { icon: "send", labelKey: "onboarding.slide5Bullet1" },
       { icon: "bell", labelKey: "onboarding.slide5Bullet2" },
@@ -117,7 +117,7 @@ const slides: Slide[] = [
     descriptionKey: "onboarding.slide6Body",
     visual: "icon",
     iconName: "trending-up",
-    gradient: ["#7FB927", "#3F8013"],
+    tone: "success",
     bullets: [
       { icon: "map", labelKey: "onboarding.slide6Bullet1" },
       { icon: "star", labelKey: "onboarding.slide6Bullet2" },
@@ -136,6 +136,12 @@ type SlideProps = {
 function OnboardingSlide({ slide, index, scrollX, height }: SlideProps) {
   const colors = useColors();
   const { t } = useTranslation();
+  const visualColor =
+    slide.tone === "success"
+      ? colors.success
+      : slide.tone === "secondary"
+        ? colors.secondary
+        : colors.primary;
 
   const inputRange = [
     (index - 1) * SCREEN_W,
@@ -232,15 +238,15 @@ function OnboardingSlide({ slide, index, scrollX, height }: SlideProps) {
           />
         ) : (
           <LinearGradient
-            colors={slide.gradient}
+            colors={[visualColor, colors.primary]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={styles.iconCircle}
+            style={[styles.iconCircle, { shadowColor: colors.shadow }]}
           >
             <Feather
               name={slide.iconName ?? "circle"}
               size={SMALL_SCREEN ? 52 : 72}
-              color="#ffffff"
+              color={colors.primaryForeground}
             />
           </LinearGradient>
         )}
@@ -277,10 +283,10 @@ function OnboardingSlide({ slide, index, scrollX, height }: SlideProps) {
               <View
                 style={[
                   styles.bulletIcon,
-                  { backgroundColor: slide.gradient[0] + "22" },
+                  { backgroundColor: visualColor + "22" },
                 ]}
               >
-                <Feather name={b.icon} size={18} color={slide.gradient[0]} />
+              <Feather name={b.icon} size={18} color={visualColor} />
               </View>
               <Text
                 style={[styles.bulletText, { color: colors.foreground }]}
@@ -532,7 +538,6 @@ const styles = StyleSheet.create({
     borderRadius: ICON_CIRCLE / 2,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#1B2A5C",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.2,
     shadowRadius: 20,

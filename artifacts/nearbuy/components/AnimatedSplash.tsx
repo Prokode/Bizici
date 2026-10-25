@@ -12,6 +12,7 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Ellipse, G, Path, Rect } from "react-native-svg";
 import { useTranslation } from "react-i18next";
+import { useColors } from "@/hooks/useColors";
 
 /**
  * BizIci animated splash.
@@ -28,11 +29,6 @@ import { useTranslation } from "react-i18next";
  * combination is unstable and the OS splash already covers the cold start.
  */
 
-const ORANGE = "#F58220";
-const NAVY = "#1B2A5C";
-const GREEN = "#7FB927";
-const AWNING = "#8FCB2E";
-
 const PIN_W = 220;
 const PIN_H = 280;
 
@@ -42,6 +38,11 @@ type Props = {
 
 export function AnimatedSplash({ onFinish }: Props) {
   const { t } = useTranslation();
+  const colors = useColors();
+  const ORANGE = colors.primary;
+  const NAVY = colors.brandNavy ?? colors.foreground;
+  const GREEN = colors.success;
+  const AWNING = colors.accent;
   // Each layer has its own opacity/scale so we can choreograph independently.
   const pinOpacity = useSharedValue(0);
   const pinTranslate = useSharedValue(-60);
@@ -190,7 +191,7 @@ export function AnimatedSplash({ onFinish }: Props) {
   return (
     <Animated.View
       pointerEvents="none"
-      style={[styles.container, containerStyle]}
+      style={[styles.container, { backgroundColor: colors.background }, containerStyle]}
     >
       {/* Wordmark sits at the top — revealed after the pin shrinks */}
       <Animated.View style={[styles.wordmarkWrap, wordStyle]}>
@@ -300,7 +301,6 @@ export function AnimatedSplash({ onFinish }: Props) {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#ffffff",
     alignItems: "center",
     justifyContent: "center",
     zIndex: 9999,

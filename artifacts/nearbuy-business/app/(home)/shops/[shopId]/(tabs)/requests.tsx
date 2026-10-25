@@ -62,7 +62,7 @@ export default function RequestsScreen() {
         : t("requests.kmAway", { km: (item.distanceMeters / 1000).toFixed(1) });
 
     return (
-      <Card style={styles.card}>
+      <Card style={[styles.card, { borderColor: colors.border }]}>
         <View style={styles.cardHeader}>
           <View style={[styles.iconBox, { backgroundColor: colors.accent }]}>
             <Feather name="search" size={24} color={colors.accentForeground} />
@@ -134,7 +134,7 @@ export default function RequestsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   listContent: { padding: 16 },
-  card: { padding: 16, marginBottom: 16 },
+  card: { padding: 18, marginBottom: 14, borderRadius: 22, borderWidth: 1 },
   cardHeader: { flexDirection: "row", marginBottom: 16 },
   iconBox: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center", marginRight: 16 },
   cardContent: { flex: 1, justifyContent: "center" },

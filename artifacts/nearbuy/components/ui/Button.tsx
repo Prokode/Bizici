@@ -97,7 +97,12 @@ export function Button({
           backgroundColor: getBackgroundColor(),
           borderColor: getBorderColor(),
           borderWidth: variant === "outline" ? 1 : 0,
-          borderRadius: colors.radius,
+          borderRadius: 999,
+          minHeight: size === "sm" ? 44 : size === "lg" ? 56 : 50,
+          shadowColor: colors.shadow,
+          shadowOpacity: variant === "primary" && !disabled ? 0.12 : 0,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 3 },
         },
         getPadding(),
         fullWidth && { width: "100%" },
@@ -114,7 +119,7 @@ export function Button({
               numberOfLines={numberOfLines}
               style={[
                 styles.text,
-                { color: getTextColor(), fontFamily: "PlusJakartaSans_600SemiBold" },
+                { color: getTextColor(), fontFamily: "PlusJakartaSans_700Bold" },
                 size === "lg" && { fontSize: 18 },
                 size === "sm" && { fontSize: 14 },
                 textStyle,

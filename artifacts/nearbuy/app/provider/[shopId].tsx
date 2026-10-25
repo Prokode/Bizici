@@ -98,9 +98,9 @@ export default function ProviderScreen() {
           onPress={() => refetch()}
           icon={
             isRefetching ? (
-              <ActivityIndicator size="small" color="#ffffff" />
+              <ActivityIndicator size="small" color={colors.primaryForeground} />
             ) : (
-              <Feather name="rotate-ccw" size={16} color="#ffffff" />
+              <Feather name="rotate-ccw" size={16} color={colors.primaryForeground} />
             )
           }
         />
@@ -147,12 +147,12 @@ export default function ProviderScreen() {
             styles.backBtn,
             {
               top: insets.top + 8,
-              backgroundColor: "rgba(0,0,0,0.45)",
+              backgroundColor: colors.overlay,
             },
           ]}
           hitSlop={12}
         >
-          <Feather name="arrow-left" size={22} color="#ffffff" />
+          <Feather name="arrow-left" size={22} color={colors.onImage} />
         </Pressable>
       </View>
 
@@ -170,11 +170,11 @@ export default function ProviderScreen() {
               <View
                 style={[
                   styles.verifiedBadge,
-                  { backgroundColor: colors.primary },
+                  { backgroundColor: colors.accent },
                 ]}
               >
-                <Feather name="check" size={10} color="#ffffff" />
-                <Text style={styles.verifiedText}>{t("provider.verified")}</Text>
+                <Feather name="check" size={10} color={colors.success} />
+                <Text style={[styles.verifiedText, { color: colors.success }]}>{t("provider.verified")}</Text>
               </View>
             ) : null}
           </View>
@@ -408,7 +408,7 @@ export default function ProviderScreen() {
               title={t("provider.chat")}
               onPress={() => router.push(chatShopHref(shop.id) as never)}
               icon={
-                <Feather name="message-circle" size={18} color="#ffffff" />
+                <Feather name="message-circle" size={18} color={colors.primaryForeground} />
               }
             />
           </View>
@@ -416,7 +416,7 @@ export default function ProviderScreen() {
             <Button
               title={t("appointments.ctaPropose")}
               onPress={() => setBookingOpen(true)}
-              icon={<Feather name="calendar" size={18} color="#ffffff" />}
+              icon={<Feather name="calendar" size={18} color={colors.primaryForeground} />}
             />
           </View>
         </View>
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 999,
   },
-  verifiedText: { fontSize: 11, color: "#ffffff", fontWeight: "700" },
+  verifiedText: { fontSize: 11, fontWeight: "700" },
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
     padding: 14,
-    borderRadius: 12,
+    borderRadius: 18,
     borderWidth: 1,
   },
   serviceTitle: { fontSize: 15, fontWeight: "700" },
@@ -557,7 +557,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 6,
     paddingVertical: 9,
-    borderRadius: 10,
+    borderRadius: 14,
     borderWidth: 1,
   },
   askText: { fontSize: 13, fontWeight: "700" },

@@ -249,12 +249,12 @@ export default function SignInScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: 24, flexGrow: 1 },
-  header: { alignItems: "center", marginTop: 24, marginBottom: 32 },
-  logo: { width: 64, height: 64, borderRadius: 16, alignItems: "center", justifyContent: "center", marginBottom: 16 },
-  title: { fontSize: 28, marginBottom: 8 },
-  subtitle: { fontSize: 16 },
-  card: { padding: 20, marginBottom: 24 },
+  content: { paddingHorizontal: 24, paddingTop: 20, paddingBottom: 28, flexGrow: 1 },
+  header: { alignItems: "center", marginTop: 20, marginBottom: 28 },
+  logo: { width: 68, height: 68, borderRadius: 22, alignItems: "center", justifyContent: "center", marginBottom: 18 },
+  title: { fontSize: 28, marginBottom: 8, letterSpacing: -0.5 },
+  subtitle: { fontSize: 15, lineHeight: 22 },
+  card: { padding: 20, marginBottom: 20, borderRadius: 24 },
   dividerRow: { flexDirection: "row", alignItems: "center", marginVertical: 16 },
   divider: { flex: 1, height: 1 },
   dividerText: { marginHorizontal: 12, fontSize: 13 },

@@ -320,10 +320,10 @@ export default function SearchTab() {
       <View
         style={[
           styles.searchBar,
-          { backgroundColor: colors.muted, borderColor: colors.border },
+          { backgroundColor: colors.card, borderColor: colors.border },
         ]}
       >
-        <Feather name="search" size={20} color={colors.mutedForeground} />
+        <Feather name="search" size={20} color={colors.primary} />
         <TextInput
           value={query}
           onChangeText={setQuery}
@@ -346,7 +346,6 @@ export default function SearchTab() {
           </Pressable>
         ) : null}
       </View>
-
       {mode === "services" ? (
         <>
           <CategoryChips
@@ -435,7 +434,7 @@ export default function SearchTab() {
                 <Button
                   title={t("search.expandSearch")}
                   onPress={() => setExpandedFor(searchKey)}
-                  icon={<Feather name="globe" size={18} color="#ffffff" />}
+                  icon={<Feather name="globe" size={18} color={colors.primaryForeground} />}
                 />
               ) : undefined
             }
@@ -572,19 +571,19 @@ function ModeSegmented({
             onPress={() => onChange(it.key)}
             style={[
               styles.segItem,
-              active && { backgroundColor: colors.background },
+               active && { backgroundColor: colors.card },
             ]}
           >
             <Feather
               name={it.icon}
               size={16}
-              color={active ? colors.foreground : colors.mutedForeground}
+              color={active ? colors.primary : colors.mutedForeground}
             />
             <Text
               style={[
                 styles.segLabel,
                 {
-                  color: active ? colors.foreground : colors.mutedForeground,
+                  color: active ? colors.primary : colors.mutedForeground,
                   fontWeight: active ? "700" : "500",
                 },
               ]}
@@ -680,12 +679,12 @@ function CategoryChip({
       <Feather
         name={icon}
         size={14}
-        color={active ? "#ffffff" : colors.mutedForeground}
+        color={active ? colors.primaryForeground : colors.mutedForeground}
       />
       <Text
         style={[
           styles.chipLabel,
-          { color: active ? "#ffffff" : colors.foreground },
+          { color: active ? colors.primaryForeground : colors.foreground },
         ]}
       >
         {label}
@@ -864,13 +863,13 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    borderRadius: 14,
+    borderRadius: 17,
     borderWidth: 1,
     marginBottom: 12,
   },
   input: { flex: 1, fontSize: 15, padding: 0 },
-  chipsScroll: { marginBottom: 12, marginHorizontal: -16 },
-  chipsRow: { paddingHorizontal: 16, gap: 8 },
+  chipsScroll: { flexGrow: 0, marginBottom: 12, marginHorizontal: -16 },
+  chipsRow: { paddingHorizontal: 16, gap: 8, alignItems: "center" },
   atCustomerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -908,7 +907,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 18,
     borderWidth: 1,
     marginBottom: 10,
   },

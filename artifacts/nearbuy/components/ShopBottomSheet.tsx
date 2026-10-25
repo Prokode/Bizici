@@ -185,27 +185,25 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                   style={[
                     styles.chip,
                     {
-                      backgroundColor: shop.isOpen
-                        ? "#10B98122"
-                        : colors.muted,
-                      borderColor: shop.isOpen ? "#10B981" : colors.border,
+                      backgroundColor: shop.isOpen ? colors.accent : colors.muted,
+                      borderColor: shop.isOpen ? colors.success : colors.border,
                     },
                   ]}
                 >
                   <Feather
                     name={shop.isOpen ? "check-circle" : "moon"}
                     size={12}
-                    color={shop.isOpen ? "#10B981" : colors.mutedForeground}
+                    color={shop.isOpen ? colors.success : colors.mutedForeground}
                   />
                   <Text
                     style={[
                       styles.chipText,
                       {
-                        color: shop.isOpen ? "#10B981" : colors.mutedForeground,
+                        color: shop.isOpen ? colors.success : colors.mutedForeground,
                       },
                     ]}
                   >
-                    {shop.isOpen ? "Ouvert" : "Fermé"}
+                    {shop.isOpen ? t("shop.openNow") : t("shop.closed")}
                   </Text>
                 </View>
                 <View style={[styles.chip, { backgroundColor: colors.muted }]}>
@@ -252,11 +250,11 @@ export function ShopBottomSheet({ shop, onClose }: Props) {
                   <View
                     style={[
                       styles.chip,
-                      { backgroundColor: "#F59E0B22", borderColor: "#F59E0B" },
+                      { backgroundColor: colors.accent, borderColor: colors.warning },
                     ]}
                   >
-                    <Feather name="star" size={12} color="#F59E0B" />
-                    <Text style={[styles.chipText, { color: "#F59E0B" }]}>
+                    <Feather name="star" size={12} color={colors.warning} />
+                    <Text style={[styles.chipText, { color: colors.warning }]}>
                       {ratingAvg.toFixed(1)} ({ratingCount})
                     </Text>
                   </View>

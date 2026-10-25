@@ -12,6 +12,8 @@ import {
 } from "@tanstack/react-query";
 import { router, Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import * as SystemUI from "expo-system-ui";
+import { StatusBar } from "expo-status-bar";
 import * as Notifications from "expo-notifications";
 import React, { useEffect, useState } from "react";
 import { Platform } from "react-native";
@@ -25,6 +27,7 @@ import { tokenCache } from "@clerk/expo/token-cache";
 
 import "@/lib/i18n";
 import "@/lib/theme";
+import { useColors, useThemeScheme } from "@/hooks/useColors";
 import { AnimatedSplash } from "@/components/AnimatedSplash";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import {
@@ -191,6 +194,13 @@ const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 const proxyUrl = process.env.EXPO_PUBLIC_CLERK_PROXY_URL || undefined;
 
 export default function RootLayout() {
+  const colors = useColors();
+  const scheme = useThemeScheme();
+  useEffect(() => {
+    if (Platform.OS !== "web") {
+      void SystemUI.setBackgroundColorAsync(colors.background).catch(() => {});
+    }
+  }, [colors.background]);
   const [fontsLoaded, fontError] = useFonts({
     PlusJakartaSans_400Regular,
     PlusJakartaSans_500Medium,
@@ -219,7 +229,8 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <ErrorBoundary>
             <QueryClientProvider client={queryClient}>
-              <GestureHandlerRootView style={{ flex: 1 }}>
+              <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
+                <StatusBar style={scheme === "dark" ? "light" : "dark"} />
                 <KeyboardProvider>
                   <CurrencyProvider>
                   <AuthTokenBridge />

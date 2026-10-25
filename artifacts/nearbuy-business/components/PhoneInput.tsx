@@ -232,7 +232,7 @@ export function PhoneInput({
         animationType="slide"
         onRequestClose={closeSheet}
       >
-        <Pressable style={styles.backdrop} onPress={closeSheet}>
+        <Pressable style={[styles.backdrop, { backgroundColor: colors.overlay }]} onPress={closeSheet}>
           <Pressable
             style={[
               styles.sheet,
@@ -381,7 +381,6 @@ const styles = StyleSheet.create({
   error: { fontSize: 12, marginTop: 4 },
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
     justifyContent: "flex-end",
   },
   sheet: { maxHeight: "75%", paddingBottom: 32 },

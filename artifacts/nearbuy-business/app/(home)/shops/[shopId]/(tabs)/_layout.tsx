@@ -8,9 +8,9 @@ import { useShopId } from "@/hooks/useShopId";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import React from "react";
-import { Platform, StyleSheet, View, useColorScheme } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 
-import { useColors } from "@/hooks/useColors";
+import { useColors, useThemeScheme } from "@/hooks/useColors";
 import { listConversations } from "@/lib/api/conversations";
 
 function useShopUnread(shopId: string | undefined) {
@@ -29,8 +29,17 @@ function useShopUnread(shopId: string | undefined) {
 
 function NativeTabLayout({ unread }: { unread: number }) {
   const { t } = useTranslation();
+  const colors = useColors();
   return (
-    <NativeTabs>
+    <NativeTabs
+      tintColor={colors.primary}
+      backgroundColor={colors.background}
+      iconColor={{ default: colors.mutedForeground, selected: colors.primary }}
+      labelStyle={{
+        default: { color: colors.mutedForeground },
+        selected: { color: colors.primary },
+      }}
+    >
       <NativeTabs.Trigger name="index">
         <Icon sf={{ default: "cube.box", selected: "cube.box.fill" }} />
         <Label>{t("nav.inventory")}</Label>
@@ -62,7 +71,7 @@ function NativeTabLayout({ unread }: { unread: number }) {
 
 function ClassicTabLayout({ unread }: { unread: number }) {
   const colors = useColors();
-  const colorScheme = useColorScheme();
+  const colorScheme = useThemeScheme();
   const isDark = colorScheme === "dark";
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";

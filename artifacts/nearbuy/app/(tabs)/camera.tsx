@@ -335,12 +335,12 @@ export default function CameraTab() {
     <View style={styles.idleWrap}>
       <View style={styles.heroWrap}>
         <LinearGradient
-          colors={["#A855F7", "#EC4899"]}
+          colors={[colors.primary, colors.primary]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.heroCircle}
+          style={[styles.heroCircle, { shadowColor: colors.shadow }]}
         >
-          <Feather name="camera" size={64} color="#ffffff" />
+          <Feather name="camera" size={64} color={colors.primaryForeground} />
         </LinearGradient>
       </View>
 
@@ -362,7 +362,7 @@ export default function CameraTab() {
         size="lg"
         fullWidth
         onPress={launchCamera}
-        icon={<Feather name="camera" size={20} color="#ffffff" />}
+        icon={<Feather name="camera" size={20} color={colors.primaryForeground} />}
       />
       {Platform.OS !== "web" && (
         <>
@@ -443,9 +443,9 @@ export default function CameraTab() {
         disabled={analyzing || !center || !photoBase64 || !!photoError}
         icon={
           analyzing ? (
-            <ActivityIndicator size="small" color="#ffffff" />
+            <ActivityIndicator size="small" color={colors.primaryForeground} />
           ) : (
-            <Feather name="zap" size={20} color="#ffffff" />
+            <Feather name="zap" size={20} color={colors.primaryForeground} />
           )
         }
       />
@@ -499,7 +499,7 @@ export default function CameraTab() {
               <Button
                 title={t("search.expandSearch")}
                 onPress={() => visualSearchMutation.mutate({ radius: radiusKm, scope: "all" })}
-                icon={<Feather name="globe" size={18} color="#ffffff" />}
+                icon={<Feather name="globe" size={18} color={colors.primaryForeground} />}
               />
             </>
           )}
@@ -690,7 +690,6 @@ export default function CameraTab() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 20 },
-
   idleWrap: { flex: 1, paddingTop: 12 },
   heroWrap: { alignItems: "center", marginTop: 12, marginBottom: 24 },
   heroCircle: {
@@ -699,7 +698,6 @@ const styles = StyleSheet.create({
     borderRadius: 80,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#EC4899",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.25,
     shadowRadius: 18,

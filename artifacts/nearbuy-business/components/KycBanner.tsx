@@ -4,6 +4,7 @@ import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { useColors } from "@/hooks/useColors";
 import {
   getGetShopKycStatusQueryOptions,
   type KycStatusResponse,
@@ -21,32 +22,9 @@ type Variant = {
   icon: React.ComponentProps<typeof Feather>["name"];
 };
 
-const VARIANTS: Record<"unsubmitted" | "pending" | "rejected", Variant> = {
-  unsubmitted: {
-    bg: "#FFF4E5",
-    border: "#F58220",
-    iconColor: "#F58220",
-    textColor: "#7A3A00",
-    icon: "alert-triangle",
-  },
-  pending: {
-    bg: "#E6EDFA",
-    border: "#1B2A5C",
-    iconColor: "#1B2A5C",
-    textColor: "#1B2A5C",
-    icon: "clock",
-  },
-  rejected: {
-    bg: "#FDECEC",
-    border: "#D14343",
-    iconColor: "#D14343",
-    textColor: "#7A1D1D",
-    icon: "x-circle",
-  },
-};
-
 export function KycBanner({ shopId }: Props) {
   const { t } = useTranslation();
+  const colors = useColors();
   const { data } = useQuery({
     ...getGetShopKycStatusQueryOptions(shopId),
     enabled: KYC_ENFORCEMENT_ENABLED,
@@ -57,7 +35,29 @@ export function KycBanner({ shopId }: Props) {
   const kyc = data as KycStatusResponse;
   if (kyc.status === "approved") return null;
 
-  const v = VARIANTS[kyc.status];
+  const v: Variant = kyc.status === "unsubmitted"
+    ? {
+        bg: colors.warning,
+        border: colors.warning,
+        iconColor: colors.warningForeground,
+        textColor: colors.warningForeground,
+        icon: "alert-triangle",
+      }
+    : kyc.status === "pending"
+      ? {
+          bg: colors.accent,
+          border: colors.border,
+          iconColor: colors.accentForeground,
+          textColor: colors.accentForeground,
+          icon: "clock",
+        }
+      : {
+          bg: colors.destructive + "18",
+          border: colors.destructive,
+          iconColor: colors.destructive,
+          textColor: colors.destructive,
+          icon: "x-circle",
+        };
   const title = t(`kyc.banner.${kyc.status}.title`);
   const subtitle =
     kyc.status === "rejected" && kyc.rejectionReason
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     gap: 12,
     padding: 14,
-    borderRadius: 12,
+    borderRadius: 18,
     borderWidth: 1,
     marginBottom: 16,
   },

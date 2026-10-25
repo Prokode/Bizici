@@ -342,7 +342,7 @@ export function AppointmentBookingModal({
             />
 
             {error ? (
-              <Text style={styles.errorText}>{error}</Text>
+              <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text>
             ) : null}
           </ScrollView>
 
@@ -353,9 +353,9 @@ export function AppointmentBookingModal({
               disabled={!canSubmit}
               icon={
                 mutation.isPending ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <ActivityIndicator size="small" color={colors.primaryForeground} />
                 ) : (
-                  <Feather name="check" size={16} color="#fff" />
+                  <Feather name="check" size={16} color={colors.primaryForeground} />
                 )
               }
             />
@@ -389,7 +389,7 @@ function ServiceChip({
     >
       <Text
         style={{
-          color: selected ? colors.primaryForeground ?? "#fff" : colors.foreground,
+          color: selected ? colors.primaryForeground : colors.foreground,
           fontSize: 13,
           fontWeight: "600",
         }}
@@ -445,6 +445,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 999,
   },
-  errorText: { color: "#dc2626", fontSize: 13, marginTop: 8 },
+  errorText: { fontSize: 13, marginTop: 8 },
   footer: { paddingTop: 8 },
 });

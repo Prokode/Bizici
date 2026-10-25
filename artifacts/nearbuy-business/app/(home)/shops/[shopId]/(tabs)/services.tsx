@@ -85,7 +85,7 @@ function ServicesContent() {
         }
         activeOpacity={0.85}
       >
-        <Card style={styles.card}>
+        <Card style={[styles.card, { borderColor: colors.border }]}>
           <View style={styles.cardRow}>
             <View style={{ flex: 1 }}>
               <Text
@@ -230,7 +230,7 @@ function ServicesContent() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   headerActions: { flexDirection: "row" },
-  card: { padding: 14, marginBottom: 10 },
+  card: { padding: 17, marginBottom: 12, borderRadius: 20, borderWidth: 1 },
   cardRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   title: { fontSize: 16 },
   metaRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },

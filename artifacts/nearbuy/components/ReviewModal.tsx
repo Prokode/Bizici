@@ -175,7 +175,7 @@ export function ReviewModal({ shopId, shopName, onClose }: Props) {
                     <Feather
                       name="star"
                       size={36}
-                      color={n <= rating ? "#F59E0B" : colors.border}
+                      color={n <= rating ? colors.warning : colors.border}
                     />
                   </Pressable>
                 ))}
@@ -216,8 +216,8 @@ export function ReviewModal({ shopId, shopName, onClose }: Props) {
                   disabled={submitting}
                   style={styles.deleteRow}
                 >
-                  <Feather name="trash-2" size={14} color="#EF4444" />
-                  <Text style={styles.deleteText}>{t("review.deleteMine")}</Text>
+                  <Feather name="trash-2" size={14} color={colors.destructive} />
+                  <Text style={[styles.deleteText, { color: colors.destructive }]}>{t("review.deleteMine")}</Text>
                 </Pressable>
               )}
             </>
@@ -275,5 +275,5 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 12,
   },
-  deleteText: { color: "#EF4444", fontSize: 13, fontWeight: "600" },
+  deleteText: { fontSize: 13, fontWeight: "600" },
 });

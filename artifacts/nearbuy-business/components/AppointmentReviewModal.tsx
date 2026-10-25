@@ -117,7 +117,7 @@ export function AppointmentReviewModal({
         if (!mutation.isPending) onClose();
       }}
     >
-      <View style={styles.backdrop}>
+      <View style={[styles.backdrop, { backgroundColor: colors.overlay }]}>
         <View
           style={[
             styles.sheet,
@@ -149,7 +149,7 @@ export function AppointmentReviewModal({
                 <Feather
                   name={n <= rating ? "star" : "star"}
                   size={32}
-                  color={n <= rating ? "#f59e0b" : colors.border}
+                  color={n <= rating ? colors.warning : colors.border}
                 />
               </Pressable>
             ))}
@@ -177,7 +177,7 @@ export function AppointmentReviewModal({
             ]}
           />
 
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          {error ? <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text> : null}
 
           <View style={styles.footer}>
             <Button
@@ -190,9 +190,9 @@ export function AppointmentReviewModal({
               disabled={mutation.isPending || rating === 0}
               icon={
                 mutation.isPending ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <ActivityIndicator size="small" color={colors.primaryForeground} />
                 ) : (
-                  <Feather name="check" size={16} color="#fff" />
+                  <Feather name="check" size={16} color={colors.primaryForeground} />
                 )
               }
             />
@@ -206,7 +206,6 @@ export function AppointmentReviewModal({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
     justifyContent: "flex-end",
   },
   sheet: {
@@ -241,6 +240,6 @@ const styles = StyleSheet.create({
     minHeight: 80,
     textAlignVertical: "top",
   },
-  errorText: { color: "#dc2626", fontSize: 13, marginTop: 8 },
+  errorText: { fontSize: 13, marginTop: 8 },
   footer: { paddingTop: 16 },
 });

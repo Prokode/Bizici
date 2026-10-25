@@ -8,14 +8,18 @@ import { getThemePreference, subscribeThemePreference } from "@/lib/theme";
  * Returns the design tokens for the active scheme. An explicit light/dark
  * preference from lib/theme wins; "system" falls back to the device scheme.
  */
-export function useColors() {
+export function useThemeScheme(): "light" | "dark" {
   const systemScheme = useColorScheme();
   const pref = useSyncExternalStore(
     subscribeThemePreference,
     getThemePreference,
     getThemePreference,
   );
-  const scheme = pref === "system" ? systemScheme : pref;
+  return (pref === "system" ? systemScheme : pref) === "dark" ? "dark" : "light";
+}
+
+export function useColors() {
+  const scheme = useThemeScheme();
   type Palette = typeof colors.light;
   const colorTokens: {
     light: Palette;

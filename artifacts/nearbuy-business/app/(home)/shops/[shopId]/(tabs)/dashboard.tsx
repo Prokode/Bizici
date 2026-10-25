@@ -216,7 +216,7 @@ export default function DashboardScreen() {
               ? t("dashboard.outOfStockNeed")
               : t("dashboard.outOfStockOk")
           }
-          tint={data.outOfStockCount > 0 ? "#f59e0b" : colors.primary}
+          tint={data.outOfStockCount > 0 ? colors.warning : colors.primary}
         />
         <StatCard
           icon="message-circle"
@@ -227,7 +227,7 @@ export default function DashboardScreen() {
               ? t("dashboard.conversationsUnread", { count: data.unreadCount })
               : t("dashboard.conversationsAllRead")
           }
-          tint={data.unreadCount > 0 ? "#ef4444" : colors.primary}
+          tint={data.unreadCount > 0 ? colors.primary : colors.mutedForeground}
         />
         <StatCard
           icon="send"
@@ -241,7 +241,7 @@ export default function DashboardScreen() {
           label={t("dashboard.ratingAvg")}
           value={ratingDisplay}
           hint={ratingHint}
-          tint="#f59e0b"
+          tint={colors.warning}
         />
         <StatCard
           icon="radio"
@@ -305,10 +305,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   statCard: {
-    width: "48%",
-    padding: 14,
+    width: "47.5%",
+    padding: 16,
     gap: 6,
     minHeight: 110,
+    borderRadius: 20,
+    borderWidth: 1,
   },
   iconBubble: {
     width: 32,
@@ -320,7 +322,7 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 12, marginTop: 2 },
   statValue: { fontSize: 22, lineHeight: 26 },
   statHint: { fontSize: 11 },
-  activityCard: { padding: 14, marginTop: 4 },
+  activityCard: { padding: 16, marginTop: 4, borderRadius: 20, borderWidth: 1 },
   activityRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   activityLabel: { fontSize: 12 },
   activityValue: { fontSize: 16, marginTop: 2 },

@@ -3,15 +3,14 @@ import { Redirect, Stack, useSegments } from "expo-router";
 import { useAuth } from "@clerk/expo";
 import { useTranslation } from "react-i18next";
 import { StatusBar } from "expo-status-bar";
-import { useColorScheme } from "react-native";
-import { useColors } from "@/hooks/useColors";
+import { useColors, useThemeScheme } from "@/hooks/useColors";
 import { isGuestProfileRoute } from "@/lib/guestProfile";
 
 export default function HomeLayout() {
   const { isSignedIn, isLoaded } = useAuth();
   const { t } = useTranslation();
   const colors = useColors();
-  const isDark = useColorScheme() === "dark";
+  const isDark = useThemeScheme() === "dark";
   const segments = useSegments();
   const isGuestProfile = isGuestProfileRoute(segments);
 

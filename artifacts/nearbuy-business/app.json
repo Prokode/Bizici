@@ -12,7 +12,7 @@
     "splash": {
       "image": "./assets/images/bizici-pin.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FFF8E9"
     },
     "ios": {
       "supportsTablet": false,

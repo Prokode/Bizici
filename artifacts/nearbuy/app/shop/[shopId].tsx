@@ -73,9 +73,9 @@ export default function ShopDetails() {
                 <View style={styles.heroBody}>
                   <Text style={[styles.title, text]}>{shop.name}</Text>
                   <View style={styles.chips}>
-                    <View style={[styles.chip, { backgroundColor: shop.isOpen ? colors.primary : colors.muted }]}>
-                      <View style={[styles.dot, { backgroundColor: shop.isOpen ? colors.primaryForeground : colors.mutedForeground }]} />
-                      <Text style={[styles.chipText, { color: shop.isOpen ? colors.primaryForeground : colors.mutedForeground }]}>{t(shop.isOpen ? "shop.openNow" : "shop.closed")}</Text>
+                    <View style={[styles.chip, { backgroundColor: shop.isOpen ? colors.accent : colors.muted }]}>
+                      <View style={[styles.dot, { backgroundColor: shop.isOpen ? colors.success : colors.mutedForeground }]} />
+                      <Text style={[styles.chipText, { color: shop.isOpen ? colors.success : colors.mutedForeground }]}>{t(shop.isOpen ? "shop.openNow" : "shop.closed")}</Text>
                     </View>
                     <View style={[styles.chip, { backgroundColor: colors.muted }]}>
                       <Feather name="star" size={13} color={colors.primary} />

@@ -69,7 +69,7 @@ export default function UserProfileScreen() {
         <Text style={[styles.title, { color: colors.foreground }]}>{name}</Text>
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>{t("userProfile.description")}</Text>
       </View>
-      <Card style={styles.card}>
+      <Card style={[styles.card, { borderColor: colors.border }]}>
         <Text style={[styles.label, { color: colors.mutedForeground }]}>{t("userProfile.name")}</Text>
         <Text selectable style={[styles.value, { color: colors.foreground }]}>{user?.fullName || user?.username || t("profile.notSpecified")}</Text>
         <Text style={[styles.label, { color: colors.mutedForeground }]}>{t("userProfile.email")}</Text>
@@ -90,12 +90,12 @@ export default function UserProfileScreen() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
-  content: { padding: 20, gap: 12 },
-  hero: { alignItems: "center", gap: 12, paddingVertical: 16 },
-  avatar: { width: 80, height: 80, borderRadius: 40 },
-  title: { fontSize: 24, textAlign: "center", fontFamily: "PlusJakartaSans_700Bold" },
-  subtitle: { fontSize: 14, textAlign: "center", fontFamily: "PlusJakartaSans_400Regular" },
-  card: { padding: 18, gap: 8 },
+  content: { padding: 20, gap: 14 },
+  hero: { alignItems: "center", gap: 12, paddingVertical: 20 },
+  avatar: { width: 84, height: 84, borderRadius: 42 },
+  title: { fontSize: 25, textAlign: "center", fontFamily: "PlusJakartaSans_700Bold", letterSpacing: -0.4 },
+  subtitle: { fontSize: 14, lineHeight: 20, textAlign: "center", fontFamily: "PlusJakartaSans_400Regular" },
+  card: { padding: 20, gap: 9, borderRadius: 22, borderWidth: 1 },
   label: { fontSize: 12, fontFamily: "PlusJakartaSans_500Medium" },
   value: { fontSize: 16, fontFamily: "PlusJakartaSans_600SemiBold", marginBottom: 8 },
   language: { marginVertical: 12 },

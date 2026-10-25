@@ -130,7 +130,7 @@ export default function InventoryScreen() {
       item.category ||
       t("inventory.noCategory");
     return (
-    <Card style={styles.card}>
+    <Card style={[styles.card, { borderColor: colors.border }]}>
       <View style={styles.cardHeader}>
         {firstPhoto ? (
           <View style={[styles.thumb, { borderRadius: colors.radius, backgroundColor: colors.muted }]}>
@@ -268,7 +268,7 @@ export default function InventoryScreen() {
       <TouchableOpacity
         style={[
           styles.fab,
-          { backgroundColor: colors.primary, bottom: (Platform.OS === "web" ? 84 : insets.bottom + 60) + 16 },
+          { backgroundColor: colors.primary, shadowColor: colors.shadow, bottom: (Platform.OS === "web" ? 84 : insets.bottom + 60) + 16 },
         ]}
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -288,7 +288,7 @@ export default function InventoryScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16, paddingTop: 8 },
-  card: { padding: 16, marginBottom: 12 },
+  card: { padding: 18, marginBottom: 14, borderRadius: 22, borderWidth: 1 },
   cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 },
   thumb: { width: 56, height: 56, marginRight: 12 },
   cardTitleArea: { flex: 1, paddingRight: 16 },
@@ -310,10 +310,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderRadius: 999,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
     elevation: 8,
   },
   fabText: { marginLeft: 8, fontSize: 16 },

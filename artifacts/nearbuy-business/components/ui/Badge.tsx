@@ -16,7 +16,7 @@ export function Badge({ children, variant = "default", style }: BadgeProps) {
       case "default": return colors.primary;
       case "secondary": return colors.secondary;
       case "destructive": return colors.destructive;
-      case "success": return colors.success || "#22c55e"; // Fallback if missing
+      case "success": return colors.success;
       case "outline": return "transparent";
       default: return colors.primary;
     }
@@ -28,7 +28,7 @@ export function Badge({ children, variant = "default", style }: BadgeProps) {
       case "default": return colors.primaryForeground;
       case "secondary": return colors.secondaryForeground;
       case "destructive": return colors.destructiveForeground;
-      case "success": return colors.successForeground || "#ffffff"; // Fallback
+      case "success": return colors.successForeground;
       default: return colors.primaryForeground;
     }
   };
@@ -71,6 +71,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 12,
-    textTransform: "uppercase",
+    letterSpacing: 0.1,
   },
 });

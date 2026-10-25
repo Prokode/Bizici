@@ -121,6 +121,9 @@
     "selfReviewError": "You can't review your own shop."
   },
   "map": {
+    "nearbyEyebrow": "Nearby",
+    "nearbyTitle": "Around you",
+    "photoSearch": "Search by photo",
     "searchPlaceholder": "Search a product (e.g. blue jeans)",
     "webHint": "Interactive map available on mobile (Expo Go). Here are shops nearby.",
     "locating": "Locating you…",

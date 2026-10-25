@@ -40,7 +40,6 @@ type SlideDef = {
   chipKey: string;
   visual: "logo" | "icon";
   iconName?: keyof typeof Feather.glyphMap;
-  gradient: [string, string];
 };
 
 const SLIDE_DEFS: SlideDef[] = [
@@ -50,7 +49,6 @@ const SLIDE_DEFS: SlideDef[] = [
     bodyKey: "onboarding.slide1Body",
     chipKey: "onboarding.slide1Chip",
     visual: "logo",
-    gradient: ["#F58220", "#E26A0A"],
   },
   {
     key: "search",
@@ -59,7 +57,6 @@ const SLIDE_DEFS: SlideDef[] = [
     chipKey: "onboarding.slide2Chip",
     visual: "icon",
     iconName: "search",
-    gradient: ["#F58220", "#1B2A5C"],
   },
   {
     key: "visual",
@@ -68,7 +65,6 @@ const SLIDE_DEFS: SlideDef[] = [
     chipKey: "onboarding.slide3Chip",
     visual: "icon",
     iconName: "camera",
-    gradient: ["#1B2A5C", "#3A4F8A"],
   },
   {
     key: "karma",
@@ -77,7 +73,6 @@ const SLIDE_DEFS: SlideDef[] = [
     chipKey: "onboarding.slide4Chip",
     visual: "icon",
     iconName: "award",
-    gradient: ["#7FB927", "#5C9618"],
   },
   {
     key: "run",
@@ -86,7 +81,6 @@ const SLIDE_DEFS: SlideDef[] = [
     chipKey: "onboarding.slide5Chip",
     visual: "icon",
     iconName: "shopping-bag",
-    gradient: ["#7FB927", "#1B2A5C"],
   },
 ];
 
@@ -100,6 +94,13 @@ type SlideProps = {
 function OnboardingSlide({ slide, index, scrollX, height }: SlideProps) {
   const colors = useColors();
   const { t } = useTranslation();
+  const slideHeight = height || SCREEN_H;
+  const heroHeight = Math.min(
+    HERO_HEIGHT,
+    Math.max(150, Math.round(slideHeight * 0.4)),
+  );
+  const logoSize = Math.min(260, Math.round(heroHeight * 0.72));
+  const haloSize = Math.min(200, Math.round(heroHeight * 0.62));
 
   const inputRange = [
     (index - 1) * SCREEN_W,
@@ -192,12 +193,19 @@ function OnboardingSlide({ slide, index, scrollX, height }: SlideProps) {
   });
 
   return (
-    <View style={[styles.slide, { width: SCREEN_W, height }]}>
+    <ScrollView
+      style={[styles.slideScroll, { width: SCREEN_W, height: slideHeight }]}
+      contentContainerStyle={[styles.slide, { minHeight: slideHeight }]}
+      showsVerticalScrollIndicator={false}
+      bounces={false}
+      nestedScrollEnabled
+      directionalLockEnabled
+    >
       <LinearGradient
-        colors={slide.gradient}
+        colors={[colors.primary, colors.primary]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={styles.hero}
+        style={[styles.hero, { height: heroHeight }]}
       >
         <Animated.View style={[styles.heroOrbA, orbAStyle]} />
         <Animated.View style={[styles.heroOrbB, orbBStyle]} />
@@ -205,27 +213,31 @@ function OnboardingSlide({ slide, index, scrollX, height }: SlideProps) {
           {slide.visual === "logo" ? (
             <Image
               source={require("../assets/images/bizici-pin.png")}
-              style={styles.logo}
+              style={{ height: logoSize, width: logoSize }}
               resizeMode="contain"
             />
           ) : (
-            <View style={styles.iconHalo}>
+            <View
+              style={[
+                styles.iconHalo,
+                {
+                  height: haloSize,
+                  width: haloSize,
+                  borderRadius: haloSize / 2,
+                },
+              ]}
+            >
               <Feather
                 name={slide.iconName ?? "circle"}
-                size={88}
-                color="#ffffff"
+                size={Math.min(88, Math.round(heroHeight * 0.36))}
+                color={colors.primaryForeground}
               />
             </View>
           )}
         </Animated.View>
       </LinearGradient>
 
-      <ScrollView
-        style={styles.copyScroll}
-        contentContainerStyle={styles.copy}
-        showsVerticalScrollIndicator={false}
-        bounces={false}
-      >
+      <View style={styles.copy}>
         <Animated.View
           style={[
             styles.chip,
@@ -251,8 +263,8 @@ function OnboardingSlide({ slide, index, scrollX, height }: SlideProps) {
         >
           {t(slide.bodyKey)}
         </Animated.Text>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -341,7 +353,7 @@ export default function OnboardingScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
         <Pressable onPress={finish} hitSlop={12}>
-          <Text style={styles.skip}>{t("onboarding.skip")}</Text>
+          <Text style={[styles.skip, { color: colors.primaryForeground }]}>{t("onboarding.skip")}</Text>
         </Pressable>
       </View>
 
@@ -389,7 +401,7 @@ export default function OnboardingScreen() {
             <Feather
               name={isLast ? "arrow-right-circle" : "arrow-right"}
               size={20}
-              color="#ffffff"
+              color={colors.primaryForeground}
             />
           }
         />
@@ -402,9 +414,6 @@ const SMALL_SCREEN = SCREEN_H < 720;
 const HERO_HEIGHT = SMALL_SCREEN
   ? Math.round(SCREEN_H * 0.34)
   : Math.min(SCREEN_H * 0.5, 480);
-const LOGO_SIZE = Math.min(260, Math.round(HERO_HEIGHT * 0.72));
-const HALO_SIZE = Math.min(200, Math.round(HERO_HEIGHT * 0.62));
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -423,16 +432,13 @@ const styles = StyleSheet.create({
   skip: {
     fontSize: 15,
     fontWeight: "700",
-    color: "#ffffff",
     textShadowColor: "rgba(0,0,0,0.25)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
   },
-  slide: {
-    flex: 1,
-  },
+  slideScroll: { flexGrow: 0 },
+  slide: { flexGrow: 1 },
   hero: {
-    height: HERO_HEIGHT,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
@@ -457,26 +463,14 @@ const styles = StyleSheet.create({
     borderRadius: 120,
     backgroundColor: "rgba(255,255,255,0.08)",
   },
-  logo: {
-    height: LOGO_SIZE,
-    width: LOGO_SIZE,
-  },
   iconHalo: {
-    height: HALO_SIZE,
-    width: HALO_SIZE,
-    borderRadius: HALO_SIZE / 2,
     backgroundColor: "rgba(255,255,255,0.18)",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
     borderColor: "rgba(255,255,255,0.35)",
   },
-  list: {
-    flex: 1,
-  },
-  copyScroll: {
-    flex: 1,
-  },
+  list: { flex: 1 },
   copy: {
     flexGrow: 1,
     paddingHorizontal: 28,

@@ -19,7 +19,7 @@ import { Feather } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
-import { useColors } from "@/hooks/useColors";
+import { useColors, useThemeScheme } from "@/hooks/useColors";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { fetchNearbyShops, type PublicShop } from "@/lib/api/shops";
 import { ProductPhoto } from "@/components/ProductPhoto";
@@ -55,6 +55,7 @@ function formatDistance(m: number): string {
 export default function MapTab() {
   const { formatPrice } = useCurrency();
   const colors = useColors();
+  const themeScheme = useThemeScheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
@@ -236,6 +237,13 @@ export default function MapTab() {
             ref={mapRef}
             style={StyleSheet.absoluteFill}
             initialRegion={region}
+            userInterfaceStyle={themeScheme}
+            mapPadding={{
+              top: insets.top + 202,
+              bottom: insets.bottom + 172,
+              left: 0,
+              right: 0,
+            }}
             onMapReady={() => { visibleRegionRef.current = region; }}
             onRegionChangeComplete={onMapRegionChangeComplete}
             showsUserLocation
@@ -276,7 +284,7 @@ export default function MapTab() {
                 }}
                 radius={selectedProvider.serviceProvider.serviceRadiusKm * 1000}
                 strokeColor={colors.primary}
-                fillColor={colors.accent}
+                fillColor={`${colors.primary}22`}
                 strokeWidth={2}
               />
             )}
@@ -284,7 +292,7 @@ export default function MapTab() {
           <View
             style={[
               styles.zoomControls,
-              { top: insets.top + 172, backgroundColor: colors.background, borderColor: colors.border },
+              { top: insets.top + 207, backgroundColor: colors.card, borderColor: colors.border },
             ]}
           >
             <Pressable
@@ -325,9 +333,9 @@ export default function MapTab() {
               <Pressable
                 accessibilityLabel={t("map.listView")}
                 onPress={() => setViewMode("list")}
-                style={[styles.trayAction, { backgroundColor: colors.foreground }]}
+                style={[styles.trayAction, { backgroundColor: colors.primary }]}
               >
-                <Feather name="list" size={16} color={colors.background} />
+                <Feather name="list" size={16} color={colors.primaryForeground} />
               </Pressable>
             </View>
             <FlatList
@@ -409,7 +417,7 @@ export default function MapTab() {
             styles.listContent,
             // Keep the first list heading below the floating location/filter
             // controls; otherwise "0 shops" renders underneath the filter pill.
-            { paddingTop: insets.top + 184, paddingBottom: 32 },
+            { paddingTop: insets.top + 226, paddingBottom: 32 },
           ]}
           ListHeaderComponent={
             <View style={styles.listHeader}>
@@ -509,7 +517,7 @@ export default function MapTab() {
                     styles.openBadge,
                     {
                       backgroundColor: item.isOpen
-                        ? "#10b98122"
+                        ? colors.accent
                         : colors.muted,
                     },
                   ]}
@@ -519,7 +527,7 @@ export default function MapTab() {
                       styles.openDot,
                       {
                         backgroundColor: item.isOpen
-                          ? "#10b981"
+                          ? colors.success
                           : colors.mutedForeground,
                       },
                     ]}
@@ -528,7 +536,7 @@ export default function MapTab() {
                     style={[
                       styles.openText,
                       {
-                        color: item.isOpen ? "#047857" : colors.mutedForeground,
+                        color: item.isOpen ? colors.success : colors.mutedForeground,
                       },
                     ]}
                   >
@@ -619,18 +627,45 @@ export default function MapTab() {
       )}
 
       <View
+        pointerEvents="none"
+        style={[
+          styles.headerBackdrop,
+          { height: insets.top + 153, backgroundColor: colors.background, borderColor: colors.border },
+        ]}
+      />
+      <View style={[styles.brandHeader, { top: insets.top + 8 }]}>
+        <Image
+          source={require("../../assets/images/bizici-logo-transparent.png")}
+          style={styles.brandLogo}
+          resizeMode="contain"
+          accessibilityLabel="BizIci"
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.brandEyebrow, { color: colors.primary }]}>{t("map.nearbyEyebrow")}</Text>
+          <Text style={[styles.brandLocation, { color: colors.foreground }]}>{t("map.nearbyTitle")}</Text>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t("map.photoSearch")}
+          onPress={() => router.push("/(tabs)/camera")}
+          style={[styles.photoButton, { backgroundColor: colors.accent }]}
+        >
+          <Feather name="camera" size={18} color={colors.primary} />
+        </Pressable>
+      </View>
+      <View
         style={[
           styles.searchWrap,
           {
-            top: insets.top + 12,
+            top: insets.top + 53,
             right: Platform.OS !== "web" ? 72 : 16,
-            backgroundColor: colors.background,
+            backgroundColor: colors.card,
             borderColor: colors.border,
             shadowColor: colors.foreground,
           },
         ]}
       >
-        <Feather name="search" size={20} color={colors.mutedForeground} />
+        <Feather name="search" size={20} color={colors.primary} />
         <TextInput
           value={query}
           onChangeText={setQuery}
@@ -658,8 +693,8 @@ export default function MapTab() {
           style={[
             styles.modeButton,
             {
-              top: insets.top + 12,
-              backgroundColor: colors.foreground,
+              top: insets.top + 53,
+              backgroundColor: colors.primary,
               shadowColor: colors.foreground,
             },
           ]}
@@ -667,7 +702,7 @@ export default function MapTab() {
           <Feather
             name={viewMode === "map" ? "list" : "map"}
             size={19}
-            color={colors.background}
+            color={colors.primaryForeground}
           />
         </Pressable>
       )}
@@ -676,8 +711,8 @@ export default function MapTab() {
         style={[
           styles.statusPill,
           {
-            top: insets.top + 76,
-            backgroundColor: colors.background,
+            top: insets.top + 108,
+            backgroundColor: colors.card,
             borderColor: colors.border,
           },
         ]}
@@ -735,11 +770,11 @@ export default function MapTab() {
                     }}
                     style={[
                       styles.radiusOption,
-                      { backgroundColor: selected ? colors.foreground : colors.background, borderColor: colors.border },
+                      { backgroundColor: selected ? colors.primary : colors.card, borderColor: colors.border },
                     ]}
                     testID={`map-radius-${option}`}
                   >
-                    <Text style={{ color: selected ? colors.background : colors.foreground, fontWeight: "700" }}>{option} km</Text>
+                    <Text style={{ color: selected ? colors.primaryForeground : colors.foreground, fontWeight: "700" }}>{option} km</Text>
                   </Pressable>
                 );
               })}
@@ -753,12 +788,12 @@ export default function MapTab() {
           style={[
             styles.errorBanner,
             {
-              top: insets.top + 124,
+            top: insets.top + 157,
               backgroundColor: colors.destructive,
             },
           ]}
         >
-          <Text style={styles.errorText}>{error}</Text>
+                  <Text style={[styles.errorText, { color: colors.destructiveForeground }]}>{error}</Text>
         </View>
       )}
 
@@ -783,8 +818,8 @@ export default function MapTab() {
         style={[
           styles.filterPill,
           {
-            top: insets.top + 116,
-            backgroundColor: colors.background,
+            top: insets.top + 158,
+            backgroundColor: colors.card,
             borderColor: colors.border,
           },
         ]}
@@ -800,20 +835,20 @@ export default function MapTab() {
               onPress={() => setFilter(f)}
               style={[
                 styles.filterItem,
-                active && { backgroundColor: colors.foreground },
+                active && { backgroundColor: colors.primary },
               ]}
             >
               <Feather
                 name={icon}
                 size={13}
-                color={active ? colors.background : colors.mutedForeground}
+                color={active ? colors.primaryForeground : colors.mutedForeground}
               />
               <Text
                 style={[
                   styles.filterLabel,
                   {
                     color: active
-                      ? colors.background
+                      ? colors.primaryForeground
                       : colors.mutedForeground,
                     fontWeight: active ? "700" : "500",
                   },
@@ -832,17 +867,51 @@ export default function MapTab() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   mapStage: { flex: 1 },
+  headerBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  brandHeader: {
+    position: "absolute",
+    left: 18,
+    right: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 11,
+    height: 36,
+    zIndex: 3,
+  },
+  brandLogo: { width: 67, height: 29 },
+  brandEyebrow: {
+    fontSize: 9,
+    fontWeight: "800",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+  },
+  brandLocation: { fontSize: 14, fontWeight: "800", marginTop: 1 },
+  photoButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 13,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   zoomControls: {
     position: "absolute",
     right: 16,
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: 17,
     overflow: "hidden",
     elevation: 4,
   },
   zoomButton: { width: 46, height: 46, alignItems: "center", justifyContent: "center" },
   searchWrap: {
     position: "absolute",
+    zIndex: 2,
     left: 16,
     right: 16,
     flexDirection: "row",
@@ -850,7 +919,7 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
@@ -860,6 +929,7 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 15, padding: 0 },
   modeButton: {
     position: "absolute",
+    zIndex: 2,
     right: 16,
     width: 46,
     height: 46,
@@ -873,6 +943,7 @@ const styles = StyleSheet.create({
   },
   statusPill: {
     position: "absolute",
+    zIndex: 2,
     alignSelf: "center",
     flexDirection: "row",
     alignItems: "center",
@@ -881,7 +952,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 999,
     borderWidth: 1,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 6,
@@ -905,13 +975,14 @@ const styles = StyleSheet.create({
   radiusOption: { minWidth: 76, alignItems: "center", justifyContent: "center", paddingHorizontal: 14, paddingVertical: 11, borderRadius: 999, borderWidth: 1 },
   errorBanner: {
     position: "absolute",
+    zIndex: 2,
     left: 16,
     right: 16,
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 10,
   },
-  errorText: { color: "#ffffff", fontSize: 13, fontWeight: "600" },
+  errorText: { fontSize: 13, fontWeight: "600" },
 
   listContent: { paddingHorizontal: 16, gap: 12 },
   listHeader: { marginBottom: 12 },
@@ -944,7 +1015,7 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 13, textAlign: "center", lineHeight: 18 },
   shopCard: {
     padding: 16,
-    borderRadius: 20,
+    borderRadius: 22,
     borderWidth: 1,
     marginBottom: 12,
     gap: 10,
@@ -1001,7 +1072,7 @@ const styles = StyleSheet.create({
     right: 12,
     paddingTop: 14,
     paddingBottom: 10,
-    borderRadius: 24,
+    borderRadius: 26,
     shadowOffset: { width: 0, height: 7 },
     shadowOpacity: 0.2,
     shadowRadius: 18,
@@ -1026,7 +1097,7 @@ const styles = StyleSheet.create({
   trayList: { paddingHorizontal: 12, gap: 10 },
   trayCard: {
     width: 218,
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     padding: 12,
     gap: 10,
@@ -1046,6 +1117,7 @@ const styles = StyleSheet.create({
 
   filterPill: {
     position: "absolute",
+    zIndex: 2,
     alignSelf: "center",
     flexDirection: "row",
     alignItems: "center",
@@ -1053,7 +1125,6 @@ const styles = StyleSheet.create({
     padding: 4,
     borderRadius: 999,
     borderWidth: 1,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 6,

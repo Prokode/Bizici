@@ -120,12 +120,12 @@ export default function ForgotPasswordScreen() {
 
         <View style={styles.header}>
           <LinearGradient
-            colors={["#F58220", "#E26A0A"]}
+            colors={[colors.primary, colors.primary]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.logo}
           >
-            <Feather name="key" size={28} color="#ffffff" />
+            <Feather name="key" size={28} color={colors.primaryForeground} />
           </LinearGradient>
           <Text
             style={[

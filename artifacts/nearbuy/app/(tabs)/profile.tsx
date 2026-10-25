@@ -87,12 +87,12 @@ export default function ProfileTab() {
       >
         <View style={styles.signInHero}>
           <LinearGradient
-            colors={["#F58220", "#E26A0A"]}
+            colors={[colors.primary, colors.primary]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.signInCircle}
           >
-            <Feather name="user" size={56} color="#ffffff" />
+            <Feather name="user" size={56} color={colors.primaryForeground} />
           </LinearGradient>
           <Text style={[styles.signInTitle, { color: colors.foreground }]}>
             {t("profile.signInTitle")}
@@ -107,7 +107,7 @@ export default function ProfileTab() {
           fullWidth
           size="lg"
           onPress={() => router.push("/(auth)/sign-in" as Href)}
-          icon={<Feather name="log-in" size={18} color="#ffffff" />}
+          icon={<Feather name="log-in" size={18} color={colors.primaryForeground} />}
         />
         <Pressable
           onPress={() => router.push("/(auth)/sign-up" as Href)}
@@ -154,7 +154,7 @@ export default function ProfileTab() {
             { backgroundColor: colors.primary },
           ]}
         >
-          <Text style={styles.avatarText}>
+          <Text style={[styles.avatarText, { color: colors.primaryForeground }]}>
             {displayName.charAt(0).toUpperCase()}
           </Text>
         </View>
@@ -167,29 +167,29 @@ export default function ProfileTab() {
       </View>
 
       <LinearGradient
-        colors={["#F58220", "#E26A0A"]}
+        colors={[colors.primary, colors.primary]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.karmaCard}
       >
         <View style={styles.karmaRow}>
-          <Feather name="award" size={28} color="#ffffff" />
-          <Text style={styles.karmaLabel}>{t("profile.karmaTitle")}</Text>
+          <Feather name="award" size={28} color={colors.primaryForeground} />
+          <Text style={[styles.karmaLabel, { color: colors.primaryForeground }]}>{t("profile.karmaTitle")}</Text>
         </View>
         {karmaQuery.isLoading ? (
           <ActivityIndicator
-            color="#ffffff"
+            color={colors.primaryForeground}
             size="large"
             style={{ marginTop: 8 }}
           />
         ) : karmaQuery.isError ? (
-          <Text style={styles.karmaError}>
+          <Text style={[styles.karmaError, { color: colors.primaryForeground }]}>
             {t("profile.karmaError")}
           </Text>
         ) : (
-          <Text style={styles.karmaValue}>{points ?? 0}</Text>
+          <Text style={[styles.karmaValue, { color: colors.primaryForeground }]}>{points ?? 0}</Text>
         )}
-        <Text style={styles.karmaHint}>
+          <Text style={[styles.karmaHint, { color: colors.primaryForeground, opacity: 0.85 }]}>
           {t("profile.karmaHint")}
         </Text>
       </LinearGradient>
@@ -260,12 +260,12 @@ export default function ProfileTab() {
         ]}
       >
         <LinearGradient
-          colors={["#F58220", "#E26A0A"]}
+          colors={[colors.primary, colors.primary]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.courseIcon}
         >
-          <Feather name="shopping-bag" size={22} color="#ffffff" />
+          <Feather name="shopping-bag" size={22} color={colors.primaryForeground} />
         </LinearGradient>
         <View style={{ flex: 1 }}>
           <Text style={[styles.courseTitle, { color: colors.foreground }]}>
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 14,
     padding: 14,
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
     marginBottom: 16,
   },
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 14,
     padding: 14,
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
     marginBottom: 16,
   },
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
   card: {
     alignItems: "center",
     padding: 20,
-    borderRadius: 16,
+    borderRadius: 22,
     borderWidth: 1,
     marginBottom: 16,
   },
@@ -437,38 +437,35 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 12,
   },
-  avatarText: { color: "#fff", fontSize: 28, fontWeight: "800" },
+  avatarText: { fontSize: 28, fontWeight: "800" },
   name: { fontSize: 18, fontWeight: "700" },
   email: { fontSize: 13, marginTop: 4 },
   karmaCard: {
     padding: 20,
-    borderRadius: 16,
+    borderRadius: 22,
     marginBottom: 16,
     overflow: "hidden",
   },
   karmaRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   karmaLabel: {
-    color: "#ffffff",
     fontSize: 14,
     fontWeight: "700",
     letterSpacing: 0.5,
   },
   karmaValue: {
-    color: "#ffffff",
     fontSize: 48,
     fontWeight: "800",
     marginTop: 6,
   },
-  karmaHint: { color: "rgba(255,255,255,0.85)", fontSize: 13, marginTop: 4 },
+  karmaHint: { fontSize: 13, marginTop: 4 },
   karmaError: {
-    color: "#ffffff",
     fontSize: 14,
     marginTop: 8,
     fontWeight: "600",
   },
   historyCard: {
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 22,
     borderWidth: 1,
     marginBottom: 16,
     gap: 12,

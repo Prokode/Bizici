@@ -50,10 +50,10 @@ export function ProviderBottomCard({ shop, onClose, onOpenProfile }: Props) {
           <ZoomablePhoto source={{ uri: provider.photoUrl }} style={styles.avatar} />
         ) : (
           <LinearGradient
-            colors={["#8B5CF6", "#6366F1"]}
+            colors={[colors.primary, colors.primary]}
             style={styles.avatarFallback}
           >
-            <Feather name="scissors" size={22} color="#ffffff" />
+            <Feather name="scissors" size={22} color={colors.primaryForeground} />
           </LinearGradient>
         )}
         <View style={{ flex: 1 }}>
@@ -65,7 +65,7 @@ export function ProviderBottomCard({ shop, onClose, onOpenProfile }: Props) {
               {fullName || shop.name}
             </Text>
             {provider?.isVerified && (
-              <Feather name="check-circle" size={16} color="#10b981" />
+              <Feather name="check-circle" size={16} color={colors.success} />
             )}
           </View>
           <Text
@@ -132,13 +132,13 @@ export function ProviderBottomCard({ shop, onClose, onOpenProfile }: Props) {
         ]}
       >
         <LinearGradient
-          colors={["#8B5CF6", "#6366F1"]}
+          colors={[colors.primary, colors.primary]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.ctaGradient}
         >
-          <Feather name="user" size={16} color="#ffffff" />
-          <Text style={styles.ctaText}>{t("shopDetails.open")}</Text>
+          <Feather name="user" size={16} color={colors.primaryForeground} />
+          <Text style={[styles.ctaText, { color: colors.primaryForeground }]}>{t("shopDetails.open")}</Text>
         </LinearGradient>
       </Pressable>
     </View>
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     right: 16,
     bottom: 24,
     padding: 14,
-    borderRadius: 16,
+    borderRadius: 22,
     borderWidth: StyleSheet.hairlineWidth,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.18,
@@ -191,5 +191,5 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 12,
   },
-  ctaText: { color: "#ffffff", fontWeight: "700", fontSize: 14 },
+  ctaText: { fontWeight: "700", fontSize: 14 },
 });

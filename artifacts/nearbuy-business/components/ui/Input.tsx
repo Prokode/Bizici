@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { useColors } from "@/hooks/useColors";
+import { useColors, useThemeScheme } from "@/hooks/useColors";
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -11,6 +11,7 @@ interface InputProps extends TextInputProps {
 
 export function Input({ label, error, containerStyle, style, secureTextEntry, ...props }: InputProps) {
   const colors = useColors();
+  const scheme = useThemeScheme();
   const [isFocused, setIsFocused] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -29,7 +30,7 @@ export function Input({ label, error, containerStyle, style, secureTextEntry, ..
           style={[
             styles.input,
             {
-              backgroundColor: colors.background,
+            backgroundColor: colors.card,
               borderColor: error ? colors.destructive : isFocused ? colors.primary : colors.input,
               color: colors.foreground,
               borderRadius: colors.radius,
@@ -38,6 +39,7 @@ export function Input({ label, error, containerStyle, style, secureTextEntry, ..
             style,
           ]}
           placeholderTextColor={colors.mutedForeground}
+        keyboardAppearance={scheme}
           secureTextEntry={isPasswordField && !isPasswordVisible}
           onFocus={(e) => {
             setIsFocused(true);
@@ -84,6 +86,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   input: {
+    minHeight: 50,
     borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 12,

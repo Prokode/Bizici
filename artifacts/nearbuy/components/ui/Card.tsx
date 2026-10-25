@@ -13,7 +13,15 @@ export function Card({ children, style, ...props }: CardProps) {
     <View
       style={[
         styles.card,
-        { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border },
+        {
+          backgroundColor: colors.card,
+          borderRadius: colors.radius,
+          borderColor: colors.border,
+          shadowColor: colors.shadow,
+          shadowOpacity: 0.04,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 3 },
+        },
         style,
       ]}
       {...props}
