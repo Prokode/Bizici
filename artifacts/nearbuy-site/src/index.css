@@ -66,7 +66,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* LIGHT MODE — BizIci palette: orange #F58220, navy #1B2A5C, green #7FB927 */
+/* iciBiz warm system: cream surfaces, terracotta action, forest-green wordmark. */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
@@ -76,55 +76,55 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 0 0% 100%;
-  --foreground: 225 55% 23%;
+  --background: 42 100% 96%;
+  --foreground: 145 19% 19%;
 
-  --border: 220 13% 91%;
+  --border: 38 27% 84%;
 
-  --card: 0 0% 100%;
-  --card-foreground: 225 55% 23%;
-  --card-border: 220 13% 91%;
+  --card: 48 100% 98%;
+  --card-foreground: 145 19% 19%;
+  --card-border: 38 27% 84%;
 
-  --sidebar: 225 55% 23%;
-  --sidebar-foreground: 220 20% 92%;
-  --sidebar-border: 225 50% 32%;
-  --sidebar-primary: 26 91% 54%;
+  --sidebar: 42 100% 96%;
+  --sidebar-foreground: 145 19% 19%;
+  --sidebar-border: 38 27% 84%;
+  --sidebar-primary: 12 55% 47%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 225 50% 30%;
-  --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-ring: 26 91% 54%;
+  --sidebar-accent: 135 34% 90%;
+  --sidebar-accent-foreground: 145 35% 24%;
+  --sidebar-ring: 12 55% 47%;
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 225 55% 23%;
-  --popover-border: 220 13% 91%;
+  --popover: 48 100% 98%;
+  --popover-foreground: 145 19% 19%;
+  --popover-border: 38 27% 84%;
 
-  --primary: 26 91% 54%;
+  --primary: 12 55% 47%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 220 20% 96%;
-  --secondary-foreground: 225 55% 23%;
+  --secondary: 39 55% 91%;
+  --secondary-foreground: 145 19% 19%;
 
-  --muted: 220 20% 96%;
-  --muted-foreground: 225 18% 46%;
+  --muted: 40 45% 93%;
+  --muted-foreground: 145 9% 38%;
 
-  --accent: 26 100% 93%;
-  --accent-foreground: 26 91% 30%;
+  --accent: 135 34% 90%;
+  --accent-foreground: 145 35% 24%;
 
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
 
-  --input: 220 13% 91%;
-  --ring: 26 91% 54%;
-  --chart-1: 26 91% 54%;
-  --chart-2: 225 55% 35%;
-  --chart-3: 83 65% 44%;
-  --chart-4: 26 91% 70%;
-  --chart-5: 225 35% 60%;
+  --input: 38 27% 84%;
+  --ring: 12 55% 47%;
+  --chart-1: 12 55% 47%;
+  --chart-2: 145 35% 34%;
+  --chart-3: 135 30% 58%;
+  --chart-4: 24 47% 65%;
+  --chart-5: 38 27% 61%;
 
-  --app-font-sans: 'Inter', sans-serif;
+  --app-font-sans: 'Avenir Next', 'Trebuchet MS', sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: Menlo, monospace;
-  --radius: .5rem; /* 8px */
+  --radius: 1.125rem;
   --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00); /*replace with H S L */
   --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00); /*replace with H S L */
   --shadow-sm: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
@@ -176,50 +176,50 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  --background: 225 50% 10%;
-  --foreground: 220 20% 96%;
+  --background: 145 19% 14%;
+  --foreground: 42 45% 94%;
 
-  --border: 225 30% 22%;
+  --border: 145 15% 29%;
 
-  --card: 225 45% 14%;
-  --card-foreground: 220 20% 96%;
-  --card-border: 225 30% 22%;
+  --card: 145 19% 18%;
+  --card-foreground: 42 45% 94%;
+  --card-border: 145 15% 29%;
 
-  --sidebar: 225 55% 8%;
-  --sidebar-foreground: 220 20% 92%;
-  --sidebar-border: 225 40% 20%;
-  --sidebar-primary: 26 91% 54%;
+  --sidebar: 145 19% 14%;
+  --sidebar-foreground: 42 45% 94%;
+  --sidebar-border: 145 15% 29%;
+  --sidebar-primary: 12 55% 58%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 225 40% 18%;
-  --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-ring: 26 91% 54%;
+  --sidebar-accent: 145 30% 27%;
+  --sidebar-accent-foreground: 42 45% 94%;
+  --sidebar-ring: 12 55% 65%;
 
-  --popover: 225 45% 14%;
-  --popover-foreground: 220 20% 96%;
-  --popover-border: 225 30% 22%;
+  --popover: 145 19% 18%;
+  --popover-foreground: 42 45% 94%;
+  --popover-border: 145 15% 29%;
 
-  --primary: 26 91% 54%;
+  --primary: 12 55% 58%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 225 35% 20%;
-  --secondary-foreground: 220 20% 96%;
+  --secondary: 145 15% 29%;
+  --secondary-foreground: 42 45% 94%;
 
-  --muted: 225 35% 18%;
-  --muted-foreground: 220 15% 70%;
+  --muted: 145 15% 29%;
+  --muted-foreground: 42 20% 76%;
 
-  --accent: 26 60% 30%;
-  --accent-foreground: 26 100% 93%;
+  --accent: 145 30% 27%;
+  --accent-foreground: 135 45% 84%;
 
   --destructive: 0 65% 55%;
   --destructive-foreground: 0 0% 100%;
 
-  --input: 225 30% 28%;
-  --ring: 26 91% 54%;
-  --chart-1: 26 91% 60%;
-  --chart-2: 225 50% 65%;
-  --chart-3: 83 65% 55%;
-  --chart-4: 26 91% 75%;
-  --chart-5: 225 35% 75%;
+  --input: 145 15% 29%;
+  --ring: 12 55% 65%;
+  --chart-1: 12 55% 65%;
+  --chart-2: 135 40% 68%;
+  --chart-3: 145 35% 54%;
+  --chart-4: 24 47% 72%;
+  --chart-5: 38 27% 68%;
 
   --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
@@ -366,3 +366,12 @@
     inset: -1px;
   }
 }
+
+/* Warm surfaces extend to existing neutral utility classes and phone previews. */
+.bg-white { background-color: #FFFDF7; }
+.bg-neutral-50 { background-color: #F6EFDF; }
+.border-neutral-100, .border-neutral-200, .border-neutral-300 { border-color: #E1D6C4; }
+.text-neutral-900, .text-neutral-800, .text-neutral-700 { color: #26392F; }
+.text-neutral-600, .text-neutral-500 { color: #59645A; }
+button { border-radius: 18px; }
+input:not([type="checkbox"]):not([type="radio"]), textarea, select { border-radius: 14px; }

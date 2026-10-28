@@ -12,7 +12,7 @@
     "badge": "Le commerce de proximité, réinventé",
     "titleA": "Trouvez ce que vous cherchez,",
     "titleB": "à deux pas de chez vous.",
-    "subtitle": "BizIci connecte les clients aux commerces de proximité — produits, stocks, prix et discussion en direct avec le vendeur.",
+    "subtitle": "iciBiz connecte les clients aux commerces de proximité — produits, stocks, prix et discussion en direct avec le vendeur.",
     "ctaDownload": "Télécharger l'application",
     "ctaLearn": "En savoir plus",
     "trust1": "Sans commission",
@@ -40,12 +40,12 @@
   },
   "twosided": {
     "title": "Deux apps, un même quartier",
-    "subtitle": "Que vous achetiez ou que vous vendiez, BizIci rapproche les habitants et les commerces.",
+    "subtitle": "Que vous achetiez ou que vous vendiez, iciBiz rapproche les habitants et les commerces.",
     "customerTitle": "Pour les clients",
     "customerBody": "Découvrez, demandez, discutez et achetez auprès des commerces près de chez vous — en toute simplicité.",
-    "customerCta": "Télécharger BizIci",
+    "customerCta": "Télécharger iciBiz",
     "sellerTitle": "Pour les commerçants",
-    "sellerBody": "Gérez votre stock, vos prix et vos clients, et gagnez en visibilité locale avec BizIci Pro.",
+    "sellerBody": "Gérez votre stock, vos prix et vos clients, et gagnez en visibilité locale avec iciBiz Pro.",
     "sellerCta": "Devenir commerçant partenaire"
   },
   "mock": {
@@ -61,19 +61,19 @@
   },
   "finalCta": {
     "title": "Votre quartier n'attend que vous.",
-    "subtitle": "Rejoignez BizIci et redécouvrez le plaisir d'acheter local."
+    "subtitle": "Rejoignez iciBiz et redécouvrez le plaisir d'acheter local."
   },
   "how": {
     "customerTitle": "Côté client",
-    "customerBody": "Téléchargez l'application BizIci pour découvrir les commerces près de vous, demander un produit et discuter avec le vendeur.",
+    "customerBody": "Téléchargez l'application iciBiz pour découvrir les commerces près de vous, demander un produit et discuter avec le vendeur.",
     "sellerTitle": "Côté vendeur",
-    "sellerBody": "L'application BizIci Pro vous permet de gérer votre stock, vos prix, et de répondre aux clients en temps réel.",
+    "sellerBody": "L'application iciBiz Pro vous permet de gérer votre stock, vos prix, et de répondre aux clients en temps réel.",
     "trustTitle": "Confiance & proximité",
     "trustBody": "Pas d'intermédiaire. Vous parlez directement au commerçant à côté de chez vous, vous payez sur place."
   },
   "download": {
     "title": "Disponible bientôt",
-    "subtitle": "BizIci arrive prochainement sur l'App Store et Google Play.",
+    "subtitle": "iciBiz arrive prochainement sur l'App Store et Google Play.",
     "badgeSoonOn": "Bientôt sur",
     "appStore": "l'App Store",
     "googlePlay": "Google Play",
@@ -93,7 +93,7 @@
   },
   "deletion": {
     "title": "Demande de suppression de compte",
-    "intro": "Vous pouvez demander la suppression de votre compte BizIci (client) ou BizIci Pro (vendeur) en remplissant ce formulaire. Notre équipe traitera votre demande dans un délai de <strong>30 jours maximum</strong> et vous contactera à l'adresse e-mail indiquée pour confirmer la suppression.",
+    "intro": "Vous pouvez demander la suppression de votre compte iciBiz (client) ou iciBiz Pro (vendeur) en remplissant ce formulaire. Notre équipe traitera votre demande dans un délai de <strong>30 jours maximum</strong> et vous contactera à l'adresse e-mail indiquée pour confirmer la suppression.",
     "afterTitle": "Que se passe-t-il après la suppression ?",
     "after1": "Votre profil, vos messages et vos préférences sont définitivement supprimés.",
     "after2": "Si vous êtes vendeur, votre commerce et vos produits sont également retirés de l'application.",
@@ -101,11 +101,11 @@
     "after4": "L'opération est irréversible.",
     "fullName": "Nom complet",
     "email": "Adresse e-mail liée à votre compte",
-    "emailHint": "Utilisez la même adresse que celle de votre compte BizIci.",
+    "emailHint": "Utilisez la même adresse que celle de votre compte iciBiz.",
     "accountType": "Type de compte à supprimer",
-    "accountTypeCustomer": "Compte client (BizIci)",
-    "accountTypeSeller": "Compte vendeur (BizIci Pro)",
-    "accountTypeBoth": "Les deux (j'utilise BizIci comme client ET vendeur)",
+    "accountTypeCustomer": "Compte client (iciBiz)",
+    "accountTypeSeller": "Compte vendeur (iciBiz Pro)",
+    "accountTypeBoth": "Les deux (j'utilise iciBiz comme client ET vendeur)",
     "reason": "Motif de la suppression",
     "reasonOptional": "(facultatif)",
     "confirm": "Je confirme avoir compris que la suppression est <strong>définitive</strong> et que je ne pourrai plus accéder à mon compte ni récupérer mes données.",

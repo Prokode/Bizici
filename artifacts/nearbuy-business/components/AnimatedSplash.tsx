@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { AccessibilityInfo, StyleSheet, Text, View } from "react-native";
 import Animated, {
+  cancelAnimation,
   Easing,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -10,270 +10,216 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import Svg, { Ellipse, G, Path, Rect } from "react-native-svg";
-import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
-
-/**
- * BizIci Pro animated splash.
- *
- * Sequence (mirrors the customer app):
- *   1. Orange location pin appears (drops & settles).
- *   2. The green storefront materialises inside the pin.
- *   3. Three green sparks burst above-left of the pin.
- *   4. The navy base/shadow appears under the pin.
- *   5. The whole composition shrinks and slides up.
- *   6. The "BizIci" wordmark + "Espace Pro" tagline fade in.
- *
- * On web the animation is skipped.
- */
-
-const PIN_W = 220;
-const PIN_H = 280;
 
 type Props = {
   onFinish: () => void;
 };
 
+type MotionMode = "initial" | "full" | "reduced";
+
+const FINISH_MS = 2200;
+const REDUCED_FINISH_MS = 500;
+
 export function AnimatedSplash({ onFinish }: Props) {
-  const { t } = useTranslation();
   const colors = useColors();
-  const pinOpacity = useSharedValue(0);
-  const pinTranslate = useSharedValue(-60);
-  const storeOpacity = useSharedValue(0);
-  const storeScale = useSharedValue(0.6);
-  const sparksOpacity = useSharedValue(0);
-  const sparksScale = useSharedValue(0.4);
-  const baseOpacity = useSharedValue(0);
-  const baseScale = useSharedValue(0.4);
+  const onFinishRef = useRef(onFinish);
+  onFinishRef.current = onFinish;
+  const completedRef = useRef(false);
+  const startedRef = useRef(false);
+  const [motionMode, setMotionMode] = useState<MotionMode>("initial");
 
-  const groupScale = useSharedValue(1);
-  const groupTranslate = useSharedValue(0);
-
+  const markOpacity = useSharedValue(0);
+  const markY = useSharedValue(-22);
+  const markScale = useSharedValue(0.9);
+  const haloOpacity = useSharedValue(0);
+  const haloScale = useSharedValue(0.72);
   const wordOpacity = useSharedValue(0);
-  const wordTranslate = useSharedValue(20);
+  const wordY = useSharedValue(8);
   const containerOpacity = useSharedValue(1);
 
   useEffect(() => {
-    if (Platform.OS === "web") {
-      const t = setTimeout(onFinish, 50);
-      return () => clearTimeout(t);
-    }
+    let mounted = true;
+    let fadeTimer: ReturnType<typeof setTimeout> | undefined;
+    let finishTimer: ReturnType<typeof setTimeout> | undefined;
+    let preferenceTimer: ReturnType<typeof setTimeout> | undefined;
+    let initialResolutionChosen = false;
+    let reducedMotionActive = false;
 
-    pinOpacity.value = withTiming(1, { duration: 500 });
-    pinTranslate.value = withSpring(0, {
-      damping: 10,
-      stiffness: 90,
-      mass: 1.1,
-    });
+    const clearTimers = () => {
+      if (fadeTimer) clearTimeout(fadeTimer);
+      if (finishTimer) clearTimeout(finishTimer);
+      if (preferenceTimer) clearTimeout(preferenceTimer);
+      fadeTimer = undefined;
+      finishTimer = undefined;
+      preferenceTimer = undefined;
+    };
 
-    storeOpacity.value = withDelay(900, withTiming(1, { duration: 600 }));
-    storeScale.value = withDelay(
-      900,
-      withSpring(1, { damping: 10, stiffness: 120 }),
+    const finishOnce = () => {
+      if (completedRef.current) return;
+      completedRef.current = true;
+      onFinishRef.current();
+    };
+
+    const showReducedMotion = () => {
+      if (!mounted || completedRef.current) return;
+      clearTimers();
+      cancelAnimation(markOpacity);
+      cancelAnimation(markY);
+      cancelAnimation(markScale);
+      cancelAnimation(haloOpacity);
+      cancelAnimation(haloScale);
+      cancelAnimation(wordOpacity);
+      cancelAnimation(wordY);
+      cancelAnimation(containerOpacity);
+      reducedMotionActive = true;
+      setMotionMode("reduced");
+      fadeTimer = setTimeout(() => {
+        containerOpacity.value = withTiming(0, { duration: 240 });
+      }, 100);
+      finishTimer = setTimeout(finishOnce, REDUCED_FINISH_MS);
+    };
+
+    const startFullMotion = () => {
+      if (!mounted || startedRef.current || completedRef.current) return;
+      clearTimers();
+      startedRef.current = true;
+      reducedMotionActive = false;
+      setMotionMode("full");
+      containerOpacity.value = 1;
+
+      markOpacity.value = withTiming(1, { duration: 360, easing: Easing.out(Easing.cubic) });
+      markY.value = withSpring(0, { damping: 14, stiffness: 150, mass: 0.85 });
+      markScale.value = withSpring(1, { damping: 13, stiffness: 160, mass: 0.9 });
+
+      haloOpacity.value = withDelay(
+        280,
+        withSequence(
+          withTiming(0.3, { duration: 240 }),
+          withTiming(0, { duration: 760, easing: Easing.out(Easing.quad) }),
+        ),
+      );
+      haloScale.value = withDelay(
+        280,
+        withTiming(1.42, { duration: 1000, easing: Easing.out(Easing.quad) }),
+      );
+
+      wordOpacity.value = withDelay(520, withTiming(1, { duration: 340 }));
+      wordY.value = withDelay(520, withSpring(0, { damping: 15, stiffness: 150 }));
+
+      fadeTimer = setTimeout(() => {
+        containerOpacity.value = withTiming(0, { duration: 360, easing: Easing.out(Easing.quad) });
+      }, 1780);
+      finishTimer = setTimeout(finishOnce, FINISH_MS);
+    };
+
+    const subscription = AccessibilityInfo.addEventListener(
+      "reduceMotionChanged",
+      (shouldReduceMotion) => {
+        initialResolutionChosen = true;
+        if (preferenceTimer) clearTimeout(preferenceTimer);
+        if (shouldReduceMotion) showReducedMotion();
+        else {
+          if (reducedMotionActive) startedRef.current = false;
+          startFullMotion();
+        }
+      },
     );
 
-    sparksOpacity.value = withDelay(1900, withTiming(1, { duration: 400 }));
-    sparksScale.value = withDelay(
-      1900,
-      withSequence(
-        withSpring(1.2, { damping: 6, stiffness: 160 }),
-        withSpring(1, { damping: 9, stiffness: 200 }),
-      ),
-    );
+    preferenceTimer = setTimeout(() => {
+      if (initialResolutionChosen) return;
+      initialResolutionChosen = true;
+      showReducedMotion();
+    }, 275);
 
-    baseOpacity.value = withDelay(2700, withTiming(1, { duration: 500 }));
-    baseScale.value = withDelay(
-      2700,
-      withSpring(1, { damping: 10, stiffness: 110 }),
-    );
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((shouldReduceMotion) => {
+        if (!mounted || initialResolutionChosen) return;
+        initialResolutionChosen = true;
+        if (preferenceTimer) clearTimeout(preferenceTimer);
+        if (shouldReduceMotion) showReducedMotion();
+        else startFullMotion();
+      })
+      .catch(() => {
+        if (!mounted || initialResolutionChosen) return;
+        initialResolutionChosen = true;
+        if (preferenceTimer) clearTimeout(preferenceTimer);
+        showReducedMotion();
+      });
 
-    groupScale.value = withDelay(
-      3800,
-      withTiming(0.5, {
-        duration: 720,
-        easing: Easing.inOut(Easing.cubic),
-      }),
-    );
-    groupTranslate.value = withDelay(
-      3800,
-      withTiming(-100, {
-        duration: 720,
-        easing: Easing.inOut(Easing.cubic),
-      }),
-    );
-
-    wordOpacity.value = withDelay(4200, withTiming(1, { duration: 600 }));
-    wordTranslate.value = withDelay(
-      4200,
-      withSpring(0, { damping: 11, stiffness: 100 }),
-    );
-
-    containerOpacity.value = withDelay(
-      5700,
-      withTiming(0, { duration: 500, easing: Easing.out(Easing.quad) }, () => {
-        runOnJS(onFinish)();
-      }),
-    );
+    return () => {
+      mounted = false;
+      clearTimers();
+      startedRef.current = false;
+      subscription.remove();
+      cancelAnimation(markOpacity);
+      cancelAnimation(markY);
+      cancelAnimation(markScale);
+      cancelAnimation(haloOpacity);
+      cancelAnimation(haloScale);
+      cancelAnimation(wordOpacity);
+      cancelAnimation(wordY);
+      cancelAnimation(containerOpacity);
+    };
   }, [
-    pinOpacity,
-    pinTranslate,
-    storeOpacity,
-    storeScale,
-    sparksOpacity,
-    sparksScale,
-    baseOpacity,
-    baseScale,
-    groupScale,
-    groupTranslate,
-    wordOpacity,
-    wordTranslate,
     containerOpacity,
-    onFinish,
+    haloOpacity,
+    haloScale,
+    markOpacity,
+    markScale,
+    markY,
+    wordOpacity,
+    wordY,
   ]);
 
-  const containerStyle = useAnimatedStyle(() => ({
-    opacity: containerOpacity.value,
+  const containerStyle = useAnimatedStyle(() => ({ opacity: containerOpacity.value }));
+  const markStyle = useAnimatedStyle(() => ({
+    opacity: markOpacity.value,
+    transform: [{ translateY: markY.value }, { scale: markScale.value }],
   }));
-
-  const groupStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: groupTranslate.value },
-      { scale: groupScale.value },
-    ],
+  const haloStyle = useAnimatedStyle(() => ({
+    opacity: haloOpacity.value,
+    transform: [{ scale: haloScale.value }],
   }));
-
-  const pinStyle = useAnimatedStyle(() => ({
-    opacity: pinOpacity.value,
-    transform: [{ translateY: pinTranslate.value }],
-  }));
-
-  const storeStyle = useAnimatedStyle(() => ({
-    opacity: storeOpacity.value,
-    transform: [{ scale: storeScale.value }],
-  }));
-
-  const sparksStyle = useAnimatedStyle(() => ({
-    opacity: sparksOpacity.value,
-    transform: [{ scale: sparksScale.value }],
-  }));
-
-  const baseStyle = useAnimatedStyle(() => ({
-    opacity: baseOpacity.value,
-    transform: [{ scale: baseScale.value }],
-  }));
-
   const wordStyle = useAnimatedStyle(() => ({
     opacity: wordOpacity.value,
-    transform: [{ translateY: wordTranslate.value }],
+    transform: [{ translateY: wordY.value }],
   }));
+  const isStatic = motionMode !== "full";
 
   return (
     <Animated.View
       pointerEvents="none"
-      style={[styles.container, { backgroundColor: colors.background }, containerStyle]}
+      style={[
+        styles.container,
+        { backgroundColor: colors.background },
+        !isStatic && containerStyle,
+      ]}
     >
-      <Animated.View style={[styles.wordmarkWrap, wordStyle]}>
-        <View style={styles.wordmarkRow}>
-          <Text style={styles.wordmark}>
-            <Text style={{ color: colors.foreground }}>Biz</Text>
-            <Text style={{ color: colors.primary }}>Ici</Text>
-          </Text>
-          <View style={[styles.proBadge, { backgroundColor: colors.primary }]}>
-            <Text style={[styles.proBadgeText, { color: colors.primaryForeground }]}>PRO</Text>
-          </View>
+      <View style={styles.lockup}>
+        <View style={styles.markStage}>
+          <Animated.View
+            style={[
+              styles.halo,
+              { backgroundColor: colors.primary },
+              !isStatic && haloStyle,
+              isStatic && styles.staticHalo,
+            ]}
+          />
+          <Animated.Image
+            source={require("../assets/images/icibiz-mark.png")}
+            resizeMode="contain"
+            style={[styles.mark, !isStatic && markStyle]}
+          />
         </View>
-        <Text style={styles.tagline}>
-          <Text style={{ color: colors.foreground }}>{t("onboarding.splashTaglineFirst")}</Text>
-          <Text style={{ color: colors.primary }}>{t("onboarding.splashTaglineSecond")}</Text>
-        </Text>
-      </Animated.View>
-
-      <Animated.View style={[styles.group, groupStyle]}>
-        <Animated.View style={[styles.layer, baseStyle]}>
-          <Svg width={PIN_W} height={PIN_H} viewBox="0 0 100 130">
-            <Ellipse cx="50" cy="120" rx="18" ry="5" fill={colors.foreground} />
-          </Svg>
+        <Animated.View style={[styles.wordmark, !isStatic && wordStyle]}>
+          <Text style={styles.brand}>
+            <Text style={{ color: colors.brandGreen }}>ici</Text>
+            <Text style={{ color: colors.primary }}>Biz</Text>
+          </Text>
+          <Text style={[styles.pro, { color: colors.primary }]}>Pro</Text>
         </Animated.View>
-
-        <Animated.View style={[styles.layer, pinStyle]}>
-          <Svg width={PIN_W} height={PIN_H} viewBox="0 0 100 130">
-            <Path
-              d="M 50 6
-                 C 26 6 8 24 8 47
-                 C 8 75 50 118 50 118
-                 C 50 118 92 75 92 47
-                 C 92 24 74 6 50 6 Z"
-              fill={colors.primary}
-            />
-            <Path
-              d="M 50 16
-                 C 32 16 18 30 18 47
-                 C 18 64 32 78 50 78
-                 C 68 78 82 64 82 47
-                 C 82 30 68 16 50 16 Z"
-              fill={colors.background}
-            />
-          </Svg>
-        </Animated.View>
-
-        <Animated.View style={[styles.layer, storeStyle]}>
-          <Svg width={PIN_W} height={PIN_H} viewBox="0 0 100 130">
-            <G>
-              <Path
-                d="M 28 31 H 72 V 38
-                   Q 66.5 43 61 38
-                   Q 55.5 43 50 38
-                   Q 44.5 43 39 38
-                   Q 33.5 43 28 38 Z"
-                fill={colors.primary}
-              />
-              <Rect x="33" y="31" width="6" height="7" fill={colors.primaryForeground} />
-              <Rect x="44" y="31" width="6" height="7" fill={colors.primaryForeground} />
-              <Rect x="55" y="31" width="6" height="7" fill={colors.primaryForeground} />
-              <Rect x="66" y="31" width="6" height="7" fill={colors.primaryForeground} />
-
-              <Path d="M 30 41 H 70 V 70 H 30 Z" fill={colors.foreground} />
-
-              <Rect
-                x="34"
-                y="48"
-                width="13"
-                height="22"
-                rx="1.2"
-                fill={colors.background}
-              />
-              <Rect x="36" y="51" width="3" height="4" fill={colors.accent} />
-
-              <Rect
-                x="52"
-                y="53"
-                width="13"
-                height="15"
-                rx="1.5"
-                fill={colors.accent}
-              />
-              <Path
-                d="M 55 53 Q 55 48 58.5 48 Q 62 48 62 53"
-                stroke={colors.accent}
-                strokeWidth={1.6}
-                fill="none"
-                strokeLinecap="round"
-              />
-            </G>
-          </Svg>
-        </Animated.View>
-
-        <Animated.View style={[styles.layer, sparksStyle]}>
-          <Svg width={PIN_W} height={PIN_H} viewBox="0 0 100 130">
-            <G stroke={colors.accent} strokeWidth={2.4} strokeLinecap="round">
-              <Path d="M 14 24 L 6 18" />
-              <Path d="M 22 12 L 18 4" />
-              <Path d="M 33 10 L 33 2" />
-            </G>
-          </Svg>
-        </Animated.View>
-      </Animated.View>
+      </View>
     </Animated.View>
   );
 }
@@ -286,46 +232,46 @@ const styles = StyleSheet.create({
     zIndex: 9999,
     elevation: 9999,
   },
-  group: {
-    width: PIN_W,
-    height: PIN_H,
-    position: "relative",
-  },
-  layer: {
-    ...StyleSheet.absoluteFillObject,
-    width: PIN_W,
-    height: PIN_H,
-  },
-  wordmarkWrap: {
-    position: "absolute",
-    top: "18%",
+  lockup: {
     alignItems: "center",
+    justifyContent: "center",
+    marginTop: -8,
   },
-  wordmarkRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
+  markStage: {
+    width: 220,
+    height: 200,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  halo: {
+    position: "absolute",
+    width: 124,
+    height: 124,
+    borderRadius: 62,
+    opacity: 0,
+  },
+  staticHalo: {
+    opacity: 0.09,
+    transform: [{ scale: 1.1 }],
+  },
+  mark: {
+    width: 132,
+    height: 160,
   },
   wordmark: {
-    fontSize: 56,
-    fontWeight: "800",
-    letterSpacing: -1,
-  },
-  proBadge: {
-    marginLeft: 8,
-    marginTop: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  proBadgeText: {
-    fontSize: 12,
-    fontWeight: "800",
-    letterSpacing: 1,
-  },
-  tagline: {
+    flexDirection: "row",
+    alignItems: "baseline",
     marginTop: 6,
-    fontSize: 15,
-    fontWeight: "500",
-    textAlign: "center",
+  },
+  brand: {
+    fontSize: 44,
+    fontWeight: "800",
+    letterSpacing: -1.7,
+  },
+  pro: {
+    marginLeft: 7,
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 0.1,
   },
 });

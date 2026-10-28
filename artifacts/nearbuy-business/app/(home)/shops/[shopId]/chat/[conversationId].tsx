@@ -89,7 +89,7 @@ export default function SellerChatThreadScreen() {
       void qc.invalidateQueries({ queryKey: ["chat-conv-list"] });
     },
     onError: (err: unknown) =>
-      Alert.alert("BizIci Pro", err instanceof Error ? err.message : t("auth.errorGeneric")),
+      Alert.alert("iciBiz Pro", err instanceof Error ? err.message : t("auth.errorGeneric")),
   });
 
   const declineMutation = useMutation({
@@ -102,7 +102,7 @@ export default function SellerChatThreadScreen() {
       void qc.invalidateQueries({ queryKey: ["chat-conv-list"] });
     },
     onError: (err: unknown) =>
-      Alert.alert("BizIci Pro", err instanceof Error ? err.message : t("auth.errorGeneric")),
+      Alert.alert("iciBiz Pro", err instanceof Error ? err.message : t("auth.errorGeneric")),
   });
 
   const cancelMutation = useMutation({
@@ -115,7 +115,7 @@ export default function SellerChatThreadScreen() {
       void qc.invalidateQueries({ queryKey: ["chat-conv-list"] });
     },
     onError: (err: unknown) =>
-      Alert.alert("BizIci Pro", err instanceof Error ? err.message : t("auth.errorGeneric")),
+      Alert.alert("iciBiz Pro", err instanceof Error ? err.message : t("auth.errorGeneric")),
   });
 
   const messagesQuery = useQuery({

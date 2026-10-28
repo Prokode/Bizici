@@ -51,11 +51,11 @@
     "submitting": "Signing in…",
     "invalidCredentials": "Invalid credentials",
     "loginError": "Login error",
-    "appName": "BizIci Admin",
+    "appName": "iciBiz Admin",
     "tagline": "Sign in to the admin console",
     "identifier": "Username",
     "brandHeadline": "Manage your local marketplace",
-    "brandSubline": "Monitor activity, validate sellers, and keep the BizIci community running smoothly.",
+    "brandSubline": "Monitor activity, validate sellers, and keep the iciBiz community running smoothly.",
     "brandPoint1": "Real-time platform statistics",
     "brandPoint2": "KYC document review & approval",
     "brandPoint3": "User, shop and content moderation",
@@ -63,7 +63,7 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "description": "Overview of BizIci activity",
+    "description": "Overview of iciBiz activity",
     "loadError": "Could not load statistics.",
     "stats": {
       "users": "Users",
@@ -88,7 +88,7 @@
   },
   "users": {
     "title": "Users",
-    "description": "All BizIci customer accounts",
+    "description": "All iciBiz customer accounts",
     "searchPlaceholder": "Search (name, email)…",
     "name": "Name",
     "email": "Email",
@@ -109,7 +109,7 @@
   },
   "shops": {
     "title": "Shops",
-    "description": "All BizIci shops",
+    "description": "All iciBiz shops",
     "searchPlaceholder": "Search (name, market)…",
     "name": "Name",
     "seller": "Seller",

@@ -232,7 +232,7 @@ function OnboardingSlide({ slide, index, scrollX, height }: SlideProps) {
       <Animated.View style={[styles.visualWrap, visualStyle]}>
         {slide.visual === "logo" ? (
           <Image
-            source={require("../assets/images/bizici-pin.png")}
+            source={require("../assets/images/icibiz-mark.png")}
             style={styles.logo}
             resizeMode="contain"
           />

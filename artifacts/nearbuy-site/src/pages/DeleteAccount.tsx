@@ -86,16 +86,16 @@ export default function DeleteAccountPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-neutral-900">
-      <header className="px-6 py-5 flex items-center justify-between border-b border-neutral-100">
+    <div className="min-h-[100dvh] flex flex-col bg-[#FFF8E9] text-[#26392F]">
+      <header className="px-6 py-5 flex items-center justify-between border-b border-[#E1D6C4]">
         <Link href="/" className="flex items-center gap-3">
           <NearBuyLogo size={36} />
-          <span className="text-xl font-bold tracking-tight"><span style={{ color: "#1B2A5C" }}>Biz</span><span style={{ color: "#7FB927" }}>Ici</span></span>
+          <span className="text-xl font-bold tracking-tight"><span style={{ color: "#2F6246" }}>ici</span><span style={{ color: "#B94F35" }}>Biz</span></span>
         </Link>
         <div className="flex items-center gap-4">
           <Link
             href="/"
-            className="text-sm text-neutral-600 hover:text-[#F58220]"
+            className="text-sm text-[#46544A] hover:text-[#B94F35]"
           >
             ← {t("nav.back")}
           </Link>
@@ -115,8 +115,8 @@ export default function DeleteAccountPage() {
             />
           </p>
 
-          <div className="mt-6 rounded-xl border border-[#F58220]/30 bg-[#F58220]/10 p-4 text-sm text-neutral-800">
-            <p className="font-semibold text-[#1B2A5C]">
+          <div className="mt-6 rounded-[18px] border border-[#D9CDB9] bg-[#F6EFDF] p-4 text-sm text-[#26392F]">
+            <p className="font-semibold text-[#26392F]">
               {t("deletion.afterTitle")}
             </p>
             <ul className="mt-2 list-disc pl-5 space-y-1 text-neutral-700">
@@ -147,7 +147,7 @@ export default function DeleteAccountPage() {
                 disabled={submitting}
                 required
                 maxLength={200}
-                className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-base shadow-sm focus:border-[#F58220] focus:outline-none focus:ring-2 focus:ring-[#F58220]/30 disabled:bg-neutral-100"
+                className="mt-1 block w-full rounded-[14px] border border-[#D9CDB9] bg-[#FFFDF7] px-3 py-2 text-base shadow-sm focus:border-[#B94F35] focus:outline-none focus:ring-2 focus:ring-[#B94F35]/30 disabled:bg-[#F1EBDD]"
                 data-testid="input-full-name"
               />
             </div>
@@ -167,7 +167,7 @@ export default function DeleteAccountPage() {
                 disabled={submitting}
                 required
                 maxLength={320}
-                className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-base shadow-sm focus:border-[#F58220] focus:outline-none focus:ring-2 focus:ring-[#F58220]/30 disabled:bg-neutral-100"
+                className="mt-1 block w-full rounded-[14px] border border-[#D9CDB9] bg-[#FFFDF7] px-3 py-2 text-base shadow-sm focus:border-[#B94F35] focus:outline-none focus:ring-2 focus:ring-[#B94F35]/30 disabled:bg-[#F1EBDD]"
                 data-testid="input-email"
               />
               <p className="mt-1 text-xs text-neutral-500">
@@ -183,7 +183,7 @@ export default function DeleteAccountPage() {
                 {accountOptions.map((opt) => (
                   <label
                     key={opt.value}
-                    className="flex items-start gap-3 rounded-lg border border-neutral-200 p-3 hover:border-[#F58220] cursor-pointer"
+                    className="flex items-start gap-3 rounded-[14px] border border-[#E1D6C4] bg-[#FFFDF7] p-3 hover:border-[#B94F35] cursor-pointer"
                   >
                     <input
                       type="radio"
@@ -192,7 +192,7 @@ export default function DeleteAccountPage() {
                       checked={accountType === opt.value}
                       onChange={() => setAccountType(opt.value)}
                       disabled={submitting}
-                      className="mt-1 accent-[#F58220]"
+                      className="mt-1 accent-[#B94F35]"
                       data-testid={`radio-account-type-${opt.value}`}
                     />
                     <span className="text-sm text-neutral-800">
@@ -220,7 +220,7 @@ export default function DeleteAccountPage() {
                 disabled={submitting}
                 maxLength={2000}
                 rows={4}
-                className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-base shadow-sm focus:border-[#F58220] focus:outline-none focus:ring-2 focus:ring-[#F58220]/30 disabled:bg-neutral-100"
+                className="mt-1 block w-full rounded-[14px] border border-[#D9CDB9] bg-[#FFFDF7] px-3 py-2 text-base shadow-sm focus:border-[#B94F35] focus:outline-none focus:ring-2 focus:ring-[#B94F35]/30 disabled:bg-[#F1EBDD]"
                 data-testid="input-reason"
               />
               <p className="mt-1 text-xs text-neutral-500">
@@ -228,13 +228,13 @@ export default function DeleteAccountPage() {
               </p>
             </div>
 
-            <label className="flex items-start gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3 cursor-pointer">
+            <label className="flex items-start gap-3 rounded-[14px] border border-[#E1D6C4] bg-[#F6EFDF] p-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={confirmed}
                 onChange={(e) => setConfirmed(e.target.checked)}
                 disabled={submitting}
-                className="mt-1 accent-[#F58220]"
+                className="mt-1 accent-[#B94F35]"
                 data-testid="checkbox-confirm"
               />
               <span className="text-sm text-neutral-800">
@@ -262,7 +262,7 @@ export default function DeleteAccountPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full inline-flex items-center justify-center rounded-full bg-[#F58220] hover:bg-[#E07418] disabled:bg-neutral-300 disabled:cursor-not-allowed text-white font-semibold px-6 py-3 text-base transition-colors"
+              className="w-full inline-flex items-center justify-center rounded-full bg-[#B94F35] hover:bg-[#9F402B] disabled:bg-[#C8BFB0] disabled:cursor-not-allowed text-white font-semibold px-6 py-3 text-base transition-colors"
               data-testid="button-submit"
             >
               {submitting ? t("deletion.submitting") : t("deletion.submit")}

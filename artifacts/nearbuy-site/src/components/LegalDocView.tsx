@@ -15,19 +15,19 @@ export function LegalDocView({
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-neutral-900">
-      <header className="px-6 py-5 flex items-center justify-between border-b border-neutral-100">
+    <div className="min-h-[100dvh] flex flex-col bg-[#FFF8E9] text-[#26392F]">
+      <header className="px-6 py-5 flex items-center justify-between border-b border-[#E1D6C4]">
         <Link href="/" className="flex items-center gap-3">
           <NearBuyLogo size={36} />
           <span className="text-xl font-bold tracking-tight">
-            <span style={{ color: "#1B2A5C" }}>Biz</span>
-            <span style={{ color: "#7FB927" }}>Ici</span>
+            <span style={{ color: "#2F6246" }}>ici</span>
+            <span style={{ color: "#B94F35" }}>Biz</span>
           </span>
         </Link>
         <div className="flex items-center gap-4">
           <Link
             href="/"
-            className="text-sm text-neutral-600 hover:text-[#F58220]"
+            className="text-sm text-[#46544A] hover:text-[#B94F35]"
           >
             ← {t("nav.back")}
           </Link>
@@ -57,7 +57,7 @@ export function LegalDocView({
           <div className="mt-10 space-y-8">
             {doc.sections.map((section, idx) => (
               <section key={idx} data-testid={`${testIdPrefix}-section-${idx}`}>
-                <h2 className="text-xl font-semibold text-[#1B2A5C]">
+                <h2 className="text-xl font-semibold text-[#26392F]">
                   {section.heading}
                 </h2>
                 <div className="mt-3 space-y-3">
@@ -74,7 +74,7 @@ export function LegalDocView({
             ))}
           </div>
 
-          <div className="mt-12 rounded-xl border border-[#1B2A5C]/15 bg-[#1B2A5C]/5 p-4 text-sm text-neutral-700">
+          <div className="mt-12 rounded-[18px] border border-[#D9CDB9] bg-[#F6EFDF] p-4 text-sm text-[#26392F]">
             <p>
               <strong>{t("legal.contactTitle")}</strong>
             </p>
@@ -82,7 +82,7 @@ export function LegalDocView({
               {t("legal.contactBody")}{" "}
               <a
                 href="mailto:privacy@bizici.fr"
-                className="text-[#F58220] hover:underline"
+                className="text-[#963E2B] hover:underline"
               >
                 privacy@bizici.fr
               </a>

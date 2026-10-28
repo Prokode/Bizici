@@ -51,11 +51,11 @@
     "submitting": "Connexion…",
     "invalidCredentials": "Identifiants invalides",
     "loginError": "Erreur de connexion",
-    "appName": "BizIci Admin",
+    "appName": "iciBiz Admin",
     "tagline": "Connexion à l'espace administrateur",
     "identifier": "Identifiant",
     "brandHeadline": "Gérez votre marketplace local",
-    "brandSubline": "Suivez l'activité, validez les vendeurs et assurez le bon fonctionnement de la communauté BizIci.",
+    "brandSubline": "Suivez l'activité, validez les vendeurs et assurez le bon fonctionnement de la communauté iciBiz.",
     "brandPoint1": "Statistiques de la plateforme en temps réel",
     "brandPoint2": "Revue et approbation des documents KYC",
     "brandPoint3": "Modération des utilisateurs, boutiques et contenus",
@@ -63,7 +63,7 @@
   },
   "dashboard": {
     "title": "Tableau de bord",
-    "description": "Vue d'ensemble de l'activité BizIci",
+    "description": "Vue d'ensemble de l'activité iciBiz",
     "loadError": "Impossible de charger les statistiques.",
     "stats": {
       "users": "Utilisateurs",
@@ -88,7 +88,7 @@
   },
   "users": {
     "title": "Utilisateurs",
-    "description": "Tous les comptes clients BizIci",
+    "description": "Tous les comptes clients iciBiz",
     "searchPlaceholder": "Rechercher (nom, email)…",
     "name": "Nom",
     "email": "Email",
@@ -109,7 +109,7 @@
   },
   "shops": {
     "title": "Boutiques",
-    "description": "Toutes les boutiques BizIci",
+    "description": "Toutes les boutiques iciBiz",
     "searchPlaceholder": "Rechercher (nom, marché)…",
     "name": "Nom",
     "seller": "Vendeur",

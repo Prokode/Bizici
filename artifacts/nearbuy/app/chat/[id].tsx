@@ -150,7 +150,7 @@ export default function ChatThreadScreen() {
     },
     onError: (err: unknown) => {
       Alert.alert(
-        "BizIci",
+        "iciBiz",
         err instanceof Error ? err.message : "Action impossible.",
       );
     },
@@ -167,7 +167,7 @@ export default function ChatThreadScreen() {
     },
     onError: (err: unknown) => {
       Alert.alert(
-        "BizIci",
+        "iciBiz",
         err instanceof Error ? err.message : "Action impossible.",
       );
     },

@@ -3,7 +3,6 @@ import type MapView from "react-native-maps";
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   Modal,
   Platform,
   Pressable,
@@ -20,6 +19,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { useColors, useThemeScheme } from "@/hooks/useColors";
+import { BrandLogo } from "@/components/BrandLogo";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { fetchNearbyShops, type PublicShop } from "@/lib/api/shops";
 import { ProductPhoto } from "@/components/ProductPhoto";
@@ -634,12 +634,7 @@ export default function MapTab() {
         ]}
       />
       <View style={[styles.brandHeader, { top: insets.top + 8 }]}>
-        <Image
-          source={require("../../assets/images/bizici-logo-transparent.png")}
-          style={styles.brandLogo}
-          resizeMode="contain"
-          accessibilityLabel="BizIci"
-        />
+        <BrandLogo size={18} />
         <View style={{ flex: 1 }}>
           <Text style={[styles.brandEyebrow, { color: colors.primary }]}>{t("map.nearbyEyebrow")}</Text>
           <Text style={[styles.brandLocation, { color: colors.foreground }]}>{t("map.nearbyTitle")}</Text>
@@ -885,7 +880,6 @@ const styles = StyleSheet.create({
     height: 36,
     zIndex: 3,
   },
-  brandLogo: { width: 67, height: 29 },
   brandEyebrow: {
     fontSize: 9,
     fontWeight: "800",

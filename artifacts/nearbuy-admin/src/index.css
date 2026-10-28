@@ -66,8 +66,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* LIGHT MODE — BizIci palette: orange primary (#F58220), navy sidebar (#1B2A5C),
-   green success (#7FB927). Foreground ink uses navy. */
+/* iciBiz warm system: cream surfaces, terracotta action, forest-green wordmark. */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
@@ -75,54 +74,54 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 0 0% 98%;
-  --foreground: 225 55% 23%;        /* BizIci navy as ink */
-  --border: 220 13% 91%;
-  --input: 220 13% 91%;
-  --ring: 26 91% 54%;               /* BizIci orange */
+  --background: 42 100% 96%;
+  --foreground: 145 19% 19%;
+  --border: 38 27% 84%;
+  --input: 38 27% 84%;
+  --ring: 12 55% 47%;
 
-  --card: 0 0% 100%;
-  --card-foreground: 225 55% 23%;
-  --card-border: 220 13% 91%;
+  --card: 48 100% 98%;
+  --card-foreground: 145 19% 19%;
+  --card-border: 38 27% 84%;
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 225 55% 23%;
-  --popover-border: 220 13% 91%;
+  --popover: 48 100% 98%;
+  --popover-foreground: 145 19% 19%;
+  --popover-border: 38 27% 84%;
 
-  --primary: 26 91% 54%;            /* BizIci orange #F58220 */
+  --primary: 12 55% 47%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 220 20% 96%;
-  --secondary-foreground: 225 55% 23%;
+  --secondary: 39 55% 91%;
+  --secondary-foreground: 145 19% 19%;
 
-  --muted: 220 20% 96%;
-  --muted-foreground: 225 18% 46%;
+  --muted: 40 45% 93%;
+  --muted-foreground: 145 9% 38%;
 
-  --accent: 26 100% 93%;            /* soft orange tint */
-  --accent-foreground: 26 91% 30%;
+  --accent: 135 34% 90%;
+  --accent-foreground: 145 35% 24%;
 
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
 
-  --sidebar: 225 55% 23%;           /* BizIci navy */
-  --sidebar-foreground: 220 20% 92%;
-  --sidebar-border: 225 50% 32%;
-  --sidebar-primary: 26 91% 54%;    /* BizIci orange highlights */
+  --sidebar: 42 100% 96%;
+  --sidebar-foreground: 145 19% 19%;
+  --sidebar-border: 38 27% 84%;
+  --sidebar-primary: 12 55% 47%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 225 50% 30%;
-  --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-ring: 26 91% 54%;
+  --sidebar-accent: 135 34% 90%;
+  --sidebar-accent-foreground: 145 35% 24%;
+  --sidebar-ring: 12 55% 47%;
 
-  --chart-1: 26 91% 54%;            /* orange */
-  --chart-2: 225 55% 35%;            /* navy */
-  --chart-3: 83 65% 44%;             /* green */
-  --chart-4: 26 91% 70%;             /* light orange */
-  --chart-5: 225 35% 60%;            /* light navy */
+  --chart-1: 12 55% 47%;
+  --chart-2: 145 35% 34%;
+  --chart-3: 135 30% 58%;
+  --chart-4: 24 47% 65%;
+  --chart-5: 38 27% 61%;
 
-  --app-font-sans: 'Inter', sans-serif;
+  --app-font-sans: 'Avenir Next', 'Trebuchet MS', sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: Menlo, monospace;
-  --radius: .625rem;
+  --radius: 1.125rem;
   --shadow-2xs: 0 1px 2px 0 rgba(0,0,0,.04);
   --shadow-xs: 0 1px 2px 0 rgba(0,0,0,.05);
   --shadow-sm: 0 1px 3px 0 rgba(0,0,0,.08), 0 1px 2px -1px rgba(0,0,0,.06);
@@ -157,49 +156,49 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  --background: 225 45% 9%;
-  --foreground: 0 0% 96%;
-  --border: 225 35% 22%;
-  --input: 225 35% 22%;
-  --ring: 26 91% 60%;
+  --background: 145 19% 14%;
+  --foreground: 42 45% 94%;
+  --border: 145 15% 29%;
+  --input: 145 15% 29%;
+  --ring: 12 55% 65%;
 
-  --card: 225 45% 13%;
-  --card-foreground: 0 0% 96%;
-  --card-border: 225 35% 22%;
+  --card: 145 19% 18%;
+  --card-foreground: 42 45% 94%;
+  --card-border: 145 15% 29%;
 
-  --popover: 225 45% 13%;
-  --popover-foreground: 0 0% 96%;
-  --popover-border: 225 35% 22%;
+  --popover: 145 19% 18%;
+  --popover-foreground: 42 45% 94%;
+  --popover-border: 145 15% 29%;
 
-  --primary: 26 91% 60%;
-  --primary-foreground: 225 55% 12%;
+  --primary: 12 55% 58%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 225 35% 22%;
-  --secondary-foreground: 0 0% 96%;
+  --secondary: 145 15% 29%;
+  --secondary-foreground: 42 45% 94%;
 
-  --muted: 225 35% 22%;
-  --muted-foreground: 220 14% 68%;
+  --muted: 145 15% 29%;
+  --muted-foreground: 42 20% 76%;
 
-  --accent: 225 35% 22%;
-  --accent-foreground: 0 0% 96%;
+  --accent: 145 30% 27%;
+  --accent-foreground: 135 45% 84%;
 
   --destructive: 0 72% 56%;
   --destructive-foreground: 0 0% 100%;
 
-  --sidebar: 225 50% 7%;
-  --sidebar-foreground: 220 14% 82%;
-  --sidebar-border: 225 35% 18%;
-  --sidebar-primary: 26 91% 60%;
-  --sidebar-primary-foreground: 225 55% 12%;
-  --sidebar-accent: 225 35% 18%;
-  --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-ring: 26 91% 60%;
+  --sidebar: 145 19% 14%;
+  --sidebar-foreground: 42 45% 94%;
+  --sidebar-border: 145 15% 29%;
+  --sidebar-primary: 12 55% 58%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 145 30% 27%;
+  --sidebar-accent-foreground: 42 45% 94%;
+  --sidebar-ring: 12 55% 65%;
 
-  --chart-1: 26 91% 60%;
-  --chart-2: 225 55% 55%;
-  --chart-3: 83 65% 55%;
-  --chart-4: 26 91% 75%;
-  --chart-5: 225 35% 70%;
+  --chart-1: 12 55% 65%;
+  --chart-2: 135 40% 68%;
+  --chart-3: 145 35% 54%;
+  --chart-4: 24 47% 72%;
+  --chart-5: 38 27% 68%;
 }
 
 @layer base {
@@ -254,3 +253,7 @@
   .border.hover-elevate-2:not(.no-hover-interaction-elevate)::after,
   .border.active-elevate-2:not(.no-active-interaction-elevate)::after { inset: -1px; }
 }
+
+/* Warm control treatment shared by admin tables, forms, dialogs and menus. */
+button { border-radius: 18px; }
+input:not([type="checkbox"]):not([type="radio"]), textarea, select { border-radius: 14px; }

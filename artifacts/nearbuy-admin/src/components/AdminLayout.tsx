@@ -85,8 +85,8 @@ export function AdminLayout({ children }: { children: ReactNode }) {
       <aside
         className="w-64 shrink-0 flex flex-col border-r border-sidebar-border"
         style={{
-          background: "linear-gradient(180deg, hsl(225 55% 23%) 0%, hsl(225 58% 18%) 100%)",
-          color: "hsl(220 20% 92%)",
+          background: "hsl(var(--sidebar))",
+          color: "hsl(var(--sidebar-foreground))",
         }}
       >
         {/* Logo */}
@@ -94,19 +94,19 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5">
               <div className="size-9 rounded-lg flex items-center justify-center shrink-0"
-                style={{ background: "rgba(255,255,255,0.08)" }}>
+                style={{ background: "rgba(47,98,70,0.10)" }}>
                 <img
-                  src={`${import.meta.env.BASE_URL}bizici-pin.png`}
-                  alt="BizIci"
+                  src={`${import.meta.env.BASE_URL}icibiz-mark.svg`}
+                  alt="iciBiz"
                   className="size-6 object-contain"
                 />
               </div>
               <div>
                 <div className="font-bold text-sm leading-tight tracking-tight">
-                  <span className="text-white">Biz</span>
-                  <span style={{ color: "#7FB927" }}>Ici</span>
+                  <span style={{ color: "#2F6246" }}>ici</span>
+                  <span style={{ color: "#B94F35" }}>Biz</span>
                 </div>
-                <div className="text-[11px] text-white/50 leading-tight mt-px">
+                <div className="text-[11px] text-foreground/60 leading-tight mt-px">
                   Admin
                 </div>
               </div>
@@ -128,21 +128,21 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                 <a
                   data-testid={`nav-${item.href.replace(/\//g, "") || "home"}`}
                   className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                     "flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors",
                     "border border-transparent",
                     active
-                      ? "bg-white/10 text-white border-white/10"
-                      : "text-white/70 hover:bg-white/6 hover:text-white/90",
+                       ? "bg-[#E6EFE5] text-[#26392F] border-[#D6E4D5]"
+                       : "text-foreground/75 hover:bg-[#F2EBDD] hover:text-foreground",
                   )}
-                  style={active ? { borderLeft: "3px solid #F58220", paddingLeft: "calc(0.75rem - 2px)" } : {}}
+                  style={active ? { borderLeft: "3px solid #B94F35", paddingLeft: "calc(0.75rem - 2px)" } : {}}
                 >
-                  <Icon className={cn("size-4 shrink-0", active ? "text-[#F58220]" : "")} />
+                  <Icon className={cn("size-4 shrink-0", active ? "text-primary" : "")} />
                   <span className="flex-1">{label}</span>
                   {item.href === "/validations" && pendingCount > 0 ? (
                     <span
                       data-testid="badge-pending-kyc"
                       className="inline-flex items-center justify-center rounded-full text-white text-[10px] font-bold leading-none min-w-[18px] h-[18px] px-1"
-                      style={{ background: "#F58220" }}
+                      style={{ background: "#B94F35" }}
                     >
                       {pendingCount}
                     </span>
@@ -154,24 +154,24 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         </nav>
 
         {/* User */}
-        <div className="px-3 py-4 border-t border-white/10 space-y-3">
+        <div className="px-3 py-4 border-t border-sidebar-border space-y-3">
           <div className="flex items-center gap-2.5 px-1">
             <div
               className="size-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white"
-              style={{ background: "#F58220" }}
+              style={{ background: "#B94F35" }}
             >
               {getInitials(admin?.username)}
             </div>
             <div className="min-w-0">
-              <div className="text-sm font-medium text-white truncate">
+              <div className="text-sm font-medium text-foreground truncate">
                 {admin?.username}
               </div>
-              <div className="text-[11px] text-white/50 truncate">{roleLabel}</div>
+              <div className="text-[11px] text-foreground/60 truncate">{roleLabel}</div>
             </div>
           </div>
           <Button
             variant="ghost"
-            className="w-full justify-start text-white/70 hover:text-white hover:bg-white/8 border-0"
+            className="w-full justify-start text-foreground/75 hover:text-foreground hover:bg-[#F2EBDD] border-0"
             onClick={logout}
             data-testid="button-logout"
           >

@@ -4,9 +4,9 @@ import { useTranslation } from "react-i18next";
 import { Search, Star, ArrowLeft, Plus } from "lucide-react";
 import { NearBuyLogo } from "@/components/NearBuyLogo";
 
-const NAVY = "#1B2A5C";
-const ORANGE = "#F58220";
-const GREEN = "#7FB927";
+const INK = "#26392F";
+const TERRACOTTA = "#B94F35";
+const GREEN = "#2F6246";
 
 /** Realistic phone shell. Pass any screen as children. */
 export function PhoneMockup({
@@ -20,11 +20,11 @@ export function PhoneMockup({
     <div className={"relative mx-auto w-[270px] " + (className ?? "")}>
       <div
         className="relative rounded-[2.6rem] p-[10px] shadow-2xl"
-        style={{ backgroundColor: NAVY }}
+        style={{ backgroundColor: INK }}
       >
         <div
           className="absolute left-1/2 top-[10px] z-20 h-6 w-28 -translate-x-1/2 rounded-b-2xl"
-          style={{ backgroundColor: NAVY }}
+          style={{ backgroundColor: INK }}
         />
         <div className="relative h-[560px] w-full overflow-hidden rounded-[2rem] bg-white">
           {children}
@@ -67,7 +67,7 @@ export function MapScreen() {
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(135deg,#EAF4E2 0%,#F3F7FB 45%,#FDEFE3 100%)",
+            "linear-gradient(135deg,#E6EFE5 0%,#FFF8E9 48%,#F8E8DA 100%)",
         }}
       />
       {/* faux street grid */}
@@ -75,7 +75,7 @@ export function MapScreen() {
         className="absolute inset-0 opacity-50"
         style={{
           backgroundImage:
-            "linear-gradient(#cdd7e6 1px,transparent 1px),linear-gradient(90deg,#cdd7e6 1px,transparent 1px)",
+            "linear-gradient(#D9CDB9 1px,transparent 1px),linear-gradient(90deg,#D9CDB9 1px,transparent 1px)",
           backgroundSize: "38px 38px",
         }}
       />
@@ -87,7 +87,7 @@ export function MapScreen() {
 
       {/* search bar */}
       <div className="absolute left-3 right-3 top-4 flex items-center gap-2 rounded-full bg-white/95 px-4 py-2.5 shadow-md backdrop-blur">
-        <Search size={15} color={NAVY} />
+        <Search size={15} color={INK} />
         <span className="text-[11px] font-medium text-neutral-500">
           {t("mock.searchPlaceholder")}
         </span>
@@ -102,11 +102,11 @@ export function MapScreen() {
         <span className="relative flex h-4 w-4">
           <span
             className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60"
-            style={{ backgroundColor: ORANGE }}
+            style={{ backgroundColor: TERRACOTTA }}
           />
           <span
             className="relative inline-flex h-4 w-4 rounded-full border-2 border-white"
-            style={{ backgroundColor: ORANGE }}
+            style={{ backgroundColor: TERRACOTTA }}
           />
         </span>
       </div>
@@ -116,19 +116,19 @@ export function MapScreen() {
         <div className="flex items-center gap-3">
           <div
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
-            style={{ backgroundColor: "#FDEFE3" }}
+            style={{ backgroundColor: "#F8E8DA" }}
           >
             <NearBuyLogo size={22} />
           </div>
           <div className="min-w-0 flex-1">
             <p
               className="truncate text-sm font-bold"
-              style={{ color: NAVY }}
+              style={{ color: INK }}
             >
               {t("mock.shopName")}
             </p>
             <div className="mt-0.5 flex items-center gap-1">
-              <Star size={11} fill={ORANGE} color={ORANGE} />
+              <Star size={11} fill={TERRACOTTA} color={TERRACOTTA} />
               <span className="text-[11px] font-semibold text-neutral-600">
                 4.9
               </span>
@@ -139,7 +139,7 @@ export function MapScreen() {
           </div>
           <span
             className="rounded-full px-3 py-1.5 text-[11px] font-bold text-white"
-            style={{ backgroundColor: ORANGE }}
+            style={{ backgroundColor: TERRACOTTA }}
           >
             {t("mock.open")}
           </span>
@@ -147,7 +147,7 @@ export function MapScreen() {
         <div className="mt-2 flex items-center gap-1.5">
           <span
             className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-            style={{ backgroundColor: "#EAF4E2", color: "#4d7a14" }}
+            style={{ backgroundColor: "#E6EFE5", color: GREEN }}
           >
             ● {t("mock.inStock")}
           </span>
@@ -161,11 +161,11 @@ export function MapScreen() {
 export function ChatScreen() {
   const { t } = useTranslation();
   return (
-    <div className="relative flex h-full w-full flex-col bg-[#F7F9FC]">
+    <div className="relative flex h-full w-full flex-col bg-[#F6EFDF]">
       {/* header */}
       <div
         className="flex items-center gap-3 px-4 pb-3 pt-5"
-        style={{ backgroundColor: NAVY }}
+        style={{ backgroundColor: INK }}
       >
         <ArrowLeft size={18} color="#fff" />
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white">
@@ -186,7 +186,7 @@ export function ChatScreen() {
       {/* bubbles */}
       <div className="flex flex-1 flex-col gap-2.5 px-3 py-4">
         <div className="max-w-[78%] self-end rounded-2xl rounded-br-md px-3 py-2 text-[12px] font-medium text-white shadow-sm"
-          style={{ backgroundColor: ORANGE }}
+          style={{ backgroundColor: TERRACOTTA }}
         >
           {t("mock.msgOut")}
         </div>
@@ -205,7 +205,7 @@ export function ChatScreen() {
       {/* input */}
       <div className="flex items-center gap-2 px-3 pb-5">
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm">
-          <Plus size={16} color={NAVY} />
+          <Plus size={16} color={INK} />
         </div>
         <div className="flex-1 rounded-full bg-white px-4 py-2.5 text-[11px] text-neutral-400 shadow-sm">
           {t("mock.typeMessage")}
