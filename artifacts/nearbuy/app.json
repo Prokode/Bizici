@@ -19,7 +19,12 @@
       "bundleIdentifier": "com.bizici.app"
     },
     "android": {
-      "package": "com.bizici.app"
+      "package": "com.bizici.app",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDwj4quKlmNeW5ZnuNBF6GXJ837Tk4rAPk"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/images/bizici-pin.png"
