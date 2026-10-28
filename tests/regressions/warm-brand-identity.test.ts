@@ -34,6 +34,8 @@ test("warm light and dark palettes keep text and action labels readable", () => 
   for (const palette of [client.light, client.dark]) {
     for (const [ink, surface] of [
       [palette.foreground, palette.background],
+      [palette.brandGreen, palette.background],
+      [palette.brandGreen, palette.card],
       [palette.cardForeground, palette.card],
       [palette.mutedForeground, palette.background],
       [palette.mutedForeground, palette.card],

@@ -1,4 +1,5 @@
 import React from "react";
+import { BrandLogo } from "@/components/BrandLogo";
 import {
   FlatList,
   RefreshControl,
@@ -126,7 +127,10 @@ export default function ShopListScreen() {
           <View>
             <View style={styles.headerRow}>
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={[styles.eyebrow, { color: colors.primary, fontFamily: "PlusJakartaSans_700Bold" }]}>{t("shopList.eyebrow")}</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <BrandLogo size={18} />
+                  <Text style={[styles.eyebrow, { color: colors.primary, fontFamily: "PlusJakartaSans_700Bold" }]}>Pro</Text>
+                </View>
                 <Text style={[styles.title, { color: colors.foreground, fontFamily: "PlusJakartaSans_700Bold" }]}>{t("shopList.heading")}</Text>
                 <Text style={[styles.subtitle, { color: colors.mutedForeground, fontFamily: "PlusJakartaSans_400Regular" }]}>{t("shopList.subtitle")}</Text>
               </View>

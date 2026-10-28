@@ -94,61 +94,61 @@ export default function DashboardPage() {
           value: data.users.total,
           hint: t("dashboard.hints.newThisWeek", { count: data.users.newThisWeek }),
           icon: Users,
-          accentColor: "#F58220",
-          bgColor: "#FEF0E2",
+          accentColor: "#B94F35",
+          bgColor: "#F8E8DA",
         },
         {
           label: t("dashboard.stats.shops"),
           value: data.shops.total,
           hint: t("dashboard.hints.shopsOpen", { count: data.shops.open }),
           icon: Store,
-          accentColor: "#1B2A5C",
-          bgColor: "#E7ECF7",
+          accentColor: "#2F6246",
+          bgColor: "#E6EFE5",
         },
         {
           label: t("dashboard.stats.products"),
           value: data.products.total,
           hint: t("dashboard.hints.productsOutOfStock", { count: data.products.outOfStock }),
           icon: Package,
-          accentColor: "#7FB927",
-          bgColor: "#EAF4E2",
+          accentColor: "#2F6246",
+          bgColor: "#E6EFE5",
         },
         {
           label: t("dashboard.stats.messages"),
           value: data.messages.total,
           hint: t("dashboard.hints.messagesToday", { count: data.messages.today }),
           icon: MessageSquare,
-          accentColor: "#F58220",
-          bgColor: "#FEF0E2",
+          accentColor: "#B94F35",
+          bgColor: "#F8E8DA",
         },
         {
           label: t("dashboard.stats.conversations"),
           value: data.conversations.total,
           icon: MessageSquare,
-          accentColor: "#1B2A5C",
-          bgColor: "#E7ECF7",
+          accentColor: "#2F6246",
+          bgColor: "#E6EFE5",
         },
         {
           label: t("dashboard.stats.activeBroadcasts"),
           value: data.broadcasts.active,
           hint: t("dashboard.hints.broadcastsTotal", { count: data.broadcasts.total }),
           icon: Megaphone,
-          accentColor: "#7FB927",
-          bgColor: "#EAF4E2",
+          accentColor: "#2F6246",
+          bgColor: "#E6EFE5",
         },
         {
           label: t("dashboard.stats.pendingInvitations"),
           value: data.invitations.pending,
           icon: Mail,
-          accentColor: "#F58220",
-          bgColor: "#FEF0E2",
+          accentColor: "#B94F35",
+          bgColor: "#F8E8DA",
         },
         {
           label: t("dashboard.stats.categories"),
           value: data.categories.total,
           icon: Tag,
-          accentColor: "#1B2A5C",
-          bgColor: "#E7ECF7",
+          accentColor: "#2F6246",
+          bgColor: "#E6EFE5",
         },
       ]
     : [];
@@ -198,9 +198,9 @@ export default function DashboardPage() {
               <CardTitle className="flex items-center gap-2 text-sm font-semibold">
                 <span
                   className="size-6 rounded-md flex items-center justify-center"
-                  style={{ background: "#FEF0E2" }}
+                  style={{ background: "#F8E8DA" }}
                 >
-                  <MessageSquare className="size-3.5" style={{ color: "#F58220" }} />
+                  <MessageSquare className="size-3.5" style={{ color: "#B94F35" }} />
                 </span>
                 {t("dashboard.messagesChart")}
               </CardTitle>
@@ -248,7 +248,7 @@ export default function DashboardPage() {
                       })
                     }
                   />
-                  <Bar dataKey="count" fill="#F58220" radius={[5, 5, 0, 0]} />
+                  <Bar dataKey="count" fill="#B94F35" radius={[12, 12, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -259,9 +259,9 @@ export default function DashboardPage() {
               <CardTitle className="flex items-center gap-2 text-sm font-semibold">
                 <span
                   className="size-6 rounded-md flex items-center justify-center"
-                  style={{ background: "#EAF4E2" }}
+                  style={{ background: "#E6EFE5" }}
                 >
-                  <Sparkles className="size-3.5" style={{ color: "#7FB927" }} />
+                  <Sparkles className="size-3.5" style={{ color: "#2F6246" }} />
                 </span>
                 {t("dashboard.karma")}
               </CardTitle>

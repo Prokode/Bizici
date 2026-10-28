@@ -17,7 +17,7 @@ export function StoreBadges({ className }: { className?: string }) {
       {badges.map(({ Icon, label }) => (
         <div
           key={label}
-          className="group relative inline-flex cursor-default items-center gap-3 rounded-2xl border border-white/15 bg-[#0E1530] px-5 py-3 text-white shadow-lg transition-transform hover:-translate-y-0.5"
+          className="group relative inline-flex cursor-default items-center gap-3 rounded-[18px] border border-[#3D5748] bg-[#26392F] px-5 py-3 text-white shadow-lg transition-transform hover:-translate-y-0.5"
         >
           <Icon className="h-7 w-7" />
           <div className="text-left leading-tight">
@@ -26,7 +26,7 @@ export function StoreBadges({ className }: { className?: string }) {
             </p>
             <p className="text-base font-semibold">{label}</p>
           </div>
-          <span className="absolute -right-2 -top-2 rounded-full bg-[#7FB927] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow">
+          <span className="absolute -right-2 -top-2 rounded-full bg-[#2F6246] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow">
             {t("download.soon")}
           </span>
         </div>

@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "BizIci",
+    "name": "iciBiz",
     "slug": "nearbuy",
     "owner": "tksm",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/bizici-pin.png",
+    "icon": "./assets/images/icibiz-icon.png",
     "scheme": "bizici",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/bizici-pin.png",
+      "image": "./assets/images/icibiz-mark.png",
       "resizeMode": "contain",
       "backgroundColor": "#FFF8E9"
     },
@@ -20,6 +20,10 @@
     },
     "android": {
       "package": "com.bizici.app",
+      "adaptiveIcon": {
+          "foregroundImage": "./assets/images/icibiz-adaptive.png",
+          "backgroundColor": "#FFF8E9"
+        },
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyDwj4quKlmNeW5ZnuNBF6GXJ837Tk4rAPk"
@@ -27,7 +31,7 @@
       }
     },
     "web": {
-      "favicon": "./assets/images/bizici-pin.png"
+      "favicon": "./assets/images/icibiz-icon.png"
     },
     "runtimeVersion": {
       "policy": "appVersion"
@@ -64,26 +68,26 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Autorisez BizIci à accéder à votre caméra pour rechercher des produits par photo."
+          "cameraPermission": "Autorisez iciBiz à accéder à votre caméra pour rechercher des produits par photo."
         }
       ],
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Autorisez BizIci à utiliser votre position pour vous montrer les boutiques autour de vous."
+          "locationAlwaysAndWhenInUsePermission": "Autorisez iciBiz à utiliser votre position pour vous montrer les boutiques autour de vous."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Autorisez BizIci à accéder à vos photos pour la recherche visuelle."
+          "photosPermission": "Autorisez iciBiz à accéder à vos photos pour la recherche visuelle."
         }
       ],
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/bizici-pin.png",
-          "color": "#F58220",
+          "icon": "./assets/images/icibiz-notification.png",
+          "color": "#B94F35",
           "defaultChannel": "default"
         }
       ]

@@ -1,6 +1,6 @@
 /**
  * Approved “Chaleur & proximité” identity, shared verbatim by both apps.
- * Keep the original logo; terracotta is the UI accent, green is semantic.
+ * Terracotta is the UI accent; green identifies “ici” in the brand wordmark.
  */
 
 const colors = {
@@ -10,6 +10,7 @@ const colors = {
 
     background: "#FFF8E9",
     foreground: "#26392F",
+    brandGreen: "#2F6246",
 
     card: "#FFFDF7",
     cardForeground: "#26392F",
@@ -47,6 +48,7 @@ const colors = {
 
     background: "#211C18",
     foreground: "#FFF4E4",
+    brandGreen: "#A9D6B8",
 
     card: "#2D251F",
     cardForeground: "#FFF4E4",

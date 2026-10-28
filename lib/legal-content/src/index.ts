@@ -1,5 +1,5 @@
 /**
- * Shared legal content (Privacy Policy + Terms of Use) for the BizIci suite.
+ * Shared legal content (Privacy Policy + Terms of Use) for the iciBiz suite.
  * Used by the marketing site and both Expo apps so the wording stays in sync.
  *
  * IMPORTANT — placeholders to fill:
@@ -47,7 +47,7 @@ const privacyFr: LegalDoc = {
   title: "Politique de confidentialité",
   lastUpdated: LAST_UPDATED_FR,
   intro:
-    "BizIci accorde une importance fondamentale à la protection de vos données personnelles. La présente politique décrit, en application du Règlement (UE) 2016/679 (RGPD) et de la loi Informatique et Libertés modifiée, les traitements que nous mettons en œuvre lorsque vous utilisez nos applications mobiles (BizIci, BizIci Pro), notre site web et nos services associés.",
+    "iciBiz accorde une importance fondamentale à la protection de vos données personnelles. La présente politique décrit, en application du Règlement (UE) 2016/679 (RGPD) et de la loi Informatique et Libertés modifiée, les traitements que nous mettons en œuvre lorsque vous utilisez nos applications mobiles (iciBiz, iciBiz Pro), notre site web et nos services associés.",
   sections: [
     {
       heading: "1. Responsable de traitement",
@@ -143,7 +143,7 @@ const privacyEn: LegalDoc = {
   title: "Privacy Policy",
   lastUpdated: LAST_UPDATED_EN,
   intro:
-    "BizIci is committed to protecting your personal data. This policy describes, in compliance with Regulation (EU) 2016/679 (GDPR) and the French Data Protection Act, the processing operations we carry out when you use our mobile apps (BizIci, BizIci Pro), our website, and related services.",
+    "iciBiz is committed to protecting your personal data. This policy describes, in compliance with Regulation (EU) 2016/679 (GDPR) and the French Data Protection Act, the processing operations we carry out when you use our mobile apps (iciBiz, iciBiz Pro), our website, and related services.",
   sections: [
     {
       heading: "1. Data Controller",
@@ -243,7 +243,7 @@ const termsFr: LegalDoc = {
   title: "Conditions générales d'utilisation",
   lastUpdated: LAST_UPDATED_FR,
   intro:
-    "Les présentes Conditions Générales d'Utilisation (« CGU ») régissent l'accès et l'utilisation des services BizIci (applications mobiles BizIci et BizIci Pro, site web et services associés). En créant un compte ou en utilisant nos services, vous acceptez sans réserve les présentes CGU.",
+    "Les présentes Conditions Générales d'Utilisation (« CGU ») régissent l'accès et l'utilisation des services iciBiz (applications mobiles iciBiz et iciBiz Pro, site web et services associés). En créant un compte ou en utilisant nos services, vous acceptez sans réserve les présentes CGU.",
   sections: [
     {
       heading: "1. Mentions légales",
@@ -257,8 +257,8 @@ const termsFr: LegalDoc = {
     {
       heading: "2. Objet du service",
       paragraphs: [
-        "BizIci est une plateforme de mise en relation entre commerçants locaux (« Vendeurs ») et clients (« Acheteurs ») permettant de découvrir des produits et services de proximité, communiquer, prendre rendez-vous et organiser des transactions.",
-        "BizIci agit exclusivement en qualité d'intermédiaire technique. La société n'est pas partie aux contrats conclus entre Vendeurs et Acheteurs et ne perçoit aucune somme au titre de ces transactions, sauf mention contraire dans les conditions tarifaires applicables.",
+        "iciBiz est une plateforme de mise en relation entre commerçants locaux (« Vendeurs ») et clients (« Acheteurs ») permettant de découvrir des produits et services de proximité, communiquer, prendre rendez-vous et organiser des transactions.",
+        "iciBiz agit exclusivement en qualité d'intermédiaire technique. La société n'est pas partie aux contrats conclus entre Vendeurs et Acheteurs et ne perçoit aucune somme au titre de ces transactions, sauf mention contraire dans les conditions tarifaires applicables.",
       ],
     },
     {
@@ -295,30 +295,30 @@ const termsFr: LegalDoc = {
     {
       heading: "6. Vérification d'identité (KYC)",
       paragraphs: [
-        "Pour publier une boutique sur BizIci, le Vendeur doit soumettre un document d'identité valide (CNI, passeport ou permis de conduire). La boutique n'est visible des Acheteurs qu'après validation par notre équipe.",
+        "Pour publier une boutique sur iciBiz, le Vendeur doit soumettre un document d'identité valide (CNI, passeport ou permis de conduire). La boutique n'est visible des Acheteurs qu'après validation par notre équipe.",
         "Nous nous réservons le droit de refuser ou de suspendre tout compte si le document ne peut être vérifié, semble falsifié, ou si l'identité du Vendeur ne peut être établie avec un niveau de confiance suffisant.",
       ],
     },
     {
       heading: "7. Propriété intellectuelle",
       paragraphs: [
-        "L'ensemble des éléments composant le service (marque BizIci, logos, interfaces, code source, textes éditoriaux) est protégé par le droit de la propriété intellectuelle et reste la propriété exclusive de l'éditeur ou de ses partenaires.",
-        "En publiant un contenu (photo, description, avis), vous accordez à BizIci une licence non exclusive, mondiale et gratuite d'utilisation, de reproduction et d'affichage de ce contenu dans le seul cadre du fonctionnement du service.",
+        "L'ensemble des éléments composant le service (marque iciBiz, logos, interfaces, code source, textes éditoriaux) est protégé par le droit de la propriété intellectuelle et reste la propriété exclusive de l'éditeur ou de ses partenaires.",
+        "En publiant un contenu (photo, description, avis), vous accordez à iciBiz une licence non exclusive, mondiale et gratuite d'utilisation, de reproduction et d'affichage de ce contenu dans le seul cadre du fonctionnement du service.",
       ],
     },
     {
       heading: "8. Suspension et résiliation",
       paragraphs: [
         "Vous pouvez résilier votre compte à tout moment depuis l'application ou via la page « Supprimer mon compte » du site web.",
-        "BizIci se réserve le droit de suspendre ou de fermer un compte en cas de manquement aux présentes CGU, de comportement frauduleux, d'usurpation d'identité, ou de toute activité portant atteinte à la sécurité ou à la réputation du service. La décision est notifiée à l'utilisateur, sauf si la loi l'interdit.",
+        "iciBiz se réserve le droit de suspendre ou de fermer un compte en cas de manquement aux présentes CGU, de comportement frauduleux, d'usurpation d'identité, ou de toute activité portant atteinte à la sécurité ou à la réputation du service. La décision est notifiée à l'utilisateur, sauf si la loi l'interdit.",
       ],
     },
     {
       heading: "9. Limitation de responsabilité",
       paragraphs: [
-        "BizIci s'engage à fournir le service avec diligence, sans toutefois garantir une disponibilité ininterrompue. Le service est fourni « en l'état », sans garantie expresse ou implicite quant à son adéquation à un usage particulier.",
-        "BizIci ne saurait être tenue responsable des litiges, dommages directs ou indirects résultant des transactions ou interactions entre Vendeurs et Acheteurs.",
-        "La responsabilité de BizIci est limitée, en tout état de cause, au montant des sommes éventuellement versées par l'utilisateur au titre du service au cours des 12 derniers mois.",
+        "iciBiz s'engage à fournir le service avec diligence, sans toutefois garantir une disponibilité ininterrompue. Le service est fourni « en l'état », sans garantie expresse ou implicite quant à son adéquation à un usage particulier.",
+        "iciBiz ne saurait être tenue responsable des litiges, dommages directs ou indirects résultant des transactions ou interactions entre Vendeurs et Acheteurs.",
+        "La responsabilité de iciBiz est limitée, en tout état de cause, au montant des sommes éventuellement versées par l'utilisateur au titre du service au cours des 12 derniers mois.",
       ],
     },
     {
@@ -330,7 +330,7 @@ const termsFr: LegalDoc = {
     {
       heading: "11. Modification des CGU",
       paragraphs: [
-        "BizIci peut modifier les présentes CGU pour refléter des évolutions légales ou fonctionnelles. Toute modification substantielle sera notifiée 30 jours à l'avance par e-mail ou via l'application. La poursuite de l'utilisation du service vaut acceptation des CGU modifiées.",
+        "iciBiz peut modifier les présentes CGU pour refléter des évolutions légales ou fonctionnelles. Toute modification substantielle sera notifiée 30 jours à l'avance par e-mail ou via l'application. La poursuite de l'utilisation du service vaut acceptation des CGU modifiées.",
       ],
     },
     {
@@ -347,7 +347,7 @@ const termsEn: LegalDoc = {
   title: "Terms of Use",
   lastUpdated: LAST_UPDATED_EN,
   intro:
-    "These Terms of Use (“Terms”) govern access to and use of the BizIci services (BizIci and BizIci Pro mobile apps, website, and related services). By creating an account or using our services, you accept these Terms without reservation.",
+    "These Terms of Use (“Terms”) govern access to and use of the iciBiz services (iciBiz and iciBiz Pro mobile apps, website, and related services). By creating an account or using our services, you accept these Terms without reservation.",
   sections: [
     {
       heading: "1. Legal information",
@@ -361,8 +361,8 @@ const termsEn: LegalDoc = {
     {
       heading: "2. Purpose of the service",
       paragraphs: [
-        "BizIci is a platform that connects local merchants (“Sellers”) with customers (“Buyers”) to discover nearby products and services, communicate, book appointments and arrange transactions.",
-        "BizIci acts exclusively as a technical intermediary. The company is not a party to the contracts concluded between Sellers and Buyers and does not collect any payment for these transactions, unless otherwise stated in applicable pricing terms.",
+        "iciBiz is a platform that connects local merchants (“Sellers”) with customers (“Buyers”) to discover nearby products and services, communicate, book appointments and arrange transactions.",
+        "iciBiz acts exclusively as a technical intermediary. The company is not a party to the contracts concluded between Sellers and Buyers and does not collect any payment for these transactions, unless otherwise stated in applicable pricing terms.",
       ],
     },
     {
@@ -399,30 +399,30 @@ const termsEn: LegalDoc = {
     {
       heading: "6. Identity verification (KYC)",
       paragraphs: [
-        "To publish a shop on BizIci, the Seller must submit a valid ID document (national ID, passport or driver's license). The shop is only visible to Buyers after validation by our team.",
+        "To publish a shop on iciBiz, the Seller must submit a valid ID document (national ID, passport or driver's license). The shop is only visible to Buyers after validation by our team.",
         "We reserve the right to refuse or suspend any account if the document cannot be verified, appears falsified, or if the Seller's identity cannot be established with sufficient confidence.",
       ],
     },
     {
       heading: "7. Intellectual property",
       paragraphs: [
-        "All elements of the service (BizIci trademark, logos, interfaces, source code, editorial texts) are protected by intellectual property law and remain the exclusive property of the publisher or its partners.",
-        "By publishing content (photo, description, review), you grant BizIci a non-exclusive, worldwide, royalty-free license to use, reproduce and display this content solely as part of the operation of the service.",
+        "All elements of the service (iciBiz trademark, logos, interfaces, source code, editorial texts) are protected by intellectual property law and remain the exclusive property of the publisher or its partners.",
+        "By publishing content (photo, description, review), you grant iciBiz a non-exclusive, worldwide, royalty-free license to use, reproduce and display this content solely as part of the operation of the service.",
       ],
     },
     {
       heading: "8. Suspension and termination",
       paragraphs: [
         "You may terminate your account at any time from the app or via the “Delete my account” page on the website.",
-        "BizIci reserves the right to suspend or close an account in case of breach of these Terms, fraudulent behavior, identity theft, or any activity affecting the security or reputation of the service. The decision is notified to the user unless prohibited by law.",
+        "iciBiz reserves the right to suspend or close an account in case of breach of these Terms, fraudulent behavior, identity theft, or any activity affecting the security or reputation of the service. The decision is notified to the user unless prohibited by law.",
       ],
     },
     {
       heading: "9. Limitation of liability",
       paragraphs: [
-        "BizIci undertakes to provide the service with due care, but does not guarantee uninterrupted availability. The service is provided “as is”, without express or implied warranty of fitness for a particular purpose.",
-        "BizIci shall not be held liable for any disputes, direct or indirect damages resulting from transactions or interactions between Sellers and Buyers.",
-        "BizIci's liability is in any event limited to the amount of any sums paid by the user for the service over the past 12 months.",
+        "iciBiz undertakes to provide the service with due care, but does not guarantee uninterrupted availability. The service is provided “as is”, without express or implied warranty of fitness for a particular purpose.",
+        "iciBiz shall not be held liable for any disputes, direct or indirect damages resulting from transactions or interactions between Sellers and Buyers.",
+        "iciBiz's liability is in any event limited to the amount of any sums paid by the user for the service over the past 12 months.",
       ],
     },
     {
@@ -434,7 +434,7 @@ const termsEn: LegalDoc = {
     {
       heading: "11. Changes to the Terms",
       paragraphs: [
-        "BizIci may update these Terms to reflect legal or functional changes. Any substantial change will be notified 30 days in advance by email or via the app. Continued use of the service constitutes acceptance of the modified Terms.",
+        "iciBiz may update these Terms to reflect legal or functional changes. Any substantial change will be notified 30 days in advance by email or via the app. Continued use of the service constitutes acceptance of the modified Terms.",
       ],
     },
     {

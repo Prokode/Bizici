@@ -65,7 +65,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-[100dvh] flex bg-background">
       {showSplash ? (
         <AnimatedSplash
           onFinish={() => {
@@ -77,30 +77,30 @@ export default function LoginPage() {
 
       {/* Brand panel */}
       <div
-        className="hidden lg:flex flex-col justify-between w-[45%] shrink-0 p-12 text-white"
+        className="hidden lg:flex flex-col justify-between w-[45%] shrink-0 p-12 text-foreground"
         style={{
-          background: "linear-gradient(145deg, #1B2A5C 0%, #243670 55%, #1a3a4a 100%)",
+          background: "linear-gradient(145deg, #FFF8E9 0%, #F8EBD5 58%, #E9F1E6 100%)",
         }}
       >
         <div className="flex items-center gap-3">
           <img
-            src={`${import.meta.env.BASE_URL}bizici-pin.png`}
-            alt="BizIci"
+            src={`${import.meta.env.BASE_URL}icibiz-mark.svg`}
+            alt="iciBiz"
             className="size-10 object-contain"
           />
           <div>
             <div className="text-xl font-bold leading-tight tracking-tight">
-              Biz<span style={{ color: "#7FB927" }}>Ici</span>
+              <span style={{ color: "#2F6246" }}>ici</span><span style={{ color: "#B94F35" }}>Biz</span>
             </div>
-            <div className="text-xs text-white/60 leading-tight">Admin</div>
+            <div className="text-xs text-foreground/65 leading-tight">Admin</div>
           </div>
         </div>
 
         <div>
-          <div className="text-4xl font-bold leading-snug mb-4">
+          <div className="text-4xl font-bold leading-snug mb-4 text-[#26392F]">
             {t("login.brandHeadline")}
           </div>
-          <p className="text-white/70 text-base leading-relaxed mb-8">
+          <p className="text-[#26392F]/75 text-base leading-relaxed mb-8">
             {t("login.brandSubline")}
           </p>
           <div className="space-y-3">
@@ -108,39 +108,42 @@ export default function LoginPage() {
               <div key={key} className="flex items-center gap-3">
                 <div
                   className="size-5 rounded-full flex items-center justify-center shrink-0"
-                  style={{ background: "#F58220" }}
+                  style={{ background: "#B94F35" }}
                 >
                   <svg viewBox="0 0 12 12" className="size-3 text-white" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="2 6 5 9 10 3" />
                   </svg>
                 </div>
-                <span className="text-sm text-white/80">{t(`login.${key}`)}</span>
+                 <span className="text-sm text-[#26392F]/85">{t(`login.${key}`)}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="text-xs text-white/40">
-          © {new Date().getFullYear()} BizIci · {t("login.allRightsReserved")}
+        <div className="text-xs text-[#26392F]/75">
+          © {new Date().getFullYear()} iciBiz · {t("login.allRightsReserved")}
         </div>
       </div>
 
       {/* Form panel */}
       <div className="flex-1 flex flex-col items-center justify-center bg-background p-8">
-        <div className="w-full max-w-sm">
+          <div className="w-full max-w-sm rounded-[1.5rem] border border-border/70 bg-card p-7 shadow-sm sm:p-9">
           <div className="mb-8 flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2 lg:hidden mb-4">
                 <img
-                  src={`${import.meta.env.BASE_URL}bizici-pin.png`}
-                  alt="BizIci"
+                  src={`${import.meta.env.BASE_URL}icibiz-mark.svg`}
+                  alt="iciBiz"
                   className="size-8 object-contain"
                 />
                 <span className="font-bold text-lg">
-                  Biz<span style={{ color: "#7FB927" }}>Ici</span>
+                  <span style={{ color: "#2F6246" }}>ici</span><span style={{ color: "#B94F35" }}>Biz</span>
                 </span>
               </div>
-              <h1 className="text-2xl font-bold tracking-tight">{t("login.appName")}</h1>
+              <h1 className="text-2xl font-bold tracking-tight" aria-label={t("login.appName")}>
+                <span style={{ color: "#2F6246" }}>ici</span><span style={{ color: "#B94F35" }}>Biz</span>
+                <span className="text-foreground"> Admin</span>
+              </h1>
               <p className="text-sm text-muted-foreground mt-1">{t("login.tagline")}</p>
             </div>
             <LanguageSwitcher />

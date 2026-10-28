@@ -6,11 +6,11 @@ import { SiteFooter } from "@/components/SiteFooter";
 export default function DeleteAccountConfirmationPage() {
   const { t } = useTranslation();
   return (
-    <div className="min-h-screen flex flex-col bg-white text-neutral-900">
-      <header className="px-6 py-5 flex items-center justify-between border-b border-neutral-100">
+    <div className="min-h-[100dvh] flex flex-col bg-[#FFF8E9] text-[#26392F]">
+      <header className="px-6 py-5 flex items-center justify-between border-b border-[#E1D6C4]">
         <Link href="/" className="flex items-center gap-3">
           <NearBuyLogo size={36} />
-          <span className="text-xl font-bold tracking-tight"><span style={{ color: "#1B2A5C" }}>Biz</span><span style={{ color: "#7FB927" }}>Ici</span></span>
+          <span className="text-xl font-bold tracking-tight"><span style={{ color: "#2F6246" }}>ici</span><span style={{ color: "#B94F35" }}>Biz</span></span>
         </Link>
       </header>
 
@@ -19,7 +19,7 @@ export default function DeleteAccountConfirmationPage() {
           className="max-w-xl mx-auto text-center"
           data-testid="delete-confirmation"
         >
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#F58220] to-[#7FB927]">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#B94F35]">
             <svg
               width="32"
               height="32"
@@ -46,7 +46,7 @@ export default function DeleteAccountConfirmationPage() {
             {t("deletion.successContact")}{" "}
             <a
               href="mailto:support@bizici.app"
-              className="text-[#F58220] hover:underline"
+              className="text-[#963E2B] hover:underline"
             >
               support@bizici.app
             </a>
@@ -54,7 +54,7 @@ export default function DeleteAccountConfirmationPage() {
           </p>
           <Link
             href="/"
-            className="mt-8 inline-flex items-center justify-center rounded-full bg-[#F58220] hover:bg-[#E07418] text-white font-semibold px-6 py-3 text-base transition-colors"
+            className="mt-8 inline-flex items-center justify-center rounded-full bg-[#B94F35] hover:bg-[#9F402B] text-white font-semibold px-6 py-3 text-base transition-colors"
             data-testid="link-home"
           >
             {t("deletion.backHome")}
