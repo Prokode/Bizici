@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { requireAuth, requireSeller, requireShopAccess } from "../lib/auth";
 import { servicesController } from "../controllers/services";
+import { categoriesController } from "../controllers/categories";
 
 /**
  * AUTHENTICATED services endpoints. Public browsing is in `services-public.ts`
@@ -9,6 +10,7 @@ import { servicesController } from "../controllers/services";
  */
 const router: IRouter = Router();
 router.use(requireAuth);
+router.post("/shops/:shopId/service-categories", requireShopAccess, categoriesController.createService);
 
 router.get(
   "/shops/:shopId/services",

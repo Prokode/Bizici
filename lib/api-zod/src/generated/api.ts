@@ -2203,6 +2203,12 @@ export const ListShopServicesParams = zod.object({
   shopId: zod.coerce.string(),
 });
 
+export const listShopServicesResponsePricingOptionsItemLabelMax = 80;
+
+export const listShopServicesResponsePricingOptionsItemPriceMin = 0;
+
+export const listShopServicesResponsePricingOptionsMax = 20;
+
 export const listShopServicesResponsePriceMin = 0;
 
 export const ListShopServicesResponseItem = zod.object({
@@ -2227,6 +2233,28 @@ export const ListShopServicesResponseItem = zod.object({
     }),
   ),
   pricingType: zod.enum(["fixed", "hourly", "quote"]),
+  pricingOptions: zod
+    .array(
+      zod
+        .object({
+          label: zod
+            .string()
+            .max(listShopServicesResponsePricingOptionsItemLabelMax)
+            .nullish(),
+          durationMinutes: zod.number().min(1),
+          price: zod
+            .number()
+            .min(listShopServicesResponsePricingOptionsItemPriceMin),
+        })
+        .describe(
+          "An independently priced duration, in major units of the shop currency.",
+        ),
+    )
+    .max(listShopServicesResponsePricingOptionsMax)
+    .optional()
+    .describe(
+      "Fixed-price offers. When present, base price and duration reflect the cheapest offer. Older services have an empty list.",
+    ),
   price: zod.number().min(listShopServicesResponsePriceMin).nullish(),
   durationMinutes: zod.number().min(1).nullish(),
   photos: zod.array(zod.string()),
@@ -2254,6 +2282,12 @@ export const createServiceBodyTitleMax = 120;
 
 export const createServiceBodyDescriptionMax = 4000;
 
+export const createServiceBodyPricingOptionsItemLabelMax = 80;
+
+export const createServiceBodyPricingOptionsItemPriceMin = 0;
+
+export const createServiceBodyPricingOptionsMax = 20;
+
 export const createServiceBodyPriceMin = 0;
 
 export const CreateServiceBody = zod.object({
@@ -2261,6 +2295,26 @@ export const CreateServiceBody = zod.object({
   description: zod.string().max(createServiceBodyDescriptionMax).nullish(),
   categoryIds: zod.array(zod.string()).optional(),
   pricingType: zod.enum(["fixed", "hourly", "quote"]),
+  pricingOptions: zod
+    .array(
+      zod
+        .object({
+          label: zod
+            .string()
+            .max(createServiceBodyPricingOptionsItemLabelMax)
+            .nullish(),
+          durationMinutes: zod.number().min(1),
+          price: zod.number().min(createServiceBodyPricingOptionsItemPriceMin),
+        })
+        .describe(
+          "An independently priced duration, in major units of the shop currency.",
+        ),
+    )
+    .max(createServiceBodyPricingOptionsMax)
+    .optional()
+    .describe(
+      "Optional offers for fixed pricing, with prices in major currency units.",
+    ),
   price: zod.number().min(createServiceBodyPriceMin).nullish(),
   durationMinutes: zod.number().min(1).nullish(),
   photos: zod.array(zod.string()).optional(),
@@ -2273,6 +2327,12 @@ export const CreateServiceBody = zod.object({
       "Per-service override of the provider's default. `inherit` means\nuse the parent shop's `serviceProvider.serviceLocation`.\n",
     ),
 });
+
+export const createServiceResponsePricingOptionsItemLabelMax = 80;
+
+export const createServiceResponsePricingOptionsItemPriceMin = 0;
+
+export const createServiceResponsePricingOptionsMax = 20;
 
 export const createServiceResponsePriceMin = 0;
 
@@ -2298,6 +2358,28 @@ export const CreateServiceResponse = zod.object({
     }),
   ),
   pricingType: zod.enum(["fixed", "hourly", "quote"]),
+  pricingOptions: zod
+    .array(
+      zod
+        .object({
+          label: zod
+            .string()
+            .max(createServiceResponsePricingOptionsItemLabelMax)
+            .nullish(),
+          durationMinutes: zod.number().min(1),
+          price: zod
+            .number()
+            .min(createServiceResponsePricingOptionsItemPriceMin),
+        })
+        .describe(
+          "An independently priced duration, in major units of the shop currency.",
+        ),
+    )
+    .max(createServiceResponsePricingOptionsMax)
+    .optional()
+    .describe(
+      "Fixed-price offers. When present, base price and duration reflect the cheapest offer. Older services have an empty list.",
+    ),
   price: zod.number().min(createServiceResponsePriceMin).nullish(),
   durationMinutes: zod.number().min(1).nullish(),
   photos: zod.array(zod.string()),
@@ -2325,6 +2407,12 @@ export const updateServiceBodyTitleMax = 120;
 
 export const updateServiceBodyDescriptionMax = 4000;
 
+export const updateServiceBodyPricingOptionsItemLabelMax = 80;
+
+export const updateServiceBodyPricingOptionsItemPriceMin = 0;
+
+export const updateServiceBodyPricingOptionsMax = 20;
+
 export const updateServiceBodyPriceMin = 0;
 
 export const UpdateServiceBody = zod.object({
@@ -2332,6 +2420,26 @@ export const UpdateServiceBody = zod.object({
   description: zod.string().max(updateServiceBodyDescriptionMax).nullish(),
   categoryIds: zod.array(zod.string()).optional(),
   pricingType: zod.enum(["fixed", "hourly", "quote"]).optional(),
+  pricingOptions: zod
+    .array(
+      zod
+        .object({
+          label: zod
+            .string()
+            .max(updateServiceBodyPricingOptionsItemLabelMax)
+            .nullish(),
+          durationMinutes: zod.number().min(1),
+          price: zod.number().min(updateServiceBodyPricingOptionsItemPriceMin),
+        })
+        .describe(
+          "An independently priced duration, in major units of the shop currency.",
+        ),
+    )
+    .max(updateServiceBodyPricingOptionsMax)
+    .optional()
+    .describe(
+      "Fixed-price offers in major currency units. Send an empty list to remove all offers.",
+    ),
   price: zod.number().min(updateServiceBodyPriceMin).nullish(),
   durationMinutes: zod.number().min(1).nullish(),
   photos: zod.array(zod.string()).optional(),
@@ -2344,6 +2452,12 @@ export const UpdateServiceBody = zod.object({
       "Per-service override of the provider's default. `inherit` means\nuse the parent shop's `serviceProvider.serviceLocation`.\n",
     ),
 });
+
+export const updateServiceResponsePricingOptionsItemLabelMax = 80;
+
+export const updateServiceResponsePricingOptionsItemPriceMin = 0;
+
+export const updateServiceResponsePricingOptionsMax = 20;
 
 export const updateServiceResponsePriceMin = 0;
 
@@ -2369,6 +2483,28 @@ export const UpdateServiceResponse = zod.object({
     }),
   ),
   pricingType: zod.enum(["fixed", "hourly", "quote"]),
+  pricingOptions: zod
+    .array(
+      zod
+        .object({
+          label: zod
+            .string()
+            .max(updateServiceResponsePricingOptionsItemLabelMax)
+            .nullish(),
+          durationMinutes: zod.number().min(1),
+          price: zod
+            .number()
+            .min(updateServiceResponsePricingOptionsItemPriceMin),
+        })
+        .describe(
+          "An independently priced duration, in major units of the shop currency.",
+        ),
+    )
+    .max(updateServiceResponsePricingOptionsMax)
+    .optional()
+    .describe(
+      "Fixed-price offers. When present, base price and duration reflect the cheapest offer. Older services have an empty list.",
+    ),
   price: zod.number().min(updateServiceResponsePriceMin).nullish(),
   durationMinutes: zod.number().min(1).nullish(),
   photos: zod.array(zod.string()),
@@ -2558,6 +2694,12 @@ export const SearchServicesQueryParams = zod.object({
   limit: zod.coerce.number().min(1).max(searchServicesQueryLimitMax).optional(),
 });
 
+export const searchServicesResponseServicePricingOptionsItemLabelMax = 80;
+
+export const searchServicesResponseServicePricingOptionsItemPriceMin = 0;
+
+export const searchServicesResponseServicePricingOptionsMax = 20;
+
 export const searchServicesResponseServicePriceMin = 0;
 
 export const searchServicesResponseShopCurrencyOneCodeMin = 3;
@@ -2609,6 +2751,28 @@ export const SearchServicesResponseItem = zod.object({
       }),
     ),
     pricingType: zod.enum(["fixed", "hourly", "quote"]),
+    pricingOptions: zod
+      .array(
+        zod
+          .object({
+            label: zod
+              .string()
+              .max(searchServicesResponseServicePricingOptionsItemLabelMax)
+              .nullish(),
+            durationMinutes: zod.number().min(1),
+            price: zod
+              .number()
+              .min(searchServicesResponseServicePricingOptionsItemPriceMin),
+          })
+          .describe(
+            "An independently priced duration, in major units of the shop currency.",
+          ),
+      )
+      .max(searchServicesResponseServicePricingOptionsMax)
+      .optional()
+      .describe(
+        "Fixed-price offers. When present, base price and duration reflect the cheapest offer. Older services have an empty list.",
+      ),
     price: zod.number().min(searchServicesResponseServicePriceMin).nullish(),
     durationMinutes: zod.number().min(1).nullish(),
     photos: zod.array(zod.string()),
@@ -2801,6 +2965,12 @@ export const GetServiceParams = zod.object({
   id: zod.coerce.string(),
 });
 
+export const getServiceResponsePricingOptionsItemLabelMax = 80;
+
+export const getServiceResponsePricingOptionsItemPriceMin = 0;
+
+export const getServiceResponsePricingOptionsMax = 20;
+
 export const getServiceResponsePriceMin = 0;
 
 export const GetServiceResponse = zod.object({
@@ -2825,6 +2995,26 @@ export const GetServiceResponse = zod.object({
     }),
   ),
   pricingType: zod.enum(["fixed", "hourly", "quote"]),
+  pricingOptions: zod
+    .array(
+      zod
+        .object({
+          label: zod
+            .string()
+            .max(getServiceResponsePricingOptionsItemLabelMax)
+            .nullish(),
+          durationMinutes: zod.number().min(1),
+          price: zod.number().min(getServiceResponsePricingOptionsItemPriceMin),
+        })
+        .describe(
+          "An independently priced duration, in major units of the shop currency.",
+        ),
+    )
+    .max(getServiceResponsePricingOptionsMax)
+    .optional()
+    .describe(
+      "Fixed-price offers. When present, base price and duration reflect the cheapest offer. Older services have an empty list.",
+    ),
   price: zod.number().min(getServiceResponsePriceMin).nullish(),
   durationMinutes: zod.number().min(1).nullish(),
   photos: zod.array(zod.string()),
@@ -3133,6 +3323,33 @@ export const ListCategoriesResponseItem = zod.object({
     ),
 });
 export const ListCategoriesResponse = zod.array(ListCategoriesResponseItem);
+
+export const CreateServiceCategoryParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const createServiceCategoryBodyNameMin = 2;
+export const createServiceCategoryBodyNameMax = 80;
+
+export const CreateServiceCategoryBody = zod.object({
+  name: zod
+    .string()
+    .min(createServiceCategoryBodyNameMin)
+    .max(createServiceCategoryBodyNameMax),
+});
+
+export const CreateServiceCategoryResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  slug: zod.string(),
+  parent: zod.string().nullish(),
+  icon: zod.string().nullish(),
+  kind: zod
+    .enum(["product", "service"])
+    .describe(
+      'Whether this category applies to products or services.\nExisting categories default to \"product\".\n',
+    ),
+});
 
 export const listCountriesResponseCurrenciesItemCodeMin = 3;
 export const listCountriesResponseCurrenciesItemCodeMax = 3;

@@ -33,6 +33,7 @@ import type {
   CoursePlan,
   CourseStartInput,
   CreateConversation200,
+  CreateServiceCategoryBody,
   DashboardSummary,
   DeleteResult,
   Discount,
@@ -4980,6 +4981,88 @@ export function useListCategories<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+export const getCreateServiceCategoryUrl = (shopId: string) => {
+  return `/api/shops/${shopId}/service-categories`;
+};
+
+export const createServiceCategory = async (
+  shopId: string,
+  createServiceCategoryBody: CreateServiceCategoryBody,
+  options?: RequestInit,
+): Promise<Category> => {
+  return customFetch<Category>(getCreateServiceCategoryUrl(shopId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createServiceCategoryBody),
+  });
+};
+
+export const getCreateServiceCategoryMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createServiceCategory>>,
+    TError,
+    { shopId: string; data: BodyType<CreateServiceCategoryBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createServiceCategory>>,
+  TError,
+  { shopId: string; data: BodyType<CreateServiceCategoryBody> },
+  TContext
+> => {
+  const mutationKey = ["createServiceCategory"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createServiceCategory>>,
+    { shopId: string; data: BodyType<CreateServiceCategoryBody> }
+  > = (props) => {
+    const { shopId, data } = props ?? {};
+
+    return createServiceCategory(shopId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateServiceCategoryMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createServiceCategory>>
+>;
+export type CreateServiceCategoryMutationBody =
+  BodyType<CreateServiceCategoryBody>;
+export type CreateServiceCategoryMutationError = ErrorType<void>;
+
+export const useCreateServiceCategory = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createServiceCategory>>,
+    TError,
+    { shopId: string; data: BodyType<CreateServiceCategoryBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createServiceCategory>>,
+  TError,
+  { shopId: string; data: BodyType<CreateServiceCategoryBody> },
+  TContext
+> => {
+  return useMutation(getCreateServiceCategoryMutationOptions(options));
+};
 
 export const getListCountriesUrl = () => {
   return `/api/countries`;

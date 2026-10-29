@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { StyleSheet, Switch, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { useShopId } from "@/hooks/useShopId";
@@ -19,6 +19,8 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PricingTypeSelector } from "@/components/PricingTypeSelector";
 import { ServiceLocationOverrideSelector } from "@/components/ServiceLocationSelector";
+import { ServicePricingOptionsEditor } from "@/components/ServicePricingOptionsEditor";
+import type { ServicePricingOption } from "@/lib/servicePricingOptions";
 
 export default function AddServiceScreen() {
   return <ServiceAccessGate><AddServiceContent /></ServiceAccessGate>;
@@ -42,17 +44,34 @@ function AddServiceContent() {
   const [serviceLocation, setServiceLocation] =
     useState<ServiceLocationOverride>("inherit");
   const [error, setError] = useState<string | null>(null);
+  const [pricingOptions, setPricingOptions] = useState<ServicePricingOption[]>([]);
+  const [pricingOptionsErrorKey, setPricingOptionsErrorKey] = useState<string | null>(null);
+  const [multiPricingEnabled, setMultiPricingEnabled] = useState(false);
 
   const createService = useCreateService();
+  const handlePricingOptionsChange = useCallback((options: ServicePricingOption[]) => {
+    setPricingOptions(options);
+  }, []);
+  const handlePricingOptionsValidation = useCallback((errorKey: string | null) => {
+    setPricingOptionsErrorKey(errorKey);
+  }, []);
+  const handlePricingOptionsEnabled = useCallback((enabled: boolean) => {
+    setMultiPricingEnabled(enabled);
+  }, []);
 
   const handleSave = () => {
     if (!shopId || !title.trim()) return;
+    if (pricingType === "fixed" && (pricingOptionsErrorKey || (multiPricingEnabled && !pricingOptions.length))) {
+      setError(t(pricingOptionsErrorKey ?? "newService.pricingOptionRequired"));
+      return;
+    }
     setError(null);
+    const usePricingOptions = pricingType === "fixed" && pricingOptions.length > 0;
     const priceCents =
-      pricingType !== "quote" && priceStr.trim()
+      !usePricingOptions && pricingType !== "quote" && priceStr.trim()
         ? Math.round(parseFloat(priceStr) * 100)
         : null;
-    const durationMinutes = durationStr.trim()
+    const durationMinutes = !usePricingOptions && durationStr.trim()
       ? Math.max(0, parseInt(durationStr, 10) || 0)
       : null;
     createService.mutate(
@@ -65,6 +84,7 @@ function AddServiceContent() {
           pricingType,
           price: priceCents,
           durationMinutes,
+          pricingOptions: pricingType === "fixed" ? pricingOptions : [],
           photos: [],
           tags: [],
           isActive,
@@ -119,6 +139,7 @@ function AddServiceContent() {
           onChange={setCategoryIds}
           kind="service"
           label=""
+          serviceShopId={shopId ?? undefined}
         />
 
         <Text
@@ -135,7 +156,15 @@ function AddServiceContent() {
         </Text>
         <PricingTypeSelector value={pricingType} onChange={setPricingType} />
 
-        {pricingType !== "quote" ? (
+        <ServicePricingOptionsEditor
+          hidden={pricingType !== "fixed"}
+          currencyCode={shop?.currency?.code}
+          onOptionsChange={handlePricingOptionsChange}
+          onValidationChange={handlePricingOptionsValidation}
+          onEnabledChange={handlePricingOptionsEnabled}
+        />
+
+        {pricingType !== "quote" && !(pricingType === "fixed" && multiPricingEnabled) ? (
           <Input
             label={`${t("newService.price")}${shop?.currency?.code ? ` (${shop.currency.code})` : ""}`}
             placeholder={t("newService.pricePlaceholder")}
@@ -145,13 +174,13 @@ function AddServiceContent() {
           />
         ) : null}
 
-        <Input
+        {multiPricingEnabled && pricingType === "fixed" ? null : <Input
           label={t("newService.durationMinutes")}
           placeholder={t("newService.durationPlaceholder")}
           value={durationStr}
           onChangeText={setDurationStr}
           keyboardType="number-pad"
-        />
+        />}
 
         <ServiceLocationOverrideSelector
           value={serviceLocation}

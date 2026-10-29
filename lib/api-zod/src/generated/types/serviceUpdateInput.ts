@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.2.0
  */
 import type { ServiceLocationOverride } from "./serviceLocationOverride";
+import type { ServicePricingOption } from "./servicePricingOption";
 import type { ServiceUpdateInputPricingType } from "./serviceUpdateInputPricingType";
 
 export interface ServiceUpdateInput {
@@ -18,6 +19,11 @@ export interface ServiceUpdateInput {
   description?: string | null;
   categoryIds?: string[];
   pricingType?: ServiceUpdateInputPricingType;
+  /**
+   * Fixed-price offers in major currency units. Send an empty list to remove all offers.
+   * @maxItems 20
+   */
+  pricingOptions?: ServicePricingOption[];
   /** @minimum 0 */
   price?: number | null;
   /** @minimum 1 */

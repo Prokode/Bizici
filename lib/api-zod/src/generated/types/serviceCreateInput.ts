@@ -7,6 +7,7 @@
  */
 import type { ServiceCreateInputPricingType } from "./serviceCreateInputPricingType";
 import type { ServiceLocationOverride } from "./serviceLocationOverride";
+import type { ServicePricingOption } from "./servicePricingOption";
 
 export interface ServiceCreateInput {
   /**
@@ -18,6 +19,11 @@ export interface ServiceCreateInput {
   description?: string | null;
   categoryIds?: string[];
   pricingType: ServiceCreateInputPricingType;
+  /**
+   * Optional offers for fixed pricing, with prices in major currency units.
+   * @maxItems 20
+   */
+  pricingOptions?: ServicePricingOption[];
   /** @minimum 0 */
   price?: number | null;
   /** @minimum 1 */

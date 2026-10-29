@@ -8,6 +8,7 @@
 import type { Category } from "./category";
 import type { ServiceLocation } from "./serviceLocation";
 import type { ServiceLocationOverride } from "./serviceLocationOverride";
+import type { ServicePricingOption } from "./servicePricingOption";
 import type { ServicePricingType } from "./servicePricingType";
 
 export interface Service {
@@ -19,6 +20,11 @@ export interface Service {
   description?: string | null;
   categories: Category[];
   pricingType: ServicePricingType;
+  /**
+   * Fixed-price offers. When present, base price and duration reflect the cheapest offer. Older services have an empty list.
+   * @maxItems 20
+   */
+  pricingOptions?: ServicePricingOption[];
   /** @minimum 0 */
   price?: number | null;
   /** @minimum 1 */

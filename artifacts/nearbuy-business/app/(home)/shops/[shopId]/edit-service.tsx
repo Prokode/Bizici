@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Platform, StyleSheet, Switch, Text, View } from "react-native";
 import { router, useLocalSearchParams, Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -13,7 +13,6 @@ import {
   getListShopServicesQueryOptions,
   getListShopServicesQueryKey,
   getGetShopQueryOptions,
-  type Service,
   type ServiceUpdateInputPricingType,
   type ServiceLocationOverride,
 } from "@workspace/api-client-react";
@@ -22,6 +21,8 @@ import { PricingTypeSelector } from "@/components/PricingTypeSelector";
 import { ServiceLocationOverrideSelector } from "@/components/ServiceLocationSelector";
 import { useShopId } from "@/hooks/useShopId";
 import { ServiceAccessGate } from "@/components/ServiceAccessGate";
+import { ServicePricingOptionsEditor } from "@/components/ServicePricingOptionsEditor";
+import type { ServicePricingOption } from "@/lib/servicePricingOptions";
 
 export default function EditServiceScreen() {
   return <ServiceAccessGate><EditServiceContent /></ServiceAccessGate>;
@@ -57,35 +58,61 @@ function EditServiceContent() {
   const [serviceLocation, setServiceLocation] =
     useState<ServiceLocationOverride>("inherit");
   const [error, setError] = useState<string | null>(null);
+  const [pricingOptions, setPricingOptions] = useState<ServicePricingOption[]>([]);
+  const [pricingOptionsErrorKey, setPricingOptionsErrorKey] = useState<string | null>(null);
+  const [multiPricingEnabled, setMultiPricingEnabled] = useState(false);
+  const initializedServiceId = useRef<string | null>(null);
 
   useEffect(() => {
-    if (existing) {
+    if (existing && initializedServiceId.current !== serviceId) {
+      initializedServiceId.current = serviceId ?? null;
       setTitle(existing.title);
       setDescription(existing.description ?? "");
       setCategoryIds(existing.categories?.map((c) => c.id) ?? []);
       setPricingType(existing.pricingType);
       setPriceStr(
-        existing.price != null ? (existing.price / 100).toFixed(2) : "",
+        existing.price != null
+          ? existing.pricingOptions?.length ? String(existing.price) : (existing.price / 100).toFixed(2)
+          : "",
       );
       setDurationStr(
         existing.durationMinutes != null ? String(existing.durationMinutes) : "",
       );
       setIsActive(existing.isActive);
       setServiceLocation(existing.serviceLocation ?? "inherit");
+      const options = existing.pricingOptions ?? [];
+      setPricingOptions(options);
+      setMultiPricingEnabled(options.length > 0);
     }
-  }, [existing]);
+  }, [existing, serviceId]);
+
+  const handlePricingOptionsChange = useCallback((options: ServicePricingOption[]) => {
+    setPricingOptions(options);
+  }, []);
+  const handlePricingOptionsValidation = useCallback((errorKey: string | null) => {
+    setPricingOptionsErrorKey(errorKey);
+  }, []);
+  const handlePricingOptionsEnabled = useCallback((enabled: boolean) => {
+    setMultiPricingEnabled(enabled);
+  }, []);
 
   const updateService = useUpdateService();
   const deleteService = useDeleteService();
 
   const handleSave = () => {
     if (!shopId || !serviceId || !title.trim()) return;
+    if (pricingType === "fixed" && multiPricingEnabled &&
+      (pricingOptionsErrorKey || pricingOptions.length === 0)) {
+      setError(t(pricingOptionsErrorKey ?? "newService.pricingOptionRequired"));
+      return;
+    }
     setError(null);
+    const usePricingOptions = pricingType === "fixed" && multiPricingEnabled;
     const priceCents =
-      pricingType !== "quote" && priceStr.trim()
+      !usePricingOptions && pricingType !== "quote" && priceStr.trim()
         ? Math.round(parseFloat(priceStr) * 100)
         : null;
-    const durationMinutes = durationStr.trim()
+    const durationMinutes = !usePricingOptions && durationStr.trim()
       ? Math.max(0, parseInt(durationStr, 10) || 0)
       : null;
     updateService.mutate(
@@ -99,6 +126,7 @@ function EditServiceContent() {
           pricingType,
           price: priceCents,
           durationMinutes,
+          pricingOptions: pricingType === "fixed" ? pricingOptions : [],
           isActive,
           serviceLocation,
         },
@@ -184,6 +212,7 @@ function EditServiceContent() {
           onChange={setCategoryIds}
           kind="service"
           label=""
+          serviceShopId={shopId ?? undefined}
         />
 
         <Text
@@ -200,7 +229,17 @@ function EditServiceContent() {
         </Text>
         <PricingTypeSelector value={pricingType} onChange={setPricingType} />
 
-        {pricingType !== "quote" ? (
+        <ServicePricingOptionsEditor
+          key={serviceId}
+          initialOptions={existing.pricingOptions}
+          currencyCode={shop?.currency?.code}
+          hidden={pricingType !== "fixed"}
+          onOptionsChange={handlePricingOptionsChange}
+          onValidationChange={handlePricingOptionsValidation}
+          onEnabledChange={handlePricingOptionsEnabled}
+        />
+
+        {pricingType !== "quote" && !(pricingType === "fixed" && multiPricingEnabled) ? (
           <Input
             label={`${t("newService.price")}${shop?.currency?.code ? ` (${shop.currency.code})` : ""}`}
             value={priceStr}
@@ -209,12 +248,12 @@ function EditServiceContent() {
           />
         ) : null}
 
-        <Input
+        {pricingType === "fixed" && multiPricingEnabled ? null : <Input
           label={t("newService.durationMinutes")}
           value={durationStr}
           onChangeText={setDurationStr}
           keyboardType="number-pad"
-        />
+        />}
 
         <ServiceLocationOverrideSelector
           value={serviceLocation}

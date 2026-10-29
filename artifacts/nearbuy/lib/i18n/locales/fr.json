@@ -606,6 +606,25 @@
     "wider": "Partout",
     "atCustomer": "À domicile"
   },
+  "newService": {
+    "pricingOptions": "Plusieurs durées et tarifs",
+    "pricingOptionsHint": "Proposez plusieurs durées de rendez-vous, chacune avec son tarif.",
+    "pricingOptionNumber": "Option {{number}}",
+    "pricingOptionLabel": "Nom de l’option (facultatif)",
+    "pricingOptionLabelPlaceholder": "ex. Classique",
+    "addPricingOption": "Ajouter une option",
+    "removePricingOption": "Supprimer",
+    "pricingOptionRequired": "Ajoutez au moins une option avec une durée et un tarif complets.",
+    "pricingOptionInvalid": "Saisissez une durée entière supérieure à zéro et un tarif valide, positif ou nul. La virgule décimale est acceptée.",
+    "pricingOptionLimit": "Vous pouvez ajouter jusqu’à 20 options tarifaires."
+  },
+  "categoryPicker": {
+    "createTitle": "Créer une catégorie de service",
+    "namePlaceholder": "Nom de la catégorie",
+    "create": "Créer",
+    "creating": "Création…",
+    "createError": "Impossible de créer la catégorie. Vérifiez votre connexion et réessayez."
+  },
   "catalog": {
     "title": "Le catalogue",
     "subtitle": "Découvrez ce qui vous attend.",

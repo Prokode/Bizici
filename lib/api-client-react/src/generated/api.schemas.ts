@@ -921,6 +921,18 @@ export interface ServiceProviderProfileInput {
   serviceLocation?: ServiceLocation;
 }
 
+/**
+ * An independently priced duration, in major units of the shop currency.
+ */
+export interface ServicePricingOption {
+  /** @maxLength 80 */
+  label?: string | null;
+  /** @minimum 1 */
+  durationMinutes: number;
+  /** @minimum 0 */
+  price: number;
+}
+
 export type ServicePricingType =
   (typeof ServicePricingType)[keyof typeof ServicePricingType];
 
@@ -939,6 +951,11 @@ export interface Service {
   description?: string | null;
   categories: Category[];
   pricingType: ServicePricingType;
+  /**
+   * Fixed-price offers. When present, base price and duration reflect the cheapest offer. Older services have an empty list.
+   * @maxItems 20
+   */
+  pricingOptions?: ServicePricingOption[];
   /** @minimum 0 */
   price?: number | null;
   /** @minimum 1 */
@@ -974,6 +991,11 @@ export interface ServiceCreateInput {
   description?: string | null;
   categoryIds?: string[];
   pricingType: ServiceCreateInputPricingType;
+  /**
+   * Optional offers for fixed pricing, with prices in major currency units.
+   * @maxItems 20
+   */
+  pricingOptions?: ServicePricingOption[];
   /** @minimum 0 */
   price?: number | null;
   /** @minimum 1 */
@@ -1003,6 +1025,11 @@ export interface ServiceUpdateInput {
   description?: string | null;
   categoryIds?: string[];
   pricingType?: ServiceUpdateInputPricingType;
+  /**
+   * Fixed-price offers in major currency units. Send an empty list to remove all offers.
+   * @maxItems 20
+   */
+  pricingOptions?: ServicePricingOption[];
   /** @minimum 0 */
   price?: number | null;
   /** @minimum 1 */
@@ -1196,6 +1223,14 @@ export const ListCategoriesKind = {
   product: "product",
   service: "service",
 } as const;
+
+export type CreateServiceCategoryBody = {
+  /**
+   * @minLength 2
+   * @maxLength 80
+   */
+  name: string;
+};
 
 export type ListCitiesParams = {
   /**

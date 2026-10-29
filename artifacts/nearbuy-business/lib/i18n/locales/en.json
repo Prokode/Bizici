@@ -305,9 +305,26 @@
     "pricePlaceholder": "30",
     "durationMinutes": "Duration (minutes)",
     "durationPlaceholder": "45",
+    "pricingOptions": "Multiple duration and price options",
+    "pricingOptionsHint": "Offer different appointment lengths at their own prices.",
+    "pricingOptionNumber": "Option {{number}}",
+    "pricingOptionLabel": "Option name (optional)",
+    "pricingOptionLabelPlaceholder": "e.g. Standard",
+    "addPricingOption": "Add another option",
+    "removePricingOption": "Remove",
+    "pricingOptionRequired": "Add at least one complete duration and price option.",
+    "pricingOptionInvalid": "Enter a whole duration above zero and a valid price of zero or more. Prices may use a decimal comma.",
+    "pricingOptionLimit": "You can add up to 20 pricing options.",
     "isActive": "Service active (visible to customers)",
     "save": "Save",
     "saveError": "Failed to save"
+  },
+  "categoryPicker": {
+    "createTitle": "Create a service category",
+    "namePlaceholder": "Category name",
+    "create": "Create",
+    "creating": "Creating…",
+    "createError": "The category could not be created. Check your connection and try again."
   },
   "editService": {
     "screenTitle": "Edit service",

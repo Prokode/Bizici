@@ -31,6 +31,12 @@ function pricingLabel(
   currency: ShopCurrency | null | undefined,
   locale: string,
 ): string {
+  if (service.pricingOptions?.length) {
+    return service.pricingOptions.map((option) => {
+      const amount = currency ? formatShopPrice(option.price * 100, currency, locale) : option.price.toFixed(2);
+      return `${option.label ? `${option.label} · ` : ""}${t("services.duration", { minutes: option.durationMinutes })} · ${amount}`;
+    }).join("\n");
+  }
   const amount = service.price != null
     ? currency ? formatShopPrice(service.price, currency, locale) : (service.price / 100).toFixed(2)
     : "";
@@ -123,7 +129,7 @@ function ServicesContent() {
                 >
                   {pricingLabel(item, t, shop?.currency, i18n.language)}
                 </Text>
-                {item.durationMinutes ? (
+                {!item.pricingOptions?.length && item.durationMinutes ? (
                   <Text
                     style={{
                       color: colors.mutedForeground,

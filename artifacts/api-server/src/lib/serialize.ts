@@ -295,6 +295,11 @@ export function serializeService(
     description: s.description ?? null,
     categories: cats,
     pricingType: (s.pricingType ?? "quote") as "fixed" | "hourly" | "quote",
+    pricingOptions: (s.pricingOptions ?? []).map((option: any) => ({
+      label: option.label ?? null,
+      durationMinutes: option.durationMinutes,
+      price: option.price,
+    })),
     price: typeof s.price === "number" ? s.price : null,
     durationMinutes:
       typeof s.durationMinutes === "number" ? s.durationMinutes : null,

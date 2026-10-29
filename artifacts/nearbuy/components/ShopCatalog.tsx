@@ -17,6 +17,7 @@ export type CatalogService = {
   id: string; title: string; description?: string | null; price: number | null;
   pricingType: "fixed" | "hourly" | "quote"; photos: string[];
   durationMinutes?: number | null; categories: { id: string; name: string }[];
+  pricingOptions?: { label?: string | null; durationMinutes: number; price: number }[];
   effectiveServiceLocation?: "at_shop" | "at_customer" | "both"; createdAt?: string | null;
 };
 
@@ -76,12 +77,14 @@ export function ShopCatalog({
     const title = product ? item.name : item.title;
     const itemKey = `${kind}:${item.id}`;
     const like = likes.getLike(kind, item.id);
-    const price = product
+    const offers = product ? [] : item.pricingOptions ?? [];
+    const amount = product
       ? formatPrice(item.price, currency)
       : item.pricingType === "quote" ? t("search.onQuote")
         : item.price == null ? "—"
           : item.pricingType === "hourly" ? t("search.hourlyPrice", { price: formatPrice(item.price * 100, currency) })
             : formatPrice(item.price * 100, currency);
+    const price = offers.length > 1 ? t("search.fromPrice", { price: amount }) : amount;
     const open = !!expanded[itemKey];
     const ask = () => product ? onAskProduct?.(item) : onAskService?.(item);
     return <View key={itemKey} style={[
@@ -108,6 +111,14 @@ export function ShopCatalog({
       {product && item.brand ? <Text numberOfLines={1} style={[styles.meta, muted]}>{item.brand}</Text> : null}
       {!!item.categories?.length ? <Text numberOfLines={1} style={[styles.meta, muted]}>{item.categories.map((category) => category.name).join(" · ")}</Text> : null}
       <Text numberOfLines={1} style={[styles.price, { color: colors.primary }]}>{price}</Text>
+      {offers.map((offer, index) => (
+        <View key={index} style={styles.offer} testID={`catalog-offer-${item.id}-${index}`}>
+          {offer.label ? <Text style={[styles.meta, { color: colors.foreground }]}>{offer.label}</Text> : null}
+          <Text style={[styles.description, { color: colors.foreground }]}>
+            {t("shopDetails.duration", { minutes: offer.durationMinutes })} · {formatPrice(offer.price * 100, currency)}
+          </Text>
+        </View>
+      ))}
       {product && item.stockStatus ? <Text style={[styles.meta, muted]}>{t(item.stockStatus === "in_stock" ? "shopDetails.inStock" : "shopDetails.outOfStock")}</Text> : null}
       {!product && item.effectiveServiceLocation ? <Text style={[styles.meta, muted]}>{t(`catalog.location.${item.effectiveServiceLocation}`)}</Text> : null}
       {item.description ? <>
@@ -116,7 +127,7 @@ export function ShopCatalog({
           <Text style={[styles.more, { color: colors.primary }]}>{t(open ? "catalog.less" : "catalog.more")}</Text>
         </Pressable> : null}
       </> : null}
-      {item.durationMinutes != null ? <Text style={[styles.meta, muted]}>{t("shopDetails.duration", { minutes: item.durationMinutes })}</Text> : null}
+      {!offers.length && item.durationMinutes != null ? <Text style={[styles.meta, muted]}>{t("shopDetails.duration", { minutes: item.durationMinutes })}</Text> : null}
       {ask ? <Pressable accessibilityRole="button" testID={`catalog-ask-${kind}-${item.id}`} onPress={ask} style={[styles.askButton, { borderColor: colors.primary }]}>
         <Feather name="message-circle" size={14} color={colors.primary} style={{ flexShrink: 0 }} />
         <Text style={[styles.askText, { color: colors.primary }]}>{t(product ? "askItem.askProduct" : "askItem.askService")}</Text>
@@ -178,6 +189,7 @@ const styles = StyleSheet.create({
   likeCount: { fontSize: 12, fontWeight: "700" },
   itemTitle: { fontSize: 14, lineHeight: 19, fontWeight: "700", minHeight: 36 },
   price: { fontSize: 14, fontWeight: "800" },
+  offer: { gap: 2, paddingVertical: 3 },
   meta: { fontSize: 11, lineHeight: 15 },
   description: { fontSize: 12, lineHeight: 17 },
   more: { fontSize: 12, fontWeight: "700", paddingVertical: 3 },

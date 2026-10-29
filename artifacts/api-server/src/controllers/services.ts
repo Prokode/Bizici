@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { Types } from "mongoose";
 import { Service, Shop } from "@workspace/db";
+import { parseServicePricingOptions, cheapestServiceOption } from "../lib/service-pricing";
 import {
   serializeService,
   serializeProviderProfile,
@@ -62,6 +63,14 @@ export const servicesController = {
         .json({ error: "pricingType must be one of fixed, hourly, quote" });
       return;
     }
+    let pricingOptions;
+    try {
+      pricingOptions = parseServicePricingOptions(body.pricingOptions === undefined ? [] : body.pricingOptions, pricingType);
+    } catch (error) {
+      res.status(400).json({ error: (error as Error).message });
+      return;
+    }
+    const cheapest = cheapestServiceOption(pricingOptions);
 
     const shopDoc = await Shop.findById(req.params.shopId as string)
       .select("sellerId kind serviceProvider.serviceLocation")
@@ -87,9 +96,10 @@ export const servicesController = {
         typeof body.description === "string" ? body.description : null,
       categories: toObjectIds(body.categoryIds),
       pricingType,
-      price: typeof body.price === "number" ? body.price : null,
+      pricingOptions,
+      price: cheapest ? cheapest.price : typeof body.price === "number" ? body.price : null,
       durationMinutes:
-        typeof body.durationMinutes === "number" ? body.durationMinutes : null,
+        cheapest ? cheapest.durationMinutes : typeof body.durationMinutes === "number" ? body.durationMinutes : null,
       photos: Array.isArray(body.photos)
         ? body.photos.filter((p: unknown) => typeof p === "string")
         : [],
@@ -116,6 +126,15 @@ export const servicesController = {
       return;
     }
     const body = req.body ?? {};
+    const current = await Service.findOne({
+      _id: new Types.ObjectId(req.params.id as string),
+      shop: new Types.ObjectId(req.params.shopId as string),
+      deletedAt: null,
+    }).select("pricingType pricingOptions").lean();
+    if (!current) {
+      res.status(404).json({ error: "Service not found" });
+      return;
+    }
     const update: any = {};
     if (typeof body.title === "string") update.title = body.title.trim();
     if (body.description !== undefined) update.description = body.description;
@@ -124,12 +143,34 @@ export const servicesController = {
     }
     const pricingType = clampPricing(body.pricingType);
     if (pricingType) update.pricingType = pricingType;
+    if (body.pricingType !== undefined && !pricingType) {
+      res.status(400).json({ error: "Invalid pricingType" });
+      return;
+    }
     if (body.price !== undefined) {
       update.price = typeof body.price === "number" ? body.price : null;
     }
     if (body.durationMinutes !== undefined) {
       update.durationMinutes =
         typeof body.durationMinutes === "number" ? body.durationMinutes : null;
+    }
+    const effectiveType = pricingType ?? current.pricingType;
+    try {
+      const options = parseServicePricingOptions(
+        body.pricingOptions === undefined
+          ? (effectiveType === "fixed" ? current.pricingOptions ?? [] : [])
+          : body.pricingOptions,
+        effectiveType,
+      );
+      if (body.pricingOptions !== undefined || effectiveType !== "fixed") update.pricingOptions = options;
+      const cheapest = cheapestServiceOption(options);
+      if (cheapest) {
+        update.price = cheapest.price;
+        update.durationMinutes = cheapest.durationMinutes;
+      }
+    } catch (error) {
+      res.status(400).json({ error: (error as Error).message });
+      return;
     }
     if (Array.isArray(body.photos)) update.photos = body.photos;
     if (Array.isArray(body.tags)) update.tags = body.tags;
@@ -145,7 +186,7 @@ export const servicesController = {
           deletedAt: null,
         },
         update,
-        { new: true },
+        { new: true, runValidators: true },
       )
         .populate("categories")
         .lean(),

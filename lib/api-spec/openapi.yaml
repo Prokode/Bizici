@@ -1050,6 +1050,35 @@ paths:
                 type: array
                 items: { $ref: "#/components/schemas/Category" }
 
+  /shops/{shopId}/service-categories:
+    post:
+      operationId: createServiceCategory
+      tags: [categories]
+      parameters:
+        - in: path
+          name: shopId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, minLength: 2, maxLength: 80 }
+              required: [name]
+      responses:
+        "200":
+          description: Created service category, or an existing category with the same name.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Category" }
+        "400":
+          description: Invalid category name.
+        "403":
+          description: Shop access or service features are not allowed.
+
   /countries:
     get:
       operationId: listCountries
@@ -2221,6 +2250,15 @@ components:
         serviceLocation:
           $ref: "#/components/schemas/ServiceLocation"
 
+    ServicePricingOption:
+      type: object
+      description: An independently priced duration, in major units of the shop currency.
+      properties:
+        label: { type: string, nullable: true, maxLength: 80 }
+        durationMinutes: { type: integer, minimum: 1 }
+        price: { type: number, minimum: 0 }
+      required: [durationMinutes, price]
+
     Service:
       type: object
       properties:
@@ -2236,6 +2274,11 @@ components:
         pricingType:
           type: string
           enum: [fixed, hourly, quote]
+        pricingOptions:
+          type: array
+          maxItems: 20
+          description: Fixed-price offers. When present, base price and duration reflect the cheapest offer. Older services have an empty list.
+          items: { $ref: "#/components/schemas/ServicePricingOption" }
         price:
           type: number
           nullable: true
@@ -2285,6 +2328,11 @@ components:
         pricingType:
           type: string
           enum: [fixed, hourly, quote]
+        pricingOptions:
+          type: array
+          maxItems: 20
+          description: Optional offers for fixed pricing, with prices in major currency units.
+          items: { $ref: "#/components/schemas/ServicePricingOption" }
         price:
           type: number
           nullable: true
@@ -2315,6 +2363,11 @@ components:
         pricingType:
           type: string
           enum: [fixed, hourly, quote]
+        pricingOptions:
+          type: array
+          maxItems: 20
+          description: Fixed-price offers in major currency units. Send an empty list to remove all offers.
+          items: { $ref: "#/components/schemas/ServicePricingOption" }
         price:
           type: number
           nullable: true

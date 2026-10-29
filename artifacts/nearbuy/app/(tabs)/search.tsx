@@ -761,7 +761,9 @@ function ProviderRow({
             price: firstSvc.price != null ? formatPrice(firstSvc.price * 100, card.currency) : "—",
           })
         : firstSvc?.price != null
-          ? formatPrice(firstSvc.price * 100, card.currency)
+          ? (firstSvc.pricingOptions?.length ?? 0) > 1
+            ? t("search.fromPrice", { price: formatPrice(firstSvc.price * 100, card.currency) })
+            : formatPrice(firstSvc.price * 100, card.currency)
           : "—";
 
   return (

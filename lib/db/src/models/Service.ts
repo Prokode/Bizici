@@ -50,6 +50,16 @@ const ServiceSchema = new Schema(
     // Optional indicative duration in minutes, mainly for fixed-price services
     // (e.g. "Coupe homme — 30 min, 25 €"). Hourly services typically leave it null.
     durationMinutes: { type: Number, default: null, min: 1 },
+    // Independent fixed-price offers. Prices are major shop-currency amounts.
+    pricingOptions: {
+      type: [new Schema({
+        label: { type: String, default: null, maxlength: 80 },
+        durationMinutes: { type: Number, required: true, min: 1, validate: Number.isSafeInteger },
+        price: { type: Number, required: true, min: 0, validate: Number.isFinite },
+      }, { _id: false })],
+      default: [],
+      validate: (options: unknown[]) => options.length <= 20,
+    },
 
     photos: { type: [String], default: [] },
     tags: { type: [String], default: [] },
@@ -73,11 +83,10 @@ const ServiceSchema = new Schema(
   { timestamps: true },
 );
 
-ServiceSchema.pre("save", function (this: any, next: (err?: unknown) => void) {
+ServiceSchema.pre("save", function (this: any) {
   if (this.isModified("title") || !this.slug) {
     this.slug = slugify(this.title as string);
   }
-  next();
 });
 
 export type ServiceDoc = InferSchemaType<typeof ServiceSchema> & {
