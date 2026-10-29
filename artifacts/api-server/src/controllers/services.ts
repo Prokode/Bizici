@@ -19,6 +19,26 @@ function clampPricing(value: unknown): "fixed" | "hourly" | "quote" | null {
   return null;
 }
 
+/** Reject invalid optional values before Mongoose turns them into server errors. */
+function serviceInputError(body: Record<string, unknown>): string | null {
+  if (body.price != null && (typeof body.price !== "number" || !Number.isFinite(body.price) || body.price < 0)) {
+    return "price must be a finite nonnegative number";
+  }
+  if (body.durationMinutes != null && (typeof body.durationMinutes !== "number" ||
+    !Number.isSafeInteger(body.durationMinutes) || body.durationMinutes < 1)) {
+    return "durationMinutes must be a positive whole number";
+  }
+  if (body.photos !== undefined && (!Array.isArray(body.photos) || body.photos.length > 20 ||
+    body.photos.some((photo: unknown) => {
+      if (typeof photo !== "string" || photo.length > 4096) return true;
+      try { return !["http:", "https:"].includes(new URL(photo).protocol); }
+      catch { return true; }
+    }))) {
+    return "photos must contain at most 20 public HTTP or HTTPS image URLs";
+  }
+  return null;
+}
+
 function clampServiceLocationOverride(
   value: unknown,
 ): "inherit" | "at_shop" | "at_customer" | "both" | null {
@@ -52,6 +72,8 @@ export const servicesController = {
 
   create: async (req: Request, res: Response) => {
     const body = req.body ?? {};
+    const inputError = serviceInputError(body);
+    if (inputError) { res.status(400).json({ error: inputError }); return; }
     if (typeof body.title !== "string" || body.title.trim().length === 0) {
       res.status(400).json({ error: "title required" });
       return;
@@ -126,6 +148,11 @@ export const servicesController = {
       return;
     }
     const body = req.body ?? {};
+    const inputError = serviceInputError(body);
+    if (inputError) { res.status(400).json({ error: inputError }); return; }
+    if (body.title !== undefined && (typeof body.title !== "string" || !body.title.trim())) {
+      res.status(400).json({ error: "title required" }); return;
+    }
     const current = await Service.findOne({
       _id: new Types.ObjectId(req.params.id as string),
       shop: new Types.ObjectId(req.params.shopId as string),

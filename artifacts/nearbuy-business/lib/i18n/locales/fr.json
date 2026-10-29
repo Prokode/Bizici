@@ -1,4 +1,15 @@
 {
+  "serviceGallery": {
+    "title": "Réalisations passées (facultatif)",
+    "hint": "Ajoutez jusqu’à 20 photos de ce service. Elles seront visibles par les clients. Vous pouvez les ajouter ou les retirer à tout moment en modifiant le service.",
+    "add": "Ajouter des photos",
+    "remove": "Retirer la photo {{index}}",
+    "pickError": "Impossible d’ouvrir vos photos. Veuillez réessayer.",
+    "uploadError": "Impossible de transférer une photo. Vérifiez votre connexion ou retirez puis sélectionnez à nouveau la photo. Le service n’a pas été enregistré.",
+    "saving": "Enregistrement en cours…",
+    "invalidPrice": "Saisissez un prix valide, supérieur ou égal à zéro.",
+    "invalidDuration": "La durée doit être un nombre entier de minutes, supérieur à zéro."
+  },
   "photoViewer": {
     "open": "Voir la photo en plein écran",
     "photo": "Photo",

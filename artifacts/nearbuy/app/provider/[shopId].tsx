@@ -51,6 +51,7 @@ export default function ProviderScreen() {
     queryKey: ["provider-detail", shopId],
     queryFn: ({ signal }) => fetchProviderDetail(String(shopId), { signal }),
     enabled: !!shopId,
+    refetchInterval: 30_000,
   });
 
   if (isLoading) {

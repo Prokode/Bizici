@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { parseServicePricingOptions, cheapestServiceOption } from "../../artifacts/api-server/src/lib/service-pricing";
 
 const read = (path: string) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 function load(path: string, require: (name: string) => unknown, globals: object = {}) {
@@ -85,6 +86,7 @@ for (const route of ["dashboard", "summary"]) {
 test("API rejects product-only service creation instead of silently converting the shop", async () => {
   let writes = 0;
   const { servicesController } = load("artifacts/api-server/src/controllers/services.ts", name => {
+    if (name === "../lib/service-pricing") return { parseServicePricingOptions, cheapestServiceOption };
     if (name === "@workspace/db") return {
       Shop: {
         findById: () => ({ select: () => ({ lean: async () => ({ kind: "products" }) }) }),

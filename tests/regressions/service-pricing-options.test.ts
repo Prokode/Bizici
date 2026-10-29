@@ -7,6 +7,8 @@ import { serializeService } from "../../artifacts/api-server/src/lib/serialize";
 import { parseServicePricingOptions, cheapestServiceOption } from "../../artifacts/api-server/src/lib/service-pricing";
 import { Service } from "../../lib/db/src/models/Service";
 import { validatePricingOptionDrafts } from "../../artifacts/nearbuy-business/lib/servicePricingOptions";
+import { serviceFormValues, serviceSaveError } from "../../artifacts/nearbuy-business/lib/serviceFormValues";
+import { prepareProductPhotos } from "../../artifacts/nearbuy-business/lib/productPhotoPreparation";
 
 const source = (path: string) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 const offers = [
@@ -120,6 +122,28 @@ test("real create/edit handlers round-trip offers, derive cheapest price, and re
   assert.equal(created.body.price, 2500);
   assert.equal(created.body.durationMinutes, 15);
 
+  const photos = ["https://example.com/work-1.jpg", "https://example.com/work-2.jpg"];
+  const gallery = response();
+  await controller.update({ params, body: { photos } }, gallery);
+  assert.deepEqual(gallery.body.photos, photos);
+  const unchanged = response();
+  await controller.update({ params, body: { description: "Past work" } }, unchanged);
+  assert.deepEqual(unchanged.body.photos, photos, "omitting gallery must preserve it");
+  const cleared = response();
+  await controller.update({ params, body: { photos: [] } }, cleared);
+  assert.deepEqual(cleared.body.photos, [], "all photos can be removed");
+  for (const body of [
+    { photos: ["file:///device/photo.jpg"] }, { photos: ["data:image/png;base64,abc"] },
+    { photos: ["javascript:alert(1)"] }, { photos: [12] }, { photos: Array(21).fill(photos[0]) },
+    { price: -1 }, { price: Infinity }, { durationMinutes: 0 }, { durationMinutes: 1.5 },
+  ]) {
+    for (const handler of ["create", "update"]) {
+      const invalid = response();
+      await controller[handler]({ params, body: { title: "Massage", pricingType: "fixed", ...body } }, invalid);
+      assert.equal(invalid.code, 400);
+    }
+  }
+
   const modified = response();
   const nextOffers = [{ durationMinutes: 30, price: 4500 }, { durationMinutes: 60, price: 8000 }];
   await controller.update({ params, body: { pricingOptions: nextOffers } }, modified);
@@ -140,6 +164,57 @@ test("real create/edit handlers round-trip offers, derive cheapest price, and re
   await controller.update({ params, body: { pricingType: "fixed", pricingOptions: [], price: 300000, durationMinutes: 15 } }, removed);
   assert.deepEqual(removed.body.pricingOptions, []);
   assert.equal(removed.body.price, 300000); // Single-price legacy units are not migrated.
+});
+
+test("single-price fields accept French commas and cannot send zero/invalid durations to Mongoose", () => {
+  assert.deepEqual(serviceFormValues("2500,50", "45", true), { price: 250050, durationMinutes: 45 });
+  assert.deepEqual(serviceFormValues("", "", false), { price: null, durationMinutes: null });
+  assert.deepEqual(serviceFormValues("0", "1", true), { price: 0, durationMinutes: 1 });
+  for (const duration of ["0", "abc", "1.5", "-2", "45min"]) {
+    assert.throws(() => serviceFormValues("2500", duration, true), /invalidDuration/);
+  }
+  for (const price of ["abc", "-1", "2,5,0", "Infinity", "2500F"]) {
+    assert.throws(() => serviceFormValues(price, "45", true), /invalidPrice/);
+  }
+  assert.equal(serviceSaveError(new Error("HTTP 500 : <!DOCTYPE html><html>Error</html>"), "Retry"), "Retry");
+  assert.equal(serviceSaveError(new Error("Photo storage unavailable"), "Retry"), "Photo storage unavailable");
+});
+
+test("a failed gallery upload never yields a partial gallery; retries reuse successful uploads", async () => {
+  const cache = new Map<string, string>();
+  const uploaded: string[] = [];
+  let fail = true;
+  const upload = async (uri: string) => {
+    uploaded.push(uri);
+    if (uri.endsWith("2") && fail) throw new Error("offline");
+    return `https://example.com/${uri.slice(-1)}.jpg`;
+  };
+  const photos = ["https://example.com/existing.jpg", "file:///1", "file:///2"];
+  await assert.rejects(prepareProductPhotos(photos, upload, cache), /offline/);
+  fail = false;
+  assert.deepEqual(await prepareProductPhotos(photos, upload, cache),
+    ["https://example.com/existing.jpg", "https://example.com/1.jpg", "https://example.com/2.jpg"]);
+  assert.deepEqual(uploaded, ["file:///1", "file:///2", "file:///2"]);
+});
+
+test("real Mongoose save middleware reaches insertion without callback-style next errors", async () => {
+  const original = Service.collection.insertOne;
+  let inserted: any;
+  Service.collection.insertOne = (async (doc: any) => {
+    inserted = doc;
+    return { acknowledged: true, insertedId: doc._id };
+  }) as typeof original;
+  try {
+    await new Service({
+      shop: new Types.ObjectId(), seller: new Types.ObjectId(), title: "Réalisations massage",
+      pricingType: "fixed", price: 2500, durationMinutes: 45, serviceLocation: "both",
+      photos: ["https://example.com/past-work.jpg"],
+    }).save();
+    assert.equal(inserted.slug, "realisations-massage");
+    assert.deepEqual(inserted.photos, ["https://example.com/past-work.jpg"]);
+  } finally {
+    Service.collection.insertOne = original;
+  }
 });
 
 test("custom category creation is authenticated and shop-scoped, validates names and reuses existing categories", async () => {

@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type RequestHandler } from "express";
 import { requireAuth, requireSeller, requireShopAccess } from "../lib/auth";
 import { servicesController } from "../controllers/services";
 import { categoriesController } from "../controllers/categories";
@@ -9,6 +9,21 @@ import { categoriesController } from "../controllers/categories";
  * short-circuit issue (see comment in index.ts).
  */
 const router: IRouter = Router();
+// Express's HTML error page is not useful in native service forms.
+const serviceWrite = (handler: RequestHandler): RequestHandler => async (req, res, next) => {
+  try {
+    await handler(req, res, next);
+  } catch (error) {
+    const name = error instanceof Error ? error.name : "";
+    const invalid = name === "ValidationError" || name === "CastError";
+    req.log.error({ err: error }, "Service write failed");
+    res.status(invalid ? 400 : 500).json({
+      error: invalid
+        ? "Vérifiez le titre, le prix et la durée du service."
+        : "Impossible d’enregistrer le service pour le moment. Veuillez réessayer.",
+    });
+  }
+};
 router.use(requireAuth);
 router.post("/shops/:shopId/service-categories", requireShopAccess, categoriesController.createService);
 
@@ -20,12 +35,12 @@ router.get(
 router.post(
   "/shops/:shopId/services",
   requireShopAccess,
-  servicesController.create,
+  serviceWrite(servicesController.create),
 );
 router.patch(
   "/shops/:shopId/services/:id",
   requireShopAccess,
-  servicesController.update,
+  serviceWrite(servicesController.update),
 );
 router.delete(
   "/shops/:shopId/services/:id",

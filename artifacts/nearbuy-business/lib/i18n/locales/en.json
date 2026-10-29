@@ -1,4 +1,15 @@
 {
+  "serviceGallery": {
+    "title": "Past work (optional)",
+    "hint": "Add up to 20 photos of this service for customers to view. You can add or remove them anytime by editing the service.",
+    "add": "Add photos",
+    "remove": "Remove photo {{index}}",
+    "pickError": "Could not open your photos. Please try again.",
+    "uploadError": "Could not upload a photo. Check your connection or remove and reselect the photo. The service has not been saved.",
+    "saving": "Saving…",
+    "invalidPrice": "Enter a valid price greater than or equal to zero.",
+    "invalidDuration": "Duration must be a whole number of minutes greater than zero."
+  },
   "photoViewer": {
     "open": "View full photo",
     "photo": "Photo",

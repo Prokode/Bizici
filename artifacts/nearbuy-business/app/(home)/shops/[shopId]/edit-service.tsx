@@ -23,6 +23,10 @@ import { useShopId } from "@/hooks/useShopId";
 import { ServiceAccessGate } from "@/components/ServiceAccessGate";
 import { ServicePricingOptionsEditor } from "@/components/ServicePricingOptionsEditor";
 import type { ServicePricingOption } from "@/lib/servicePricingOptions";
+import { ServicePhotoEditor } from "@/components/ServicePhotoEditor";
+import { prepareProductPhotos } from "@/lib/productPhotoPreparation";
+import { uploadProductPhoto } from "@/lib/uploadProductPhoto";
+import { serviceFormValues, serviceSaveError } from "@/lib/serviceFormValues";
 
 export default function EditServiceScreen() {
   return <ServiceAccessGate><EditServiceContent /></ServiceAccessGate>;
@@ -62,6 +66,10 @@ function EditServiceContent() {
   const [pricingOptionsErrorKey, setPricingOptionsErrorKey] = useState<string | null>(null);
   const [multiPricingEnabled, setMultiPricingEnabled] = useState(false);
   const initializedServiceId = useRef<string | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const saveLock = useRef(false);
+  const uploadedPhotos = useRef(new Map<string, string>());
 
   useEffect(() => {
     if (existing && initializedServiceId.current !== serviceId) {
@@ -79,6 +87,7 @@ function EditServiceContent() {
         existing.durationMinutes != null ? String(existing.durationMinutes) : "",
       );
       setIsActive(existing.isActive);
+      setPhotos(existing.photos ?? []);
       setServiceLocation(existing.serviceLocation ?? "inherit");
       const options = existing.pricingOptions ?? [];
       setPricingOptions(options);
@@ -99,8 +108,8 @@ function EditServiceContent() {
   const updateService = useUpdateService();
   const deleteService = useDeleteService();
 
-  const handleSave = () => {
-    if (!shopId || !serviceId || !title.trim()) return;
+  const handleSave = async () => {
+    if (!shopId || !serviceId || !title.trim() || saveLock.current) return;
     if (pricingType === "fixed" && multiPricingEnabled &&
       (pricingOptionsErrorKey || pricingOptions.length === 0)) {
       setError(t(pricingOptionsErrorKey ?? "newService.pricingOptionRequired"));
@@ -108,14 +117,24 @@ function EditServiceContent() {
     }
     setError(null);
     const usePricingOptions = pricingType === "fixed" && multiPricingEnabled;
-    const priceCents =
-      !usePricingOptions && pricingType !== "quote" && priceStr.trim()
-        ? Math.round(parseFloat(priceStr) * 100)
-        : null;
-    const durationMinutes = !usePricingOptions && durationStr.trim()
-      ? Math.max(0, parseInt(durationStr, 10) || 0)
-      : null;
-    updateService.mutate(
+    let values;
+    try {
+      values = serviceFormValues(priceStr, usePricingOptions ? "" : durationStr, !usePricingOptions && pricingType !== "quote");
+    } catch (err) {
+      setError(t(`serviceGallery.${(err as Error).message}`));
+      return;
+    }
+    saveLock.current = true;
+    setSaving(true);
+    try {
+      let resolvedPhotos: string[];
+      try {
+        resolvedPhotos = await prepareProductPhotos(photos, (uri) => uploadProductPhoto(shopId, uri), uploadedPhotos.current);
+      } catch {
+        setError(t("serviceGallery.uploadError"));
+        return;
+      }
+      await updateService.mutateAsync(
       {
         shopId: shopId as string,
         id: serviceId as string,
@@ -124,8 +143,8 @@ function EditServiceContent() {
           description: description.trim() || null,
           categoryIds,
           pricingType,
-          price: priceCents,
-          durationMinutes,
+          ...values,
+          photos: resolvedPhotos,
           pricingOptions: pricingType === "fixed" ? pricingOptions : [],
           isActive,
           serviceLocation,
@@ -138,11 +157,14 @@ function EditServiceContent() {
           });
           router.back();
         },
-        onError: (err: any) => {
-          setError(err?.message ?? t("newService.saveError"));
-        },
       },
     );
+    } catch (err) {
+      setError(serviceSaveError(err, t("newService.saveError")));
+    } finally {
+      saveLock.current = false;
+      setSaving(false);
+    }
   };
 
   const performDelete = () => {
@@ -255,6 +277,8 @@ function EditServiceContent() {
           keyboardType="number-pad"
         />}
 
+        <ServicePhotoEditor photos={photos} onChange={setPhotos} disabled={saving} />
+
         <ServiceLocationOverrideSelector
           value={serviceLocation}
           onChange={setServiceLocation}
@@ -285,10 +309,10 @@ function EditServiceContent() {
         ) : null}
 
         <Button
-          title={t("newService.save")}
+          title={t(saving ? "serviceGallery.saving" : "newService.save")}
           size="lg"
-          loading={updateService.isPending}
-          disabled={!title.trim() || updateService.isPending}
+          loading={saving}
+          disabled={!title.trim() || saving || deleteService.isPending}
           onPress={handleSave}
           style={{ marginTop: 24 }}
         />
@@ -296,6 +320,7 @@ function EditServiceContent() {
           title={t("editService.delete")}
           variant="ghost"
           loading={deleteService.isPending}
+          disabled={saving}
           onPress={handleDelete}
           style={{ marginTop: 8 }}
           textStyle={{ color: colors.destructive }}

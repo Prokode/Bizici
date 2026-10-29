@@ -35,6 +35,7 @@ export default function ShopDetails() {
     queryKey: ["provider-detail", shopId],
     queryFn: ({ signal }) => fetchProviderDetail(shopId, { signal }),
     enabled: !!shopId && hasServices,
+    refetchInterval: 30_000,
   });
   const profile = provider.data?.provider;
   const { formatPrice } = useCurrency();

@@ -62,7 +62,7 @@ test("seller signup explicitly separates email and social forms with consent bef
   assert.match(source, /signup-method-email/);
   assert.equal(source.match(/<ConsentCheckbox/g)?.length, 1);
   assert.ok(source.indexOf("<ConsentCheckbox") < source.indexOf('title={t("auth.continueGoogle")}'));
-  assert.match(source, /disabled=\{!hasLocation \|\| !acceptedTerms\}/);
+  assert.match(source, /disabled=\{!hasLocation \|\| !acceptedTerms \|\| ssoProvider !== null \|\| fetchStatus === "fetching"\}/);
 });
 test("text product and service search validators accept every Marketplace distance up to 400 km", () => {
   for (const radiusKm of [5, 32, 64, 96, 160, 400]) {

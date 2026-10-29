@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { StyleSheet, Switch, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { useShopId } from "@/hooks/useShopId";
@@ -21,6 +21,10 @@ import { PricingTypeSelector } from "@/components/PricingTypeSelector";
 import { ServiceLocationOverrideSelector } from "@/components/ServiceLocationSelector";
 import { ServicePricingOptionsEditor } from "@/components/ServicePricingOptionsEditor";
 import type { ServicePricingOption } from "@/lib/servicePricingOptions";
+import { ServicePhotoEditor } from "@/components/ServicePhotoEditor";
+import { prepareProductPhotos } from "@/lib/productPhotoPreparation";
+import { uploadProductPhoto } from "@/lib/uploadProductPhoto";
+import { serviceFormValues, serviceSaveError } from "@/lib/serviceFormValues";
 
 export default function AddServiceScreen() {
   return <ServiceAccessGate><AddServiceContent /></ServiceAccessGate>;
@@ -47,6 +51,10 @@ function AddServiceContent() {
   const [pricingOptions, setPricingOptions] = useState<ServicePricingOption[]>([]);
   const [pricingOptionsErrorKey, setPricingOptionsErrorKey] = useState<string | null>(null);
   const [multiPricingEnabled, setMultiPricingEnabled] = useState(false);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const saveLock = useRef(false);
+  const uploadedPhotos = useRef(new Map<string, string>());
 
   const createService = useCreateService();
   const handlePricingOptionsChange = useCallback((options: ServicePricingOption[]) => {
@@ -59,22 +67,32 @@ function AddServiceContent() {
     setMultiPricingEnabled(enabled);
   }, []);
 
-  const handleSave = () => {
-    if (!shopId || !title.trim()) return;
+  const handleSave = async () => {
+    if (!shopId || !title.trim() || saveLock.current) return;
     if (pricingType === "fixed" && (pricingOptionsErrorKey || (multiPricingEnabled && !pricingOptions.length))) {
       setError(t(pricingOptionsErrorKey ?? "newService.pricingOptionRequired"));
       return;
     }
     setError(null);
     const usePricingOptions = pricingType === "fixed" && pricingOptions.length > 0;
-    const priceCents =
-      !usePricingOptions && pricingType !== "quote" && priceStr.trim()
-        ? Math.round(parseFloat(priceStr) * 100)
-        : null;
-    const durationMinutes = !usePricingOptions && durationStr.trim()
-      ? Math.max(0, parseInt(durationStr, 10) || 0)
-      : null;
-    createService.mutate(
+    let values;
+    try {
+      values = serviceFormValues(priceStr, usePricingOptions ? "" : durationStr, !usePricingOptions && pricingType !== "quote");
+    } catch (err) {
+      setError(t(`serviceGallery.${(err as Error).message}`));
+      return;
+    }
+    saveLock.current = true;
+    setSaving(true);
+    try {
+      let resolvedPhotos: string[];
+      try {
+        resolvedPhotos = await prepareProductPhotos(photos, (uri) => uploadProductPhoto(shopId, uri), uploadedPhotos.current);
+      } catch {
+        setError(t("serviceGallery.uploadError"));
+        return;
+      }
+      await createService.mutateAsync(
       {
         shopId: shopId as string,
         data: {
@@ -82,10 +100,9 @@ function AddServiceContent() {
           description: description.trim() || null,
           categoryIds,
           pricingType,
-          price: priceCents,
-          durationMinutes,
+          ...values,
           pricingOptions: pricingType === "fixed" ? pricingOptions : [],
-          photos: [],
+          photos: resolvedPhotos,
           tags: [],
           isActive,
           serviceLocation,
@@ -98,11 +115,14 @@ function AddServiceContent() {
           });
           router.back();
         },
-        onError: (err: any) => {
-          setError(err?.message ?? t("newService.saveError"));
-        },
       },
     );
+    } catch (err) {
+      setError(serviceSaveError(err, t("newService.saveError")));
+    } finally {
+      saveLock.current = false;
+      setSaving(false);
+    }
   };
 
   return (
@@ -182,6 +202,8 @@ function AddServiceContent() {
           keyboardType="number-pad"
         />}
 
+        <ServicePhotoEditor photos={photos} onChange={setPhotos} disabled={saving} />
+
         <ServiceLocationOverrideSelector
           value={serviceLocation}
           onChange={setServiceLocation}
@@ -214,10 +236,10 @@ function AddServiceContent() {
         <View style={{ flex: 1 }} />
 
         <Button
-          title={t("newService.save")}
+          title={t(saving ? "serviceGallery.saving" : "newService.save")}
           size="lg"
-          loading={createService.isPending}
-          disabled={!title.trim() || createService.isPending}
+          loading={saving}
+          disabled={!title.trim() || saving}
           onPress={handleSave}
           style={{ marginTop: 24 }}
         />
