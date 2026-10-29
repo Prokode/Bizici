@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   Platform,
@@ -57,6 +57,8 @@ export default function SignUpScreen() {
   const { next } = useLocalSearchParams<{ next?: string }>();
   const { signUp, errors, fetchStatus } = useSignUp();
   const { startSSOFlow } = useSSO();
+  const ssoPending = useRef(false);
+  const [ssoProvider, setSSOProvider] = useState<"oauth_google" | "oauth_apple" | null>(null);
   const queryClient = useQueryClient();
 
   const [emailAddress, setEmailAddress] = useState("");
@@ -113,6 +115,7 @@ export default function SignUpScreen() {
   }, [router, next]);
 
   const handleSubmit = async () => {
+    if (ssoPending.current) return;
     setSubmitError(null);
     if (!requireTermsOrAlert() || !hasLocation) return;
     try {
@@ -175,6 +178,7 @@ export default function SignUpScreen() {
    */
   const onSSO = useCallback(
     async (strategy: "oauth_google" | "oauth_apple", source: ConsentSource) => {
+      if (ssoPending.current || fetchStatus === "fetching") return;
       setSubmitError(null);
       const reportFailure = (message: string) => {
         setSubmitError(message);
@@ -185,6 +189,8 @@ export default function SignUpScreen() {
         return;
       }
       if (!hasLocation) return;
+      ssoPending.current = true;
+      setSSOProvider(strategy);
       try {
         const result = await startSSOFlow({
           strategy,
@@ -233,9 +239,12 @@ export default function SignUpScreen() {
               ? t("auth.errorApple")
               : t("auth.errorGoogle")),
         );
+      } finally {
+        ssoPending.current = false;
+        setSSOProvider(null);
       }
     },
-    [acceptedTerms, goHome, hasLocation, saveLocation, startSSOFlow, t],
+    [acceptedTerms, fetchStatus, goHome, hasLocation, saveLocation, startSSOFlow, t],
   );
 
   const onGoogle = useCallback(
@@ -385,7 +394,9 @@ export default function SignUpScreen() {
                 />
               }
               onPress={onGoogle}
-              disabled={!hasLocation || !acceptedTerms}
+              loading={ssoProvider === "oauth_google"}
+              disabled={!hasLocation || !acceptedTerms || ssoProvider !== null || fetchStatus === "fetching"}
+              testID="sso-google"
               style={{ marginBottom: 12 }}
             />
             {/*
@@ -399,7 +410,9 @@ export default function SignUpScreen() {
                 title={t("auth.continueApple")}
                 icon={<FontAwesome name="apple" size={18} color="#FFFFFF" />}
                 onPress={onApple}
-                disabled={!hasLocation || !acceptedTerms}
+                loading={ssoProvider === "oauth_apple"}
+                disabled={!hasLocation || !acceptedTerms || ssoProvider !== null || fetchStatus === "fetching"}
+                testID="sso-apple"
                 style={{
                   backgroundColor: "#000000",
                   borderColor: "#000000",
@@ -466,6 +479,7 @@ export default function SignUpScreen() {
                 !password ||
                 !hasLocation ||
                 !acceptedTerms ||
+                ssoProvider !== null ||
                 fetchStatus === "fetching"
               }
               loading={fetchStatus === "fetching"}

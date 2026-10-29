@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View, Platform } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useColors } from "@/hooks/useColors";
@@ -34,6 +34,8 @@ export default function SignInScreen() {
   const { t } = useTranslation();
   const { signIn, fetchStatus } = useSignIn();
   const { startSSOFlow } = useSSO();
+  const ssoPending = useRef(false);
+  const [ssoProvider, setSSOProvider] = useState<"oauth_google" | "oauth_apple" | null>(null);
 
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
@@ -47,6 +49,7 @@ export default function SignInScreen() {
   };
 
   const handleSubmit = async () => {
+    if (ssoPending.current) return;
     setSubmitError(null);
     if (fetchStatus === "fetching") return;
     if (!isSignInEmailValid(emailAddress)) {
@@ -79,6 +82,9 @@ export default function SignInScreen() {
    */
   const onSSO = useCallback(
     async (strategy: "oauth_google" | "oauth_apple") => {
+      if (ssoPending.current || fetchStatus === "fetching") return;
+      ssoPending.current = true;
+      setSSOProvider(strategy);
       setSubmitError(null);
       const reportFailure = (message: string) => {
         setSubmitError(message);
@@ -114,9 +120,12 @@ export default function SignInScreen() {
               ? t("auth.errorApple")
               : t("auth.errorGoogle")),
         );
+      } finally {
+        ssoPending.current = false;
+        setSSOProvider(null);
       }
     },
-    [router, startSSOFlow, t],
+    [fetchStatus, router, startSSOFlow, t],
   );
 
   const onGoogle = useCallback(() => onSSO("oauth_google"), [onSSO]);
@@ -143,6 +152,9 @@ export default function SignInScreen() {
             variant="secondary"
             icon={<Feather name="chrome" size={18} color={colors.secondaryForeground} />}
             onPress={onGoogle}
+            loading={ssoProvider === "oauth_google"}
+            disabled={ssoProvider !== null || fetchStatus === "fetching"}
+            testID="sso-google"
             style={{ marginBottom: 12 }}
           />
           {/* Apple SSO button — iOS/web only (Apple HIG). UI only;
@@ -152,6 +164,9 @@ export default function SignInScreen() {
               title={t("auth.continueApple")}
               icon={<FontAwesome name="apple" size={18} color="#FFFFFF" />}
               onPress={onApple}
+              loading={ssoProvider === "oauth_apple"}
+              disabled={ssoProvider !== null || fetchStatus === "fetching"}
+              testID="sso-apple"
               style={{
                 backgroundColor: "#000000",
                 borderColor: "#000000",
@@ -202,7 +217,7 @@ export default function SignInScreen() {
           <Button
             title={t("auth.signInButton")}
             size="lg"
-            disabled={!emailAddress.trim() || !password || fetchStatus === "fetching"}
+            disabled={!emailAddress.trim() || !password || fetchStatus === "fetching" || ssoProvider !== null}
             testID="business-sign-in-submit"
             loading={fetchStatus === "fetching"}
             onPress={handleSubmit}
