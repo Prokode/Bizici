@@ -81,6 +81,14 @@ test("viewer caches are account scoped and rapid taps are guarded until saved", 
   assert.ok(hook.indexOf("await setCatalogLike") < hook.indexOf("queryClient.setQueryData"));
 });
 
+test("product and service chat labels wrap within padded narrow-card buttons without shrinking the icon", () => {
+  const ui = source("artifacts/nearbuy/components/ShopCatalog.tsx");
+  assert.match(ui, /askButton: \{ width: "100%", minHeight: 44, paddingHorizontal: 10, paddingVertical: 8/);
+  assert.match(ui, /askText: \{[^\n]*flexShrink: 1, minWidth: 0, lineHeight: 16, textAlign: "center"/);
+  assert.match(ui, /name="message-circle"[^\n]*style=\{\{ flexShrink: 0 \}\}/);
+  assert.ok(ui.includes('t(product ? "askItem.askProduct" : "askItem.askService")'));
+});
+
 test("vote handler saves, reloads, deduplicates and removes account votes for products and services", async (context) => {
   // Exercise the real handler with an isolated repository; no live customer data
   // or Clerk credentials are needed for this persistence-contract test.

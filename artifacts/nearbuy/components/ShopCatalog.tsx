@@ -118,7 +118,7 @@ export function ShopCatalog({
       </> : null}
       {item.durationMinutes != null ? <Text style={[styles.meta, muted]}>{t("shopDetails.duration", { minutes: item.durationMinutes })}</Text> : null}
       {ask ? <Pressable accessibilityRole="button" testID={`catalog-ask-${kind}-${item.id}`} onPress={ask} style={[styles.askButton, { borderColor: colors.primary }]}>
-        <Feather name="message-circle" size={14} color={colors.primary} />
+        <Feather name="message-circle" size={14} color={colors.primary} style={{ flexShrink: 0 }} />
         <Text style={[styles.askText, { color: colors.primary }]}>{t(product ? "askItem.askProduct" : "askItem.askService")}</Text>
       </Pressable> : null}
     </View>;
@@ -181,8 +181,8 @@ const styles = StyleSheet.create({
   meta: { fontSize: 11, lineHeight: 15 },
   description: { fontSize: 12, lineHeight: 17 },
   more: { fontSize: 12, fontWeight: "700", paddingVertical: 3 },
-  askButton: { minHeight: 44, borderWidth: 1, borderRadius: 11, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 2 },
-  askText: { fontSize: 12, fontWeight: "700" },
+  askButton: { width: "100%", minHeight: 44, paddingHorizontal: 10, paddingVertical: 8, borderWidth: 1, borderRadius: 11, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 2 },
+  askText: { fontSize: 12, fontWeight: "700", flexShrink: 1, minWidth: 0, lineHeight: 16, textAlign: "center" },
   categoryBlock: { gap: 9 },
   category: { minHeight: 44, paddingHorizontal: 15, borderRadius: 24, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   empty: { borderWidth: 1, borderRadius: 16, padding: 20, alignItems: "center", gap: 8 },
