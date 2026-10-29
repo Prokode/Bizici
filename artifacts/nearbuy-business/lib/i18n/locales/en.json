@@ -634,5 +634,31 @@
     "cancel": "Cancel",
     "helperReadOnly": "Only the shop owner can change this photo.",
     "alt": "Photo of {{name}}"
+  },
+  "catalog": {
+    "title": "The catalog",
+    "subtitle": "A closer look at what’s here.",
+    "newProducts": "New products",
+    "newServices": "New services",
+    "mostLiked": "Most liked",
+    "mostLikedProducts": "Most liked products",
+    "mostLikedServices": "Most liked services",
+    "noLikes": "No likes yet. Be the first to save a favorite.",
+    "browse": "Browse by category",
+    "all": "All",
+    "allProducts": "All products",
+    "allServices": "All services",
+    "empty": "This catalog is taking shape. Check back soon.",
+    "like": "Like {{name}}",
+    "unlike": "Unlike {{name}}",
+    "likesLoading": "Updating likes…",
+    "likesError": "Likes unavailable. Retry",
+    "more": "Read more",
+    "less": "Show less",
+    "location": {
+      "at_shop": "At the shop",
+      "at_customer": "At your place",
+      "both": "At the shop or your place"
+    }
   }
 }

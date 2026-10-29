@@ -605,5 +605,31 @@
     "withinKm": "{{km}} km",
     "wider": "Partout",
     "atCustomer": "À domicile"
+  },
+  "catalog": {
+    "title": "Le catalogue",
+    "subtitle": "Découvrez ce qui vous attend.",
+    "newProducts": "Nouveaux produits",
+    "newServices": "Nouveaux services",
+    "mostLiked": "Les plus aimés",
+    "mostLikedProducts": "Produits les plus aimés",
+    "mostLikedServices": "Services les plus aimés",
+    "noLikes": "Pas encore de j’aime. Soyez le premier à enregistrer un favori.",
+    "browse": "Parcourir par catégorie",
+    "all": "Tout",
+    "allProducts": "Tous les produits",
+    "allServices": "Tous les services",
+    "empty": "Ce catalogue se prépare. Revenez bientôt.",
+    "like": "Aimer {{name}}",
+    "unlike": "Ne plus aimer {{name}}",
+    "likesLoading": "Mise à jour des j’aime…",
+    "likesError": "J’aime indisponibles. Réessayer",
+    "more": "Lire la suite",
+    "less": "Réduire",
+    "location": {
+      "at_shop": "En boutique",
+      "at_customer": "À votre domicile",
+      "both": "En boutique ou à votre domicile"
+    }
   }
 }

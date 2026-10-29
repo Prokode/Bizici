@@ -18,6 +18,52 @@ tags:
   - name: discounts
   - name: chat
 paths:
+  /public/catalog/{shopId}/likes:
+    get:
+      operationId: getCatalogLikes
+      tags: [products]
+      summary: Public product and service like totals with optional signed-in viewer state
+      parameters:
+        - in: path
+          name: shopId
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Like counts; items without votes are omitted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CatalogLikeList" }
+        "400": { description: Invalid shop id }
+        "404": { description: Shop not found }
+  /catalog/{kind}/{itemId}/like:
+    put:
+      operationId: setCatalogLike
+      tags: [products]
+      summary: Set or remove the authenticated account's like idempotently
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema: { type: string, enum: [product, service] }
+        - in: path
+          name: itemId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CatalogLikeInput" }
+      responses:
+        "200":
+          description: Saved vote and current count
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CatalogLikeState" }
+        "400": { description: Invalid item or input }
+        "401": { description: Sign-in required }
+        "404": { description: Item not found }
   /photo-uploads/{uploadId}:
     put:
       operationId: uploadLocalPhoto
@@ -1197,6 +1243,26 @@ components:
       schema: { type: string }
 
   schemas:
+    CatalogLikeInput:
+      type: object
+      required: [liked]
+      properties:
+        liked: { type: boolean }
+    CatalogLikeState:
+      type: object
+      required: [id, kind, likeCount, likedByMe]
+      properties:
+        id: { type: string }
+        kind: { type: string, enum: [product, service] }
+        likeCount: { type: integer, minimum: 0 }
+        likedByMe: { type: boolean }
+    CatalogLikeList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/CatalogLikeState" }
     PublicProductSearchHit:
       type: object
       required: [id, shopId, shopName, shopMarketName, shopIsOpen, name, brand, description, price, photo, distanceMeters]
@@ -1749,6 +1815,7 @@ components:
         imageUrl: { type: string, nullable: true }
         category: { type: string, nullable: true }
         lastVerifiedAt: { type: string }
+        createdAt: { type: string, format: date-time }
       required:
         - id
         - shopId

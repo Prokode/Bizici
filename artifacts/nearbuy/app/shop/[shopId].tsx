@@ -11,13 +11,12 @@ import { useColors } from "@/hooks/useColors";
 import { Button } from "@/components/ui/Button";
 import { fetchShopDetail } from "@/lib/api/shops";
 import { fetchProviderDetail } from "@/lib/api/providers";
-import { LocationBadge } from "@/components/LocationBadge";
 import { ShopReviewsSection } from "@/components/ShopReviewsSection";
 import { chatShopHref } from "@/lib/chatItemContext";
 import { BrandPhoto } from "@/components/BrandPhoto";
 import { ZoomablePhoto } from "@/components/ZoomablePhoto";
-import { ProductGallery } from "@/components/ProductGallery";
 import { ShopProductFilters, useShopProductFilters } from "@/components/ShopProductFilters";
+import { ShopCatalog } from "@/components/ShopCatalog";
 
 export default function ShopDetails() {
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
@@ -120,54 +119,26 @@ export default function ShopDetails() {
                         {!!profile?.certifications.length && <Text style={text}>{profile.certifications.join(" · ")}</Text>}
                         {profile?.portfolioPhotos.map(uri => <ZoomablePhoto key={uri} source={{ uri }} photos={profile.portfolioPhotos} style={styles.photo} />)}
                         <Button title={t("provider.openProfile")} variant="outline" onPress={() => router.push(`/provider/${shop.id}`)} />
-                        <Text style={[styles.heading, text]}>{t("shopDetails.services")}</Text>
-                        {!provider.data?.services.length && <Text style={muted}>{t("shopDetails.noServices")}</Text>}
-                        {provider.data?.services.map(service => (
-                          <View key={service.id} style={card}>
-                            <Text style={[styles.heading, text]}>{service.title}</Text>
-                            {service.photos.map(uri => <ZoomablePhoto key={uri} source={{ uri }} photos={service.photos} accessibilityLabel={service.title} style={styles.photo} />)}
-                            {!!service.description && <Text style={text}>{service.description}</Text>}
-                            <Text style={{ color: colors.primary }}>{service.pricingType === "quote" ? t("search.onQuote") :
-                              service.price == null ? "—" : service.pricingType === "hourly" ? t("search.hourlyPrice", { price: formatPrice(service.price * 100, shop.currency) }) : formatPrice(service.price * 100, shop.currency)}</Text>
-                            {service.durationMinutes != null && <Text style={muted}>{t("shopDetails.duration", { minutes: service.durationMinutes })}</Text>}
-                            <LocationBadge mode={service.effectiveServiceLocation} colors={colors} t={t} />
-                            <Button
-                              title={t("askItem.askService")}
-                              variant="outline"
-                              testID={`ask-service-${service.id}`}
-                              onPress={() => router.push(chatShopHref(shop.id, { kind: "service", id: service.id, name: service.title }) as never)}
-                            />
-                          </View>
-                        ))}
                       </>
                     )}
                 </View>
               )}
-              {(shop.kind !== "services" || !!detail.data?.products.length) && (
-                <>
-                  <Text style={[styles.section, text]}>{t("shopDetails.products")}</Text>
-                  <CurrencyPreference />
-                  <ShopProductFilters key={shop.id} products={detail.data?.products ?? []} {...productFilters} />
-                  {!detail.data?.products.length && <Text style={muted}>{t("shopDetails.noProducts")}</Text>}
-                  {!!detail.data?.products.length && !productFilters.filtered.length && <Text style={muted}>{t("shopProductFilters.noMatches")}</Text>}
-                  {productFilters.filtered.map(product => (
-                    <View key={product.id} style={card}>
-                      <ProductGallery photos={product.photos} label={product.name} />
-                      <Text style={[styles.heading, text]}>{product.name}</Text>
-                      {!!product.brand && <Text style={muted}>{product.brand}</Text>}
-                      {!!product.description && <Text style={text}>{product.description}</Text>}
-                      <Text style={[styles.price, { color: colors.primary }]}>{formatPrice(product.price, shop.currency)}</Text>
-                      <Text style={muted}>{t(product.stockStatus === "in_stock" ? "shopDetails.inStock" : "shopDetails.outOfStock")}</Text>
-                      <Button
-                        title={t("askItem.askProduct")}
-                        variant="outline"
-                        testID={`ask-product-${product.id}`}
-                        onPress={() => router.push(chatShopHref(shop.id, { kind: "product", id: product.id, name: product.name }) as never)}
-                      />
-                    </View>
-                  ))}
-                </>
-              )}
+              <CurrencyPreference />
+              <ShopCatalog
+                shopId={shop.id}
+                returnTo={`/shop/${shop.id}`}
+                currency={shop.currency}
+                products={detail.data?.products ?? []}
+                filteredProducts={productFilters.filtered}
+                services={provider.data?.services ?? []}
+                productFiltersSlot={detail.data?.products.length ? <ShopProductFilters key={shop.id}
+                  products={detail.data.products} {...productFilters} /> : null}
+                selectedCategoryId={productFilters.filters.category}
+                onSelectCategory={(category) => productFilters.setFilters(current => ({ ...current, category }))}
+                formatPrice={formatPrice}
+                onAskProduct={(item) => router.push(chatShopHref(shop.id, { kind: "product", id: item.id, name: item.name }) as never)}
+                onAskService={(item) => router.push(chatShopHref(shop.id, { kind: "service", id: item.id, name: item.title }) as never)}
+              />
               <ShopReviewsSection
                 shopId={shop.id}
                 shopName={shop.name}

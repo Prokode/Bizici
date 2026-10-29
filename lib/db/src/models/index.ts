@@ -76,6 +76,7 @@ export {
   PUSH_PLATFORMS,
 } from "./PushToken";
 export { Basket, type BasketDoc, type BasketItemDoc } from "./Basket";
+export { CatalogLike, type CatalogLikeDoc } from "./CatalogLike";
 export {
   AccountDeletionRequest,
   type AccountDeletionRequestDoc,

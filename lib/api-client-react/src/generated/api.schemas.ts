@@ -5,6 +5,30 @@
  * NearBuy Business API (MongoDB-backed)
  * OpenAPI spec version: 0.2.0
  */
+export interface CatalogLikeInput {
+  liked: boolean;
+}
+
+export type CatalogLikeStateKind =
+  (typeof CatalogLikeStateKind)[keyof typeof CatalogLikeStateKind];
+
+export const CatalogLikeStateKind = {
+  product: "product",
+  service: "service",
+} as const;
+
+export interface CatalogLikeState {
+  id: string;
+  kind: CatalogLikeStateKind;
+  /** @minimum 0 */
+  likeCount: number;
+  likedByMe: boolean;
+}
+
+export interface CatalogLikeList {
+  items: CatalogLikeState[];
+}
+
 export interface CountryCurrency {
   /**
    * @minLength 3
@@ -600,6 +624,7 @@ export interface Product {
   imageUrl?: string | null;
   category?: string | null;
   lastVerifiedAt: string;
+  createdAt?: string;
 }
 
 export type ProductCreateInputStockStatus =

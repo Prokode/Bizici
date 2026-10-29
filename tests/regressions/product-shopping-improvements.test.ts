@@ -39,7 +39,8 @@ test("product slideshow is identical in both apps and preserves full-gallery pho
   assert.match(client, /\{index \+ 1\} \/ \{photos\.length\}/);
   const shop = read("artifacts/nearbuy/app/shop/[shopId].tsx");
   assert.doesNotMatch(shop, /product\.photos\.map/);
-  assert.match(shop, /ProductGallery photos=\{product\.photos\}/);
+  assert.match(shop, /<ShopCatalog/);
+  assert.match(read("artifacts/nearbuy/components/ShopCatalog.tsx"), /ProductGallery photos=\{item\.photos \?\? \[\]\}/);
 });
 test("price entry labels use only the selected shop currency, without euro or dollar literals", () => {
   for (const locale of ["en", "fr"]) {

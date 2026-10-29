@@ -335,6 +335,7 @@ export function serializeProduct(p: any) {
       )
     : [];
   return {
+    createdAt: (p.createdAt instanceof Date ? p.createdAt : new Date(p.createdAt ?? p._id?.getTimestamp?.() ?? 0)).toISOString(),
     id: String(p._id),
     shopId: String(p.shop?._id ?? p.shop),
     sellerId: String(p.seller?._id ?? p.seller),

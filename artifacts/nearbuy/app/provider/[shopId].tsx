@@ -19,7 +19,6 @@ import { useColors } from "@/hooks/useColors";
 import {
   fetchProviderDetail,
   type PublicProviderDetail,
-  type PublicService,
 } from "@/lib/api/providers";
 import { AppointmentBookingModal } from "@/components/AppointmentBookingModal";
 import { LocationBadge } from "@/components/LocationBadge";
@@ -28,15 +27,8 @@ import { chatShopHref } from "@/lib/chatItemContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { BrandPhoto } from "@/components/BrandPhoto";
 import { ZoomablePhoto } from "@/components/ZoomablePhoto";
-
-function formatServicePrice(svc: PublicService, t: (k: string, o?: Record<string, unknown>) => string, money: (minor: number) => string): string {
-  if (svc.pricingType === "quote") return t("search.onQuote");
-  if (svc.pricingType === "hourly")
-    return t("search.hourlyPrice", {
-      price: svc.price != null ? money(svc.price * 100) : "—",
-    });
-  return svc.price != null ? money(svc.price * 100) : "—";
-}
+import { CurrencyPreference } from "@/components/CurrencyPreference";
+import { ShopCatalog } from "@/components/ShopCatalog";
 
 export default function ProviderScreen() {
   const { formatPrice } = useCurrency();
@@ -45,6 +37,9 @@ export default function ProviderScreen() {
   const { t } = useTranslation();
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [categorySelection, setCategorySelection] = useState({ shopId, id: "" });
+  const selectedCategoryId = categorySelection.shopId === shopId ? categorySelection.id : "";
+  const setSelectedCategoryId = (id: string) => setCategorySelection({ shopId, id });
 
   const {
     data,
@@ -274,92 +269,18 @@ export default function ProviderScreen() {
           )}
         </Section>
 
-        {/* Services */}
         <Section title={t("provider.servicesTitle")} colors={colors}>
-          {services.length === 0 ? (
-            <Text style={[styles.body, { color: colors.mutedForeground }]}>
-              {t("provider.noServices")}
-            </Text>
-          ) : (
-            <View style={{ gap: 10 }}>
-              {services.map((s) => (
-                <View
-                  key={s.id}
-                  style={[
-                    styles.serviceCard,
-                    {
-                      backgroundColor: colors.card,
-                      borderColor: colors.border,
-                    },
-                  ]}
-                >
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={[
-                        styles.serviceTitle,
-                        { color: colors.foreground },
-                      ]}
-                    >
-                      {s.title}
-                    </Text>
-                    {s.description ? (
-                      <Text
-                        style={[
-                          styles.serviceDesc,
-                          { color: colors.mutedForeground },
-                        ]}
-                        numberOfLines={2}
-                      >
-                        {s.description}
-                      </Text>
-                    ) : null}
-                    {s.categories.length > 0 ? (
-                      <View style={styles.serviceCatsRow}>
-                        {s.categories.map((c) => (
-                          <Text
-                            key={c.id}
-                            style={[
-                              styles.serviceCat,
-                              { color: colors.mutedForeground },
-                            ]}
-                          >
-                            {c.name}
-                          </Text>
-                        ))}
-                      </View>
-                    ) : null}
-                  </View>
-                  <View style={{ alignItems: "flex-end", gap: 6 }}>
-                    <Text
-                      style={[styles.servicePrice, { color: colors.primary }]}
-                    >
-                      {formatServicePrice(s, t, (minor) => formatPrice(minor, shop.currency))}
-                    </Text>
-                    <LocationBadge
-                      mode={s.effectiveServiceLocation}
-                      colors={colors}
-                      t={t}
-                    />
-                  </View>
-                  <Pressable
-                    testID={`ask-service-${s.id}`}
-                    accessibilityRole="button"
-                    onPress={() =>
-                      router.push(
-                        chatShopHref(shop.id, { kind: "service", id: s.id, name: s.title }) as never,
-                      )
-                    }
-                    style={[styles.askBtn, { borderColor: colors.primary }]}
-                  >
-                    <Feather name="message-circle" size={14} color={colors.primary} />
-                    <Text style={[styles.askText, { color: colors.primary }]}>
-                      {t("askItem.askService")}
-                    </Text>
-                  </Pressable>
-                </View>
-              ))}
-            </View>
-          )}
+          <CurrencyPreference />
+          <ShopCatalog
+            shopId={shop.id}
+            returnTo={`/provider/${shop.id}`}
+            currency={shop.currency}
+            services={services}
+            selectedCategoryId={selectedCategoryId}
+            onSelectCategory={setSelectedCategoryId}
+            formatPrice={formatPrice}
+            onAskService={(item) => router.push(chatShopHref(shop.id, { kind: "service", id: item.id, name: item.title }) as never)}
+          />
         </Section>
 
         {/* Portfolio */}

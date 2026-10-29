@@ -36,4 +36,5 @@ export interface Product {
   imageUrl?: string | null;
   category?: string | null;
   lastVerifiedAt: string;
+  createdAt?: Date;
 }

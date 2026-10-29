@@ -50,7 +50,12 @@ test("every customer price surface uses currency-aware display, not euro interpo
     const source = read(`artifacts/nearbuy/${file}`);
     assert.match(source, /useCurrency/);
     assert.doesNotMatch(source, /€/);
-    assert.match(source, /formatPrice\(/);
+    if (source.includes("<ShopCatalog")) {
+      assert.match(source, /formatPrice=\{formatPrice\}/);
+      assert.match(read("artifacts/nearbuy/components/ShopCatalog.tsx"), /formatPrice\(item\.price/);
+    } else {
+      assert.match(source, /formatPrice\(/);
+    }
   }
   const context = read("artifacts/nearbuy/contexts/CurrencyContext.tsx");
   assert.match(context, /useState\("seller"\)/);

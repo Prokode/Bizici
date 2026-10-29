@@ -21,6 +21,9 @@ import type {
   Basket,
   BasketItemInput,
   BroadcastRequest,
+  CatalogLikeInput,
+  CatalogLikeList,
+  CatalogLikeState,
   Category,
   ChatConversationCreateInput,
   ChatMessageCreateInput,
@@ -95,6 +98,204 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * @summary Public product and service like totals with optional signed-in viewer state
+ */
+export const getGetCatalogLikesUrl = (shopId: string) => {
+  return `/api/public/catalog/${shopId}/likes`;
+};
+
+export const getCatalogLikes = async (
+  shopId: string,
+  options?: RequestInit,
+): Promise<CatalogLikeList> => {
+  return customFetch<CatalogLikeList>(getGetCatalogLikesUrl(shopId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetCatalogLikesQueryKey = (shopId: string) => {
+  return [`/api/public/catalog/${shopId}/likes`] as const;
+};
+
+export const getGetCatalogLikesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCatalogLikes>>,
+  TError = ErrorType<void>,
+>(
+  shopId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getCatalogLikes>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCatalogLikesQueryKey(shopId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCatalogLikes>>> = ({
+    signal,
+  }) => getCatalogLikes(shopId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!shopId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCatalogLikes>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCatalogLikesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCatalogLikes>>
+>;
+export type GetCatalogLikesQueryError = ErrorType<void>;
+
+/**
+ * @summary Public product and service like totals with optional signed-in viewer state
+ */
+
+export function useGetCatalogLikes<
+  TData = Awaited<ReturnType<typeof getCatalogLikes>>,
+  TError = ErrorType<void>,
+>(
+  shopId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getCatalogLikes>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCatalogLikesQueryOptions(shopId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Set or remove the authenticated account's like idempotently
+ */
+export const getSetCatalogLikeUrl = (
+  kind: "product" | "service",
+  itemId: string,
+) => {
+  return `/api/catalog/${kind}/${itemId}/like`;
+};
+
+export const setCatalogLike = async (
+  kind: "product" | "service",
+  itemId: string,
+  catalogLikeInput: CatalogLikeInput,
+  options?: RequestInit,
+): Promise<CatalogLikeState> => {
+  return customFetch<CatalogLikeState>(getSetCatalogLikeUrl(kind, itemId), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(catalogLikeInput),
+  });
+};
+
+export const getSetCatalogLikeMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setCatalogLike>>,
+    TError,
+    {
+      kind: "product" | "service";
+      itemId: string;
+      data: BodyType<CatalogLikeInput>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setCatalogLike>>,
+  TError,
+  {
+    kind: "product" | "service";
+    itemId: string;
+    data: BodyType<CatalogLikeInput>;
+  },
+  TContext
+> => {
+  const mutationKey = ["setCatalogLike"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setCatalogLike>>,
+    {
+      kind: "product" | "service";
+      itemId: string;
+      data: BodyType<CatalogLikeInput>;
+    }
+  > = (props) => {
+    const { kind, itemId, data } = props ?? {};
+
+    return setCatalogLike(kind, itemId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SetCatalogLikeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setCatalogLike>>
+>;
+export type SetCatalogLikeMutationBody = BodyType<CatalogLikeInput>;
+export type SetCatalogLikeMutationError = ErrorType<void>;
+
+/**
+ * @summary Set or remove the authenticated account's like idempotently
+ */
+export const useSetCatalogLike = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setCatalogLike>>,
+    TError,
+    {
+      kind: "product" | "service";
+      itemId: string;
+      data: BodyType<CatalogLikeInput>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof setCatalogLike>>,
+  TError,
+  {
+    kind: "product" | "service";
+    itemId: string;
+    data: BodyType<CatalogLikeInput>;
+  },
+  TContext
+> => {
+  return useMutation(getSetCatalogLikeMutationOptions(options));
+};
 
 /**
  * @summary Upload photo bytes using a short-lived signed capability

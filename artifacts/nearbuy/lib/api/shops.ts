@@ -50,6 +50,7 @@ export type PublicShop = {
 };
 
 export type PublicProduct = {
+  createdAt?: string;
   id: string;
   shopId: string;
   sellerId: string;

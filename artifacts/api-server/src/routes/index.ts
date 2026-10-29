@@ -21,6 +21,7 @@ import adminRouter from "./admin";
 import kycRouter from "./kyc";
 import productPhotosRouter from "./product-photos";
 import localPhotoUploadsRouter from "./local-photo-uploads";
+import catalogLikesRouter from "./catalog-likes";
 
 const router: IRouter = Router();
 
@@ -41,6 +42,7 @@ router.use(shopBrandPhotoRouter);
 router.use(countriesRouter);
 router.use(citiesRouter);
 router.use(servicesPublicRouter);
+router.use(catalogLikesRouter);
 router.use(meRouter);
 router.use(shopsRouter);
 router.use(productsRouter);

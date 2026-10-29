@@ -47,7 +47,8 @@ test("viewer supports pinch, pan, double-tap, close/back, web escape and full-im
   assert.match(read("artifacts/nearbuy/components/ZoomablePhoto.tsx"), /event\.stopPropagation\(\)/);
 });
 test("product surfaces supply full galleries and search previews resolve their product's real photos", () => {
-  assert.match(read("artifacts/nearbuy/app/shop/[shopId].tsx"), /photos=\{product\.photos\}/);
+  assert.match(read("artifacts/nearbuy/app/shop/[shopId].tsx"), /<ShopCatalog/);
+  assert.match(read("artifacts/nearbuy/components/ShopCatalog.tsx"), /photos=\{item\.photos \?\? \[\]\}/);
   assert.match(read("artifacts/nearbuy/components/ShopBottomSheet.tsx"), /photos=\{item\.photos\}/);
   assert.match(read("artifacts/nearbuy-business/app/(home)/shops/[shopId]/add-product.tsx"), /photos=\{photos\}/);
   const productPhoto = read("artifacts/nearbuy/components/ProductPhoto.tsx");

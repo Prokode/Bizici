@@ -8,6 +8,47 @@
 import * as zod from "zod";
 
 /**
+ * @summary Public product and service like totals with optional signed-in viewer state
+ */
+export const GetCatalogLikesParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const getCatalogLikesResponseItemsItemLikeCountMin = 0;
+
+export const GetCatalogLikesResponse = zod.object({
+  items: zod.array(
+    zod.object({
+      id: zod.string(),
+      kind: zod.enum(["product", "service"]),
+      likeCount: zod.number().min(getCatalogLikesResponseItemsItemLikeCountMin),
+      likedByMe: zod.boolean(),
+    }),
+  ),
+});
+
+/**
+ * @summary Set or remove the authenticated account's like idempotently
+ */
+export const SetCatalogLikeParams = zod.object({
+  kind: zod.enum(["product", "service"]),
+  itemId: zod.coerce.string(),
+});
+
+export const SetCatalogLikeBody = zod.object({
+  liked: zod.boolean(),
+});
+
+export const setCatalogLikeResponseLikeCountMin = 0;
+
+export const SetCatalogLikeResponse = zod.object({
+  id: zod.string(),
+  kind: zod.enum(["product", "service"]),
+  likeCount: zod.number().min(setCatalogLikeResponseLikeCountMin),
+  likedByMe: zod.boolean(),
+});
+
+/**
  * @summary Upload photo bytes using a short-lived signed capability
  */
 export const UploadLocalPhotoParams = zod.object({
@@ -1721,6 +1762,7 @@ export const ListProductsResponseItem = zod.object({
   imageUrl: zod.string().nullish(),
   category: zod.string().nullish(),
   lastVerifiedAt: zod.string(),
+  createdAt: zod.coerce.date().optional(),
 });
 export const ListProductsResponse = zod.array(ListProductsResponseItem);
 
@@ -1895,6 +1937,7 @@ export const CreateProductResponse = zod.object({
   imageUrl: zod.string().nullish(),
   category: zod.string().nullish(),
   lastVerifiedAt: zod.string(),
+  createdAt: zod.coerce.date().optional(),
 });
 
 export const UpdateProductParams = zod.object({
@@ -2068,6 +2111,7 @@ export const UpdateProductResponse = zod.object({
   imageUrl: zod.string().nullish(),
   category: zod.string().nullish(),
   lastVerifiedAt: zod.string(),
+  createdAt: zod.coerce.date().optional(),
 });
 
 export const DeleteProductParams = zod.object({
