@@ -18,6 +18,101 @@ tags:
   - name: discounts
   - name: chat
 paths:
+  /me/interests:
+    get:
+      operationId: getMyInterests
+      tags: [me]
+      responses:
+        "200":
+          description: Saved interests
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InterestPreferences" }
+    put:
+      operationId: setMyInterests
+      tags: [me]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InterestInput" }
+      responses:
+        "200":
+          description: Saved interests
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InterestPreferences" }
+  /me/favorites:
+    get:
+      operationId: getMyFavoriteShops
+      tags: [me]
+      responses:
+        "200":
+          description: Favorite shops and providers
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/FavoriteShop" }
+  /me/favorites/{shopId}:
+    put:
+      operationId: setMyFavoriteShop
+      tags: [me]
+      parameters:
+        - in: path
+          name: shopId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FavoriteInput" }
+      responses:
+        "200":
+          description: Saved favorite state
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FavoriteState" }
+  /me/notifications:
+    get:
+      operationId: getMyNotifications
+      tags: [me]
+      parameters:
+        - in: query
+          name: before
+          schema: { type: string }
+      responses:
+        "200":
+          description: Most recent 50 notifications and total unread count
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NotificationPage" }
+  /me/notifications/read-all:
+    post:
+      operationId: readAllMyNotifications
+      tags: [me]
+      responses:
+        "200":
+          description: Marked read
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NotificationReadResult" }
+  /me/notifications/{notificationId}/read:
+    post:
+      operationId: readMyNotification
+      tags: [me]
+      parameters:
+        - in: path
+          name: notificationId
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Marked read
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NotificationReadResult" }
   /public/catalog/{shopId}/likes:
     get:
       operationId: getCatalogLikes
@@ -1272,6 +1367,71 @@ components:
       schema: { type: string }
 
   schemas:
+    InterestInput:
+      type: object
+      required: [categoryIds]
+      properties:
+        categoryIds:
+          type: array
+          maxItems: 100
+          items: { type: string }
+    InterestPreferences:
+      type: object
+      required: [categoryIds, configured]
+      properties:
+        categoryIds:
+          type: array
+          items: { type: string }
+        configured: { type: boolean }
+    FavoriteInput:
+      type: object
+      required: [favorite]
+      properties:
+        favorite: { type: boolean }
+    FavoriteState:
+      type: object
+      required: [shopId, favorite]
+      properties:
+        shopId: { type: string }
+        favorite: { type: boolean }
+    FavoriteShop:
+      type: object
+      required: [shopId, name, kind, countryCode, brandImageUrl]
+      properties:
+        shopId: { type: string }
+        name: { type: string }
+        kind: { type: string, enum: [products, services, hybrid] }
+        countryCode: { type: ["string", "null"] }
+        brandImageUrl: { type: ["string", "null"] }
+    AppNotification:
+      type: object
+      required: [id, type, title, body, shopId, conversationId, itemId, itemKind, action, readAt, createdAt]
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [chat_message, catalog_change] }
+        title: { type: string }
+        body: { type: string }
+        shopId: { type: string }
+        conversationId: { type: ["string", "null"] }
+        itemId: { type: ["string", "null"] }
+        itemKind: { type: ["string", "null"], enum: [product, service, null] }
+        action: { type: ["string", "null"], enum: [created, updated, deleted, null] }
+        readAt: { type: ["string", "null"] }
+        createdAt: { type: string }
+    NotificationPage:
+      type: object
+      required: [items, unreadCount, nextCursor]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/AppNotification" }
+        unreadCount: { type: integer }
+        nextCursor: { type: ["string", "null"] }
+    NotificationReadResult:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean }
     CatalogLikeInput:
       type: object
       required: [liked]

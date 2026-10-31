@@ -17,6 +17,7 @@ import { BrandPhoto } from "@/components/BrandPhoto";
 import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 import { ShopProductFilters, useShopProductFilters } from "@/components/ShopProductFilters";
 import { ShopCatalog } from "@/components/ShopCatalog";
+import { FavoriteShopButton } from "@/components/FavoriteShopButton";
 
 export default function ShopDetails() {
   const { shopId } = useLocalSearchParams<{ shopId: string }>();
@@ -97,6 +98,11 @@ export default function ShopDetails() {
                       </Text>
                     </View>
                   )}
+                  <View style={styles.actions}>
+                    <View style={{ flex: 1 }}>
+                      <FavoriteShopButton shopId={shop.id} name={shop.name} />
+                    </View>
+                  </View>
                   <View style={[styles.actions, { flexDirection: "column" }]}>
                     <View style={{ flex: 1 }}>
                       <Button title={t("shop.directions")} variant="outline" fullWidth icon={<Feather name="navigation" size={16} color={colors.primary} />} onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${shop.latitude},${shop.longitude}`)} />

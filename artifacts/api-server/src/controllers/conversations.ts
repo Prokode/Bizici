@@ -10,7 +10,8 @@ import {
 } from "@workspace/db";
 
 import { getShopAccess } from "../lib/auth";
-import { sendPushToUsers } from "../lib/push";
+import { notifyUsers } from "../lib/notifications";
+import { AppNotification } from "@workspace/db";
 
 // ---- helpers -----------------------------------------------------------
 
@@ -375,9 +376,10 @@ export const conversationsController = {
         // Resolve a friendly title based on the shop name (sellers know their
         // shop, customers see the boutique they wrote to).
         const shop = await Shop.findById(conv.shopId)
-          .select({ name: 1, _id: 0 })
+          .select({ name: 1, sellerId: 1, _id: 0 })
           .lean();
         const shopName = shop?.name ?? "NearBuy";
+        if (role === "customer" && shop?.sellerId) recipientUserIds.push(shop.sellerId);
 
         let title: string;
         if (role === "customer") {
@@ -393,16 +395,13 @@ export const conversationsController = {
         // Truncate body so the OS preview stays readable.
         const body = text.length > 140 ? `${text.slice(0, 137)}…` : text;
 
-        await sendPushToUsers(recipientUserIds, {
+        await notifyUsers(recipientUserIds.map(String).filter((id) => id !== String(req.userId)), {
+          eventKey: `chat:${String(msg._id)}`,
+          type: "chat_message",
+          shopId: String(conv.shopId),
+          conversationId: String(conv._id),
           title,
           body,
-          threadId: String(conv._id),
-          data: {
-            type: "chat_message",
-            conversationId: String(conv._id),
-            shopId: String(conv.shopId),
-            senderRole: role,
-          },
         });
       } catch (err) {
         req.log.error({ err }, "Failed to send chat push notification");
@@ -429,6 +428,9 @@ export const conversationsController = {
     const field =
       role === "customer" ? "customerUnreadCount" : "sellerUnreadCount";
     await Conversation.updateOne({ _id: conv._id }, { $set: { [field]: 0 } });
+    await AppNotification.updateMany({
+      userId: req.userId, conversationId: conv._id, type: "chat_message", readAt: null,
+    }, { $set: { readAt: new Date() } });
     res.json({ ok: true });
   },
 };

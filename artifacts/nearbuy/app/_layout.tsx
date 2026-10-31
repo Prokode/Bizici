@@ -15,8 +15,10 @@ import * as SplashScreen from "expo-splash-screen";
 import * as SystemUI from "expo-system-ui";
 import { StatusBar } from "expo-status-bar";
 import * as Notifications from "expo-notifications";
+import { notificationTarget } from "@/lib/notificationTarget";
+import { getGetMyNotificationsQueryKey } from "@workspace/api-client-react";
 import React, { useEffect, useState } from "react";
-import { Platform } from "react-native";
+import { AppState, Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
@@ -50,6 +52,7 @@ import {
   subscribeToPendingSignupLocation,
 } from "@/lib/pendingSignupLocation";
 import { syncPendingSignupLocation } from "@/lib/pendingSignupLocationCore";
+import { InterestPreferencesBridge } from "@/components/InterestPreferencesBridge";
 
 function AuthTokenBridge() {
   const { getToken } = useAuth();
@@ -113,6 +116,14 @@ function PendingSignupLocationBridge() {
  * bridge so it works even before the user signs in (e.g. cold-start tap).
  */
 function NotificationTapHandler() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const queryClient = useQueryClient();
+  const [target, setTarget] = useState<string | null>(null);
+  useEffect(() => {
+    if (!target || !isLoaded || !isSignedIn) return;
+    const timer = setTimeout(() => { router.push(target as never); setTarget(null); }, 150);
+    return () => clearTimeout(timer);
+  }, [target, isLoaded, isSignedIn]);
   useEffect(() => {
     // expo-notifications cold-start + listener APIs are not implemented on web.
     if (Platform.OS === "web") return;
@@ -120,22 +131,22 @@ function NotificationTapHandler() {
       const data = response.notification.request.content.data as
         | Record<string, unknown>
         | undefined;
-      if (data?.type === "chat_message" && typeof data.conversationId === "string") {
-        // Defer a tick so router is ready
-        setTimeout(() => {
-          router.push(`/chat/${data.conversationId}` as never);
-        }, 50);
-      }
+      setTarget(notificationTarget(data));
     };
 
     // Cold-start tap (notification opened the app from killed state)
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response) handleResponse(response);
-    });
+    }).catch(() => undefined);
 
     const sub = Notifications.addNotificationResponseReceivedListener(handleResponse);
-    return () => sub.remove();
-  }, []);
+    const received = Notifications.addNotificationReceivedListener(() => {
+      void queryClient.invalidateQueries({ queryKey: getGetMyNotificationsQueryKey() });
+      void queryClient.invalidateQueries({ queryKey: ["chat-conv-list"] });
+      void queryClient.invalidateQueries({ queryKey: ["chat-messages"] });
+    });
+    return () => { sub.remove(); received.remove(); };
+  }, [queryClient]);
   return null;
 }
 
@@ -145,7 +156,16 @@ function NotificationTapHandler() {
  * device the user no longer trusts.
  */
 function PushRegistrationBridge() {
-  const { isSignedIn, isLoaded } = useAuth();
+  const { isSignedIn, isLoaded, userId } = useAuth();
+  const [retryRevision, setRetryRevision] = useState(0);
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+    const resume = AppState.addEventListener("change", (state) => {
+      if (state === "active") setRetryRevision((value) => value + 1);
+    });
+    const refresh = Notifications.addPushTokenListener(() => setRetryRevision((value) => value + 1));
+    return () => { resume.remove(); refresh.remove(); };
+  }, []);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -153,9 +173,9 @@ function PushRegistrationBridge() {
 
     if (isSignedIn) {
       (async () => {
-        const token = await registerForPushNotificationsAsync();
-        if (cancelled || !token) return;
         try {
+          const token = await registerForPushNotificationsAsync();
+          if (cancelled || !token) return;
           await registerPushTokenWithServer(token);
           // Persist so a future sign-out can deregister even after a cold
           // restart or if this very registration request silently fails next
@@ -178,7 +198,7 @@ function PushRegistrationBridge() {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, userId, retryRevision]);
   return null;
 }
 
@@ -235,6 +255,7 @@ export default function RootLayout() {
                   <CurrencyProvider>
                   <AuthTokenBridge />
                   <PendingSignupLocationBridge />
+                  <InterestPreferencesBridge />
                   <PushRegistrationBridge />
                   <NotificationTapHandler />
                   <Slot />

@@ -22,6 +22,7 @@ import { fetchMyKarma, type KarmaEvent } from "@/lib/api/karma";
 import { OnboardingPreferences } from "@/components/OnboardingPreferences";
 import { CurrencyPreference } from "@/components/CurrencyPreference";
 import { ONBOARDING_SEEN_KEY } from "@/app/onboarding";
+import { useGetMyNotifications, getGetMyNotificationsQueryKey } from "@workspace/api-client-react";
 
 const API_BASE = process.env.EXPO_PUBLIC_DOMAIN
   ? `https://${process.env.EXPO_PUBLIC_DOMAIN}`
@@ -41,6 +42,7 @@ export default function ProfileTab() {
   const { user, isSignedIn } = useUser();
   const { signOut, getToken } = useAuth();
   const { t, i18n } = useTranslation();
+  const notifications = useGetMyNotifications(undefined, { query: { enabled: !!isSignedIn && !!user?.id, queryKey: [...getGetMyNotificationsQueryKey(), user?.id ?? "signed-out"], refetchInterval: 15_000, refetchIntervalInBackground: false } });
 
   const formatRelative = React.useCallback(
     (iso: string): string => {
@@ -120,6 +122,7 @@ export default function ProfileTab() {
         <View style={{ marginTop: 24 }}>
           <OnboardingPreferences testIDPrefix="profile" />
           <CurrencyPreference />
+          <SocialEntries unreadCount={0} />
         </View>
       </ScrollView>
     );
@@ -165,6 +168,7 @@ export default function ProfileTab() {
           {user?.primaryEmailAddress?.emailAddress}
         </Text>
       </View>
+      <SocialEntries unreadCount={notifications.data?.unreadCount ?? 0} />
 
       <LinearGradient
         colors={[colors.primary, colors.primary]}
@@ -360,6 +364,25 @@ export default function ProfileTab() {
       </Pressable>
     </ScrollView>
   );
+}
+
+function SocialEntries({ unreadCount }: { unreadCount: number }) {
+  const colors = useColors();
+  const router = useRouter();
+  const { t } = useTranslation();
+  const entries = [
+    { route: "/favorites", icon: "heart" as const, title: t("social.favoritesTitle"), hint: t("social.favoritesHint") },
+    { route: "/interests", icon: "sliders" as const, title: t("social.interestsTitle"), hint: t("social.interestsHint") },
+    { route: "/notifications", icon: "bell" as const, title: t("social.notificationsTitle"), hint: t("social.notificationsHint"), count: unreadCount },
+  ];
+  return <View style={{ gap: 10, marginBottom: 18 }}>
+    {entries.map((entry) => <Pressable key={entry.route} onPress={() => router.push(entry.route as Href)} accessibilityRole="button" accessibilityLabel={entry.title} style={[styles.replayEntry, { backgroundColor: colors.card, borderColor: colors.border, marginBottom: 0 }]}>
+      <View style={[styles.replayIcon, { backgroundColor: colors.muted }]}><Feather name={entry.icon} size={20} color={colors.primary} /></View>
+      <View style={{ flex: 1 }}><Text style={[styles.replayTitle, { color: colors.foreground }]}>{entry.title}</Text><Text style={[styles.replayHint, { color: colors.mutedForeground }]} numberOfLines={1}>{entry.hint}</Text></View>
+      {!!entry.count && <View style={{ minWidth: 24, height: 24, borderRadius: 12, paddingHorizontal: 6, backgroundColor: colors.primary, alignItems: "center", justifyContent: "center" }}><Text style={{ color: colors.primaryForeground, fontSize: 11, fontWeight: "800" }}>{entry.count > 99 ? "99+" : entry.count}</Text></View>}
+      <Feather name="chevron-right" size={20} color={colors.mutedForeground} />
+    </Pressable>)}
+  </View>;
 }
 
 const styles = StyleSheet.create({

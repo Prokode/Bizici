@@ -38,8 +38,14 @@ import type {
   DeleteResult,
   Discount,
   DiscountCreateInput,
+  FavoriteInput,
+  FavoriteShop,
+  FavoriteState,
   GetConversation200,
+  GetMyNotificationsParams,
   HealthStatus,
+  InterestInput,
+  InterestPreferences,
   InviteMemberInput,
   KycStatusResponse,
   KycSubmitBody,
@@ -50,6 +56,8 @@ import type {
   ListConversations200,
   MarkConversationRead200,
   Me,
+  NotificationPage,
+  NotificationReadResult,
   PendingInvitation,
   PostConversationMessage201,
   Product,
@@ -99,6 +107,549 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+export const getGetMyInterestsUrl = () => {
+  return `/api/me/interests`;
+};
+
+export const getMyInterests = async (
+  options?: RequestInit,
+): Promise<InterestPreferences> => {
+  return customFetch<InterestPreferences>(getGetMyInterestsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetMyInterestsQueryKey = () => {
+  return [`/api/me/interests`] as const;
+};
+
+export const getGetMyInterestsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyInterests>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getMyInterests>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyInterestsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyInterests>>> = ({
+    signal,
+  }) => getMyInterests({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyInterests>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetMyInterestsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyInterests>>
+>;
+export type GetMyInterestsQueryError = ErrorType<unknown>;
+
+export function useGetMyInterests<
+  TData = Awaited<ReturnType<typeof getMyInterests>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getMyInterests>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetMyInterestsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getSetMyInterestsUrl = () => {
+  return `/api/me/interests`;
+};
+
+export const setMyInterests = async (
+  interestInput: InterestInput,
+  options?: RequestInit,
+): Promise<InterestPreferences> => {
+  return customFetch<InterestPreferences>(getSetMyInterestsUrl(), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(interestInput),
+  });
+};
+
+export const getSetMyInterestsMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setMyInterests>>,
+    TError,
+    { data: BodyType<InterestInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setMyInterests>>,
+  TError,
+  { data: BodyType<InterestInput> },
+  TContext
+> => {
+  const mutationKey = ["setMyInterests"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setMyInterests>>,
+    { data: BodyType<InterestInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return setMyInterests(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SetMyInterestsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setMyInterests>>
+>;
+export type SetMyInterestsMutationBody = BodyType<InterestInput>;
+export type SetMyInterestsMutationError = ErrorType<unknown>;
+
+export const useSetMyInterests = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setMyInterests>>,
+    TError,
+    { data: BodyType<InterestInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof setMyInterests>>,
+  TError,
+  { data: BodyType<InterestInput> },
+  TContext
+> => {
+  return useMutation(getSetMyInterestsMutationOptions(options));
+};
+
+export const getGetMyFavoriteShopsUrl = () => {
+  return `/api/me/favorites`;
+};
+
+export const getMyFavoriteShops = async (
+  options?: RequestInit,
+): Promise<FavoriteShop[]> => {
+  return customFetch<FavoriteShop[]>(getGetMyFavoriteShopsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetMyFavoriteShopsQueryKey = () => {
+  return [`/api/me/favorites`] as const;
+};
+
+export const getGetMyFavoriteShopsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyFavoriteShops>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getMyFavoriteShops>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyFavoriteShopsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getMyFavoriteShops>>
+  > = ({ signal }) => getMyFavoriteShops({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyFavoriteShops>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetMyFavoriteShopsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyFavoriteShops>>
+>;
+export type GetMyFavoriteShopsQueryError = ErrorType<unknown>;
+
+export function useGetMyFavoriteShops<
+  TData = Awaited<ReturnType<typeof getMyFavoriteShops>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getMyFavoriteShops>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetMyFavoriteShopsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getSetMyFavoriteShopUrl = (shopId: string) => {
+  return `/api/me/favorites/${shopId}`;
+};
+
+export const setMyFavoriteShop = async (
+  shopId: string,
+  favoriteInput: FavoriteInput,
+  options?: RequestInit,
+): Promise<FavoriteState> => {
+  return customFetch<FavoriteState>(getSetMyFavoriteShopUrl(shopId), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(favoriteInput),
+  });
+};
+
+export const getSetMyFavoriteShopMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setMyFavoriteShop>>,
+    TError,
+    { shopId: string; data: BodyType<FavoriteInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setMyFavoriteShop>>,
+  TError,
+  { shopId: string; data: BodyType<FavoriteInput> },
+  TContext
+> => {
+  const mutationKey = ["setMyFavoriteShop"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setMyFavoriteShop>>,
+    { shopId: string; data: BodyType<FavoriteInput> }
+  > = (props) => {
+    const { shopId, data } = props ?? {};
+
+    return setMyFavoriteShop(shopId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SetMyFavoriteShopMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setMyFavoriteShop>>
+>;
+export type SetMyFavoriteShopMutationBody = BodyType<FavoriteInput>;
+export type SetMyFavoriteShopMutationError = ErrorType<unknown>;
+
+export const useSetMyFavoriteShop = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setMyFavoriteShop>>,
+    TError,
+    { shopId: string; data: BodyType<FavoriteInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof setMyFavoriteShop>>,
+  TError,
+  { shopId: string; data: BodyType<FavoriteInput> },
+  TContext
+> => {
+  return useMutation(getSetMyFavoriteShopMutationOptions(options));
+};
+
+export const getGetMyNotificationsUrl = (params?: GetMyNotificationsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/me/notifications?${stringifiedParams}`
+    : `/api/me/notifications`;
+};
+
+export const getMyNotifications = async (
+  params?: GetMyNotificationsParams,
+  options?: RequestInit,
+): Promise<NotificationPage> => {
+  return customFetch<NotificationPage>(getGetMyNotificationsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetMyNotificationsQueryKey = (
+  params?: GetMyNotificationsParams,
+) => {
+  return [`/api/me/notifications`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetMyNotificationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyNotifications>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetMyNotificationsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMyNotifications>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetMyNotificationsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getMyNotifications>>
+  > = ({ signal }) => getMyNotifications(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyNotifications>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetMyNotificationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyNotifications>>
+>;
+export type GetMyNotificationsQueryError = ErrorType<unknown>;
+
+export function useGetMyNotifications<
+  TData = Awaited<ReturnType<typeof getMyNotifications>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetMyNotificationsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMyNotifications>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetMyNotificationsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getReadAllMyNotificationsUrl = () => {
+  return `/api/me/notifications/read-all`;
+};
+
+export const readAllMyNotifications = async (
+  options?: RequestInit,
+): Promise<NotificationReadResult> => {
+  return customFetch<NotificationReadResult>(getReadAllMyNotificationsUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getReadAllMyNotificationsMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof readAllMyNotifications>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof readAllMyNotifications>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["readAllMyNotifications"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof readAllMyNotifications>>,
+    void
+  > = () => {
+    return readAllMyNotifications(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReadAllMyNotificationsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof readAllMyNotifications>>
+>;
+
+export type ReadAllMyNotificationsMutationError = ErrorType<unknown>;
+
+export const useReadAllMyNotifications = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof readAllMyNotifications>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof readAllMyNotifications>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getReadAllMyNotificationsMutationOptions(options));
+};
+
+export const getReadMyNotificationUrl = (notificationId: string) => {
+  return `/api/me/notifications/${notificationId}/read`;
+};
+
+export const readMyNotification = async (
+  notificationId: string,
+  options?: RequestInit,
+): Promise<NotificationReadResult> => {
+  return customFetch<NotificationReadResult>(
+    getReadMyNotificationUrl(notificationId),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
+};
+
+export const getReadMyNotificationMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof readMyNotification>>,
+    TError,
+    { notificationId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof readMyNotification>>,
+  TError,
+  { notificationId: string },
+  TContext
+> => {
+  const mutationKey = ["readMyNotification"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof readMyNotification>>,
+    { notificationId: string }
+  > = (props) => {
+    const { notificationId } = props ?? {};
+
+    return readMyNotification(notificationId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReadMyNotificationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof readMyNotification>>
+>;
+
+export type ReadMyNotificationMutationError = ErrorType<unknown>;
+
+export const useReadMyNotification = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof readMyNotification>>,
+    TError,
+    { notificationId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof readMyNotification>>,
+  TError,
+  { notificationId: string },
+  TContext
+> => {
+  return useMutation(getReadMyNotificationMutationOptions(options));
+};
 
 /**
  * @summary Public product and service like totals with optional signed-in viewer state

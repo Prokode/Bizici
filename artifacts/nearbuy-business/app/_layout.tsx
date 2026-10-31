@@ -15,8 +15,9 @@ import * as SplashScreen from "expo-splash-screen";
 import * as SystemUI from "expo-system-ui";
 import { StatusBar } from "expo-status-bar";
 import * as Notifications from "expo-notifications";
+import { notificationTarget } from "@/lib/notificationTarget";
 import React, { useEffect, useRef, useState } from "react";
-import { Platform } from "react-native";
+import { AppState, Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -127,6 +128,14 @@ function PendingSignupLocationBridge() {
 }
 
 function NotificationTapHandler() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const queryClient = useQueryClient();
+  const [target, setTarget] = useState<string | null>(null);
+  useEffect(() => {
+    if (!target || !isLoaded || !isSignedIn) return;
+    const timer = setTimeout(() => { router.push(target as never); setTarget(null); }, 150);
+    return () => clearTimeout(timer);
+  }, [target, isLoaded, isSignedIn]);
   useEffect(() => {
     // Cold-start notification responses and listeners are native-only.
     if (Platform.OS === "web") return;
@@ -134,31 +143,34 @@ function NotificationTapHandler() {
       const data = response.notification.request.content.data as
         | Record<string, unknown>
         | undefined;
-      if (
-        data?.type === "chat_message" &&
-        typeof data.conversationId === "string" &&
-        typeof data.shopId === "string"
-      ) {
-        setTimeout(() => {
-          router.push(
-            `/(home)/shops/${data.shopId}/chat/${data.conversationId}` as never,
-          );
-        }, 50);
-      }
+      setTarget(notificationTarget(data));
     };
 
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response) handleResponse(response);
-    });
+    }).catch(() => undefined);
 
     const sub = Notifications.addNotificationResponseReceivedListener(handleResponse);
-    return () => sub.remove();
-  }, []);
+    const received = Notifications.addNotificationReceivedListener(() => {
+      void queryClient.invalidateQueries({ queryKey: ["chat-conv-list"] });
+      void queryClient.invalidateQueries({ queryKey: ["chat-messages"] });
+    });
+    return () => { sub.remove(); received.remove(); };
+  }, [queryClient]);
   return null;
 }
 
 function PushRegistrationBridge() {
-  const { isSignedIn, isLoaded } = useAuth();
+  const { isSignedIn, isLoaded, userId } = useAuth();
+  const [retryRevision, setRetryRevision] = useState(0);
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+    const resume = AppState.addEventListener("change", (state) => {
+      if (state === "active") setRetryRevision((value) => value + 1);
+    });
+    const refresh = Notifications.addPushTokenListener(() => setRetryRevision((value) => value + 1));
+    return () => { resume.remove(); refresh.remove(); };
+  }, []);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -166,9 +178,9 @@ function PushRegistrationBridge() {
 
     if (isSignedIn) {
       (async () => {
-        const token = await registerForPushNotificationsAsync();
-        if (cancelled || !token) return;
         try {
+          const token = await registerForPushNotificationsAsync();
+          if (cancelled || !token) return;
           await registerPushTokenWithServer(token);
           await rememberRegisteredToken(token);
         } catch {
@@ -187,7 +199,7 @@ function PushRegistrationBridge() {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, userId, retryRevision]);
   return null;
 }
 

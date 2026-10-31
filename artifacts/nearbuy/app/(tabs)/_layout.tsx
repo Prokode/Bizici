@@ -7,11 +7,13 @@ import { useTranslation } from "react-i18next";
 
 import { useColors } from "@/hooks/useColors";
 import { listConversations } from "@/lib/api/conversations";
+import { getGetMyNotificationsQueryKey, useGetMyNotifications } from "@workspace/api-client-react";
 
 export default function TabsLayout() {
   const colors = useColors();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, userId } = useAuth();
   const { t } = useTranslation();
+  const notificationQuery = useGetMyNotifications(undefined, { query: { enabled: !!isSignedIn && !!userId, queryKey: [...getGetMyNotificationsQueryKey(), userId ?? "signed-out"], refetchInterval: 15_000, refetchIntervalInBackground: false } });
 
   const unreadQuery = useQuery({
     queryKey: ["chat-conv-list"],
@@ -87,6 +89,9 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <Feather name="user" size={size} color={color} />
           ),
+          tabBarBadge: (notificationQuery.data?.unreadCount ?? 0) > 0
+            ? (notificationQuery.data?.unreadCount ?? 0) > 99 ? "99+" : notificationQuery.data?.unreadCount
+            : undefined,
         }}
       />
     </Tabs>

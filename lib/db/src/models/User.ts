@@ -57,10 +57,13 @@ const UserSchema = new Schema(
             ref: 'City',
             required: false
     },
-    phone: { type: String, required: false }
+    phone: { type: String, required: false },
+    interestCategoryIds: { type: [Schema.Types.ObjectId], ref: "Category", default: [] },
+    interestsConfiguredAt: { type: Date, default: null },
   },
   { timestamps: true },
 );
+UserSchema.index({ country: 1, interestCategoryIds: 1 });
 
 export type UserDoc = InferSchemaType<typeof UserSchema> & { _id: any };
 

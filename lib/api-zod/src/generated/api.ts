@@ -7,6 +7,95 @@
  */
 import * as zod from "zod";
 
+export const GetMyInterestsResponse = zod.object({
+  categoryIds: zod.array(zod.string()),
+  configured: zod.boolean(),
+});
+
+export const setMyInterestsBodyCategoryIdsMax = 100;
+
+export const SetMyInterestsBody = zod.object({
+  categoryIds: zod.array(zod.string()).max(setMyInterestsBodyCategoryIdsMax),
+});
+
+export const SetMyInterestsResponse = zod.object({
+  categoryIds: zod.array(zod.string()),
+  configured: zod.boolean(),
+});
+
+export const GetMyFavoriteShopsResponseItem = zod.object({
+  shopId: zod.string(),
+  name: zod.string(),
+  kind: zod.enum(["products", "services", "hybrid"]),
+  countryCode: zod.string().nullable(),
+  brandImageUrl: zod.string().nullable(),
+});
+export const GetMyFavoriteShopsResponse = zod.array(
+  GetMyFavoriteShopsResponseItem,
+);
+
+export const SetMyFavoriteShopParams = zod.object({
+  shopId: zod.coerce.string(),
+});
+
+export const SetMyFavoriteShopBody = zod.object({
+  favorite: zod.boolean(),
+});
+
+export const SetMyFavoriteShopResponse = zod.object({
+  shopId: zod.string(),
+  favorite: zod.boolean(),
+});
+
+export const GetMyNotificationsQueryParams = zod.object({
+  before: zod.coerce.string().optional(),
+});
+
+export const GetMyNotificationsResponse = zod.object({
+  items: zod.array(
+    zod.object({
+      id: zod.string(),
+      type: zod.enum(["chat_message", "catalog_change"]),
+      title: zod.string(),
+      body: zod.string(),
+      shopId: zod.string(),
+      conversationId: zod.string().nullable(),
+      itemId: zod.string().nullable(),
+      itemKind: zod
+        .union([
+          zod.literal("product"),
+          zod.literal("service"),
+          zod.literal(null),
+        ])
+        .nullable(),
+      action: zod
+        .union([
+          zod.literal("created"),
+          zod.literal("updated"),
+          zod.literal("deleted"),
+          zod.literal(null),
+        ])
+        .nullable(),
+      readAt: zod.string().nullable(),
+      createdAt: zod.string(),
+    }),
+  ),
+  unreadCount: zod.number(),
+  nextCursor: zod.string().nullable(),
+});
+
+export const ReadAllMyNotificationsResponse = zod.object({
+  success: zod.boolean(),
+});
+
+export const ReadMyNotificationParams = zod.object({
+  notificationId: zod.coerce.string(),
+});
+
+export const ReadMyNotificationResponse = zod.object({
+  success: zod.boolean(),
+});
+
 /**
  * @summary Public product and service like totals with optional signed-in viewer state
  */

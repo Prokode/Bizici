@@ -29,6 +29,7 @@ import { BrandPhoto } from "@/components/BrandPhoto";
 import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 import { CurrencyPreference } from "@/components/CurrencyPreference";
 import { ShopCatalog } from "@/components/ShopCatalog";
+import { FavoriteShopButton } from "@/components/FavoriteShopButton";
 
 export default function ProviderScreen() {
   const { formatPrice } = useCurrency();
@@ -158,6 +159,9 @@ export default function ProviderScreen() {
       >
         {/* Identity */}
         <View style={[styles.headerBlock, { borderBottomColor: colors.border }]}>
+          <View style={{ alignSelf: "flex-start", marginBottom: 12 }}>
+            <FavoriteShopButton shopId={shop.id} name={shop.name} compact />
+          </View>
           <View style={styles.nameRow}>
             <Text style={[styles.name, { color: colors.foreground }]}>
               {displayName}

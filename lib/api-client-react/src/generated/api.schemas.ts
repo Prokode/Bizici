@@ -5,6 +5,107 @@
  * NearBuy Business API (MongoDB-backed)
  * OpenAPI spec version: 0.2.0
  */
+export interface InterestInput {
+  /** @maxItems 100 */
+  categoryIds: string[];
+}
+
+export interface InterestPreferences {
+  categoryIds: string[];
+  configured: boolean;
+}
+
+export interface FavoriteInput {
+  favorite: boolean;
+}
+
+export interface FavoriteState {
+  shopId: string;
+  favorite: boolean;
+}
+
+export type FavoriteShopKind =
+  (typeof FavoriteShopKind)[keyof typeof FavoriteShopKind];
+
+export const FavoriteShopKind = {
+  products: "products",
+  services: "services",
+  hybrid: "hybrid",
+} as const;
+
+export interface FavoriteShop {
+  shopId: string;
+  name: string;
+  kind: FavoriteShopKind;
+  /** @nullable */
+  countryCode: string | null;
+  /** @nullable */
+  brandImageUrl: string | null;
+}
+
+export type AppNotificationType =
+  (typeof AppNotificationType)[keyof typeof AppNotificationType];
+
+export const AppNotificationType = {
+  chat_message: "chat_message",
+  catalog_change: "catalog_change",
+} as const;
+
+/**
+ * @nullable
+ */
+export type AppNotificationItemKind =
+  | (typeof AppNotificationItemKind)[keyof typeof AppNotificationItemKind]
+  | null;
+
+export const AppNotificationItemKind = {
+  product: "product",
+  service: "service",
+} as const;
+
+/**
+ * @nullable
+ */
+export type AppNotificationAction =
+  | (typeof AppNotificationAction)[keyof typeof AppNotificationAction]
+  | null;
+
+export const AppNotificationAction = {
+  created: "created",
+  updated: "updated",
+  deleted: "deleted",
+} as const;
+
+export interface AppNotification {
+  id: string;
+  type: AppNotificationType;
+  title: string;
+  body: string;
+  shopId: string;
+  /** @nullable */
+  conversationId: string | null;
+  /** @nullable */
+  itemId: string | null;
+  /** @nullable */
+  itemKind: AppNotificationItemKind;
+  /** @nullable */
+  action: AppNotificationAction;
+  /** @nullable */
+  readAt: string | null;
+  createdAt: string;
+}
+
+export interface NotificationPage {
+  items: AppNotification[];
+  unreadCount: number;
+  /** @nullable */
+  nextCursor: string | null;
+}
+
+export interface NotificationReadResult {
+  success: boolean;
+}
+
 export interface CatalogLikeInput {
   liked: boolean;
 }
@@ -1050,6 +1151,10 @@ null) when the provider opted to hide it.
   /** Distance from the search origin in kilometers. */
   distanceKm: number;
 }
+
+export type GetMyNotificationsParams = {
+  before?: string;
+};
 
 export type UploadLocalPhotoParams = {
   expires: string;

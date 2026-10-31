@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   View,
+  Modal,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from "react-native";
@@ -28,6 +29,8 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/Button";
 import { OnboardingPreferences } from "@/components/OnboardingPreferences";
 import { useColors } from "@/hooks/useColors";
+import { InterestPicker } from "@/components/InterestPicker";
+import { INTEREST_DRAFT_DONE_KEY, readInterestDraft, saveInterestDraft } from "@/lib/interestDraft";
 
 export const ONBOARDING_SEEN_KEY = "nearbuy.consumer.onboarding.seen";
 
@@ -313,12 +316,21 @@ export default function OnboardingScreen() {
   // Measured height left for slides once the footer is laid out, so slide
   // content scrolls instead of running under the footer controls.
   const [listH, setListH] = useState(0);
+  const [interestModalOpen, setInterestModalOpen] = useState(false);
+  const [interestIds, setInterestIds] = useState<string[]>([]);
 
   const slides = useMemo(() => SLIDE_DEFS, []);
+  useEffect(() => {
+    let active = true;
+    void readInterestDraft().then((ids) => { if (active && ids) setInterestIds(ids); });
+    return () => { active = false; };
+  }, []);
 
   const finish = useCallback(async () => {
     try {
       await AsyncStorage.setItem(ONBOARDING_SEEN_KEY, "1");
+      await saveInterestDraft(interestIds);
+      await AsyncStorage.setItem(INTEREST_DRAFT_DONE_KEY, "1");
     } catch {
       // ignore
     }
@@ -386,6 +398,18 @@ export default function OnboardingScreen() {
           { paddingBottom: insets.bottom + (SMALL_SCREEN ? 14 : 24) },
         ]}
       >
+        {isLast && (
+          <Pressable
+            onPress={() => setInterestModalOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t("onboarding.interestsButton")}
+            style={[styles.interestsPrompt, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            <Feather name="sliders" size={17} color={colors.primary} />
+            <Text style={[styles.interestsPromptText, { color: colors.foreground }]}>{t("onboarding.interestsButton")}</Text>
+            <Text style={{ color: colors.mutedForeground, fontSize: 12 }}>{t("onboarding.optional")}</Text>
+          </Pressable>
+        )}
         {index === 0 ? <OnboardingPreferences /> : null}
         <View style={styles.dots}>
           {slides.map((s, i) => (
@@ -406,6 +430,30 @@ export default function OnboardingScreen() {
           }
         />
       </View>
+      <Modal visible={interestModalOpen} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setInterestModalOpen(false)}>
+        <View style={[styles.interestModal, { backgroundColor: colors.background }]}>
+          <View style={styles.interestModalHeading}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.interestModalTitle, { color: colors.foreground }]}>{t("social.interestsTitle")}</Text>
+              <Text style={[styles.interestModalHint, { color: colors.mutedForeground }]}>{t("onboarding.interestsHint")}</Text>
+            </View>
+            <Pressable onPress={() => setInterestModalOpen(false)} accessibilityRole="button" accessibilityLabel={t("common.close")} hitSlop={10}>
+              <Feather name="x" size={22} color={colors.foreground} />
+            </Pressable>
+          </View>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }}>
+            <InterestPicker selected={interestIds} onToggle={(id) => {
+              const nextIds = interestIds.includes(id) ? interestIds.filter((value) => value !== id) : [...interestIds, id];
+              setInterestIds(nextIds);
+              void saveInterestDraft(nextIds);
+            }} />
+          </ScrollView>
+          <View style={styles.interestModalActions}>
+            <Button title={t("onboarding.skip")} variant="outline" onPress={() => setInterestModalOpen(false)} />
+            <View style={{ flex: 1 }}><Button title={t("onboarding.interestsDone")} fullWidth onPress={() => setInterestModalOpen(false)} /></View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -508,6 +556,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: SMALL_SCREEN ? 10 : 16,
   },
+  interestsPrompt: { flexDirection: "row", alignItems: "center", gap: 9, borderWidth: 1, borderRadius: 15, paddingHorizontal: 13, paddingVertical: 10, marginBottom: 12 },
+  interestsPromptText: { fontSize: 13, fontWeight: "700", flex: 1 },
+  interestModal: { flex: 1, paddingTop: 28, paddingHorizontal: 20, paddingBottom: 24 },
+  interestModalHeading: { flexDirection: "row", alignItems: "flex-start", gap: 14, marginBottom: 24 },
+  interestModalTitle: { fontSize: 23, fontWeight: "800" },
+  interestModalHint: { fontSize: 14, lineHeight: 20, marginTop: 7 },
+  interestModalActions: { flexDirection: "row", gap: 10, paddingTop: 16 },
   dots: {
     flexDirection: "row",
     justifyContent: "center",

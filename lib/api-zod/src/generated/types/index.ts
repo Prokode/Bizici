@@ -7,6 +7,10 @@
  */
 
 export * from "./analyzePhotoInput";
+export * from "./appNotification";
+export * from "./appNotificationAction";
+export * from "./appNotificationItemKind";
+export * from "./appNotificationType";
 export * from "./basket";
 export * from "./basketItem";
 export * from "./basketItemInput";
@@ -41,8 +45,15 @@ export * from "./deleteResult";
 export * from "./dimension";
 export * from "./discount";
 export * from "./discountCreateInput";
+export * from "./favoriteInput";
+export * from "./favoriteShop";
+export * from "./favoriteShopKind";
+export * from "./favoriteState";
 export * from "./getConversation200";
+export * from "./getMyNotificationsParams";
 export * from "./healthStatus";
+export * from "./interestInput";
+export * from "./interestPreferences";
 export * from "./inviteMemberInput";
 export * from "./kycDocumentType";
 export * from "./kycStatus";
@@ -56,6 +67,8 @@ export * from "./listConversationMessagesParams";
 export * from "./listConversations200";
 export * from "./markConversationRead200";
 export * from "./me";
+export * from "./notificationPage";
+export * from "./notificationReadResult";
 export * from "./pendingInvitation";
 export * from "./pendingInvitationRole";
 export * from "./postConversationMessage201";

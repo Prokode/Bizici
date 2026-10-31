@@ -2,6 +2,7 @@ import { Router, type IRouter, type RequestHandler } from "express";
 import { requireAuth, requireSeller, requireShopAccess } from "../lib/auth";
 import { servicesController } from "../controllers/services";
 import { categoriesController } from "../controllers/categories";
+import { observeCatalogWrite } from "../lib/notifications";
 
 /**
  * AUTHENTICATED services endpoints. Public browsing is in `services-public.ts`
@@ -35,16 +36,19 @@ router.get(
 router.post(
   "/shops/:shopId/services",
   requireShopAccess,
+  observeCatalogWrite("service", "created"),
   serviceWrite(servicesController.create),
 );
 router.patch(
   "/shops/:shopId/services/:id",
   requireShopAccess,
+  observeCatalogWrite("service", "updated"),
   serviceWrite(servicesController.update),
 );
 router.delete(
   "/shops/:shopId/services/:id",
   requireShopAccess,
+  observeCatalogWrite("service", "deleted"),
   servicesController.remove,
 );
 

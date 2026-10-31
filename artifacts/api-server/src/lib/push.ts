@@ -69,11 +69,11 @@ export async function sendPushToUsers(
     if (messages.length === 0) return;
 
     const chunks = expo.chunkPushNotifications(messages);
-    const tickets: ExpoPushTicket[] = [];
+    const deliveries: Array<{ ticket: ExpoPushTicket; target: ExpoPushMessage["to"] }> = [];
     for (const chunk of chunks) {
       try {
         const chunkTickets = await expo.sendPushNotificationsAsync(chunk);
-        tickets.push(...chunkTickets);
+        chunkTickets.forEach((ticket, index) => deliveries.push({ ticket, target: chunk[index]!.to }));
       } catch (err) {
         logger.error({ err }, "expo.sendPushNotificationsAsync failed");
       }
@@ -81,10 +81,9 @@ export async function sendPushToUsers(
 
     // Prune tokens whose tickets reported DeviceNotRegistered.
     await Promise.all(
-      tickets.map(async (ticket, i) => {
+      deliveries.map(async ({ ticket, target }) => {
         if (ticket.status !== "error") return;
         const code = ticket.details?.error;
-        const target = messages[i]?.to;
         if (
           code === "DeviceNotRegistered" &&
           typeof target === "string"
