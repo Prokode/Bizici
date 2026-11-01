@@ -99,16 +99,12 @@ export default function ShopDetails() {
                     </View>
                   )}
                   <View style={styles.actions}>
-                    <View style={{ flex: 1 }}>
-                      <FavoriteShopButton shopId={shop.id} name={shop.name} />
+                    <FavoriteShopButton shopId={shop.id} name={shop.name} compact />
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <Button title={t("shop.directions")} variant="outline" size="sm" numberOfLines={1} fullWidth icon={<Feather name="navigation" size={16} color={colors.primary} />} onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${shop.latitude},${shop.longitude}`)} />
                     </View>
-                  </View>
-                  <View style={[styles.actions, { flexDirection: "column" }]}>
-                    <View style={{ flex: 1 }}>
-                      <Button title={t("shop.directions")} variant="outline" fullWidth icon={<Feather name="navigation" size={16} color={colors.primary} />} onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${shop.latitude},${shop.longitude}`)} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Button title={t("shop.chat")} fullWidth icon={<Feather name="message-circle" size={16} color={colors.primaryForeground} />} onPress={() => router.push(chatShopHref(shop.id) as never)} />
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <Button title={t("shop.chatShort")} accessibilityLabel={t("shop.chat")} size="sm" numberOfLines={1} fullWidth icon={<Feather name="message-circle" size={16} color={colors.primaryForeground} />} onPress={() => router.push(chatShopHref(shop.id) as never)} />
                     </View>
                   </View>
                 </View>

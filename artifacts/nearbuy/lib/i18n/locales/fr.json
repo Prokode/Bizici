@@ -97,6 +97,7 @@
     "callShop": "Appeler",
     "directions": "Itinéraire",
     "chat": "Discuter avec le vendeur",
+    "chatShort": "Discuter",
     "chatUnavailable": "Discussion indisponible",
     "chatOpenFailed": "Impossible d'ouvrir la discussion. Réessayez.",
     "stillHere": "Toujours là ?",
