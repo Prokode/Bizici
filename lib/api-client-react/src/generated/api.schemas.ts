@@ -1233,6 +1233,23 @@ export type SetShopBrandPhotoBody = {
 };
 
 export type SearchPublicProductsParams = {
+  /**
+   * Inclusive minimum in priceCurrency major units.
+   * @minimum 0
+   * @maximum 1000000000000
+   */
+  minPrice?: number;
+  /**
+   * Inclusive maximum in priceCurrency major units.
+   * @minimum 0
+   * @maximum 1000000000000
+   */
+  maxPrice?: number;
+  /**
+   * ISO currency required with price bounds.
+   * @pattern ^[A-Z]{3}$
+   */
+  priceCurrency?: string;
   q: string;
   /**
    * @minimum -90
@@ -1274,6 +1291,23 @@ export type UnregisterPushTokenBody = {
 };
 
 export type SearchServicesParams = {
+  /**
+   * Inclusive minimum advertised price in priceCurrency major units. Excludes quotes.
+   * @minimum 0
+   * @maximum 1000000000000
+   */
+  minPrice?: number;
+  /**
+   * Inclusive maximum advertised price in priceCurrency major units. Excludes quotes.
+   * @minimum 0
+   * @maximum 1000000000000
+   */
+  maxPrice?: number;
+  /**
+   * ISO currency required with price bounds.
+   * @pattern ^[A-Z]{3}$
+   */
+  priceCurrency?: string;
   latitude: number;
   longitude: number;
   /**

@@ -1,4 +1,15 @@
 {
+  "priceFilter": {
+    "title": "Prix",
+    "hint": "Fourchette dans la devise choisie, appliquée avant le chargement des résultats. Pour les services : prix affiché, hors devis.",
+    "currency": "Devise de la fourchette",
+    "minimum": "Minimum",
+    "maximum": "Maximum",
+    "noLimit": "Sans limite",
+    "invalid": "Choisissez une devise et des montants positifs ou nuls (2 décimales maximum), avec un minimum inférieur ou égal au maximum.",
+    "reset": "Réinitialiser",
+    "apply": "Appliquer"
+  },
   "photoViewer": {
     "open": "Voir la photo en plein écran",
     "photo": "Photo",

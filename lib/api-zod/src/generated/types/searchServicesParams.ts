@@ -8,6 +8,23 @@
 import type { SearchServicesServiceLocation } from "./searchServicesServiceLocation";
 
 export type SearchServicesParams = {
+  /**
+   * Inclusive minimum advertised price in priceCurrency major units. Excludes quotes.
+   * @minimum 0
+   * @maximum 1000000000000
+   */
+  minPrice?: number;
+  /**
+   * Inclusive maximum advertised price in priceCurrency major units. Excludes quotes.
+   * @minimum 0
+   * @maximum 1000000000000
+   */
+  maxPrice?: number;
+  /**
+   * ISO currency required with price bounds.
+   * @pattern ^[A-Z]{3}$
+   */
+  priceCurrency?: string;
   latitude: number;
   longitude: number;
   /**

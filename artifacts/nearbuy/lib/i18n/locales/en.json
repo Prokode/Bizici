@@ -1,4 +1,15 @@
 {
+  "priceFilter": {
+    "title": "Price",
+    "hint": "Range in the selected currency, applied before results are loaded. Services use the advertised price, excluding quotes.",
+    "currency": "Range currency",
+    "minimum": "Minimum",
+    "maximum": "Maximum",
+    "noLimit": "No limit",
+    "invalid": "Choose a currency and non-negative amounts (up to 2 decimal places), with a minimum no higher than the maximum.",
+    "reset": "Reset",
+    "apply": "Apply"
+  },
   "photoViewer": {
     "open": "View full photo",
     "photo": "Photo",

@@ -19,6 +19,7 @@ import Fuse from "fuse.js";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
+import { PriceRangeSheet, type PriceFilter } from "@/components/PriceRangeSheet";
 import { MarketplaceDistanceSheet, MARKETPLACE_SUGGESTED_KM } from "@/components/MarketplaceDistanceSheet";
 import { useColors } from "@/hooks/useColors";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -71,8 +72,10 @@ export default function SearchTab() {
   const [atCustomerOnly, setAtCustomerOnly] = useState(false);
   const [radiusKm, setRadiusKm] = useState(MARKETPLACE_SUGGESTED_KM);
   const [distanceOpen, setDistanceOpen] = useState(false);
+  const [priceOpen, setPriceOpen] = useState(false);
+  const [priceFilter, setPriceFilter] = useState<PriceFilter | null>(null);
   const [expandedFor, setExpandedFor] = useState<string | null>(null);
-  const searchKey = JSON.stringify([debouncedQ, center?.lat, center?.lng, radiusKm]);
+  const searchKey = JSON.stringify([debouncedQ, center?.lat, center?.lng, radiusKm, priceFilter]);
   const expanded = expandedFor === searchKey;
 
   // Debounce typing → 300 ms
@@ -143,7 +146,7 @@ export default function SearchTab() {
     isFetchingNextPage,
     isFetchNextPageError,
   } = useInfiniteQuery({
-    queryKey: ["public-search", debouncedQ, center?.lat, center?.lng, radiusKm, expanded],
+    queryKey: ["public-search", debouncedQ, center?.lat, center?.lng, radiusKm, expanded, priceFilter],
     initialPageParam: undefined as string | undefined,
     queryFn: ({ signal, pageParam }) =>
       fetchSearchPage({
@@ -153,6 +156,7 @@ export default function SearchTab() {
         radiusKm,
         scope: expanded ? "all" : undefined,
         cursor: pageParam,
+        ...priceFilter,
         signal,
       }),
     getNextPageParam: (page) => page.nextCursor ?? undefined,
@@ -198,11 +202,12 @@ export default function SearchTab() {
     latitude: center?.lat ?? 0,
     longitude: center?.lng ?? 0,
     radiusKm,
+    ...priceFilter,
     ...(selectedCatId ? { categoryId: selectedCatId } : {}),
     ...(debouncedQ.length >= 2 ? { q: debouncedQ } : {}),
     ...(atCustomerOnly ? { serviceLocation: "at_customer" as const } : {}),
   };
-  const { data: serviceHits = [], isLoading: loadingServices } =
+  const { data: serviceHits = [], isLoading: loadingServices, isError: serviceSearchError, refetch: retryServices } =
     useSearchServices(servicesParams, {
       query: {
         queryKey: getSearchServicesQueryKey(servicesParams),
@@ -256,7 +261,7 @@ export default function SearchTab() {
     !!center;
 
   const showServicesEmpty =
-    mode === "services" && !selectedCatId && debouncedQ.length < 2;
+    mode === "services" && !selectedCatId && debouncedQ.length < 2 && !priceFilter;
   const showServicesNoResults =
     mode === "services" &&
     !showServicesEmpty &&
@@ -370,6 +375,13 @@ export default function SearchTab() {
       ) : null}
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsScroll} contentContainerStyle={styles.chipsRow}>
+        <Pressable testID="price-filter-button" accessibilityRole="button" accessibilityLabel={t("priceFilter.title")} accessibilityState={{ selected: !!priceFilter }} onPress={() => setPriceOpen(true)} style={[styles.chip, { backgroundColor: priceFilter ? colors.accent : colors.muted, borderColor: priceFilter ? colors.primary : colors.border }]}>
+          <Feather name="sliders" size={14} color={colors.primary} />
+          <Text style={[styles.chipLabel, { color: colors.foreground }]}>{priceFilter
+            ? `${priceFilter.minPrice ?? "0"} – ${priceFilter.maxPrice ?? "∞"} ${priceFilter.priceCurrency}`
+            : t("priceFilter.title")}</Text>
+          <Feather name="chevron-down" size={14} color={colors.primary} />
+        </Pressable>
         <Pressable
           testID="marketplace-distance-button"
           onPress={() => setDistanceOpen(true)}
@@ -396,6 +408,10 @@ export default function SearchTab() {
           setDistanceOpen(false);
         }}
       />
+      <PriceRangeSheet visible={priceOpen} value={priceFilter} onClose={() => setPriceOpen(false)} onApply={(value) => {
+        setPriceFilter(value);
+        setPriceOpen(false);
+      }} />
       {mode === "products" && expanded && (
         <View style={{ gap: 8, marginBottom: 12 }}>
           <Text style={{ color: colors.foreground, fontWeight: "700" }}>
@@ -490,6 +506,8 @@ export default function SearchTab() {
             )}
           />
         )
+      ) : serviceSearchError ? (
+        <EmptyState icon="alert-circle" title={t("search.errorTitle")} body={t("search.errorHint")} colors={colors} cta={<Button title={t("common.retry")} onPress={() => retryServices()} />} />
       ) : showServicesEmpty ? (
         <EmptyState
           icon="briefcase"

@@ -374,6 +374,15 @@ export const GetPublicExchangeRatesResponse = zod.object({
 /**
  * @summary Search available public products nearby or outside the selected radius
  */
+export const searchPublicProductsQueryMinPriceMin = 0;
+export const searchPublicProductsQueryMinPriceMax = 1000000000000;
+
+export const searchPublicProductsQueryMaxPriceMin = 0;
+export const searchPublicProductsQueryMaxPriceMax = 1000000000000;
+
+export const searchPublicProductsQueryPriceCurrencyRegExp = new RegExp(
+  "^[A-Z]{3}$",
+);
 export const searchPublicProductsQueryLatMin = -90;
 export const searchPublicProductsQueryLatMax = 90;
 
@@ -388,6 +397,23 @@ export const searchPublicProductsQueryLimitDefault = 60;
 export const searchPublicProductsQueryLimitMax = 200;
 
 export const SearchPublicProductsQueryParams = zod.object({
+  minPrice: zod.coerce
+    .number()
+    .min(searchPublicProductsQueryMinPriceMin)
+    .max(searchPublicProductsQueryMinPriceMax)
+    .optional()
+    .describe("Inclusive minimum in priceCurrency major units."),
+  maxPrice: zod.coerce
+    .number()
+    .min(searchPublicProductsQueryMaxPriceMin)
+    .max(searchPublicProductsQueryMaxPriceMax)
+    .optional()
+    .describe("Inclusive maximum in priceCurrency major units."),
+  priceCurrency: zod.coerce
+    .string()
+    .regex(searchPublicProductsQueryPriceCurrencyRegExp)
+    .optional()
+    .describe("ISO currency required with price bounds."),
   q: zod.coerce.string(),
   lat: zod.coerce
     .number()
@@ -2752,6 +2778,13 @@ export const UpdateProviderProfileResponse = zod.object({
     ),
 });
 
+export const searchServicesQueryMinPriceMin = 0;
+export const searchServicesQueryMinPriceMax = 1000000000000;
+
+export const searchServicesQueryMaxPriceMin = 0;
+export const searchServicesQueryMaxPriceMax = 1000000000000;
+
+export const searchServicesQueryPriceCurrencyRegExp = new RegExp("^[A-Z]{3}$");
 export const searchServicesQueryRadiusKmMin = 0.1;
 export const searchServicesQueryRadiusKmMax = 400;
 
@@ -2760,6 +2793,27 @@ export const searchServicesQueryQMax = 120;
 export const searchServicesQueryLimitMax = 50;
 
 export const SearchServicesQueryParams = zod.object({
+  minPrice: zod.coerce
+    .number()
+    .min(searchServicesQueryMinPriceMin)
+    .max(searchServicesQueryMinPriceMax)
+    .optional()
+    .describe(
+      "Inclusive minimum advertised price in priceCurrency major units. Excludes quotes.",
+    ),
+  maxPrice: zod.coerce
+    .number()
+    .min(searchServicesQueryMaxPriceMin)
+    .max(searchServicesQueryMaxPriceMax)
+    .optional()
+    .describe(
+      "Inclusive maximum advertised price in priceCurrency major units. Excludes quotes.",
+    ),
+  priceCurrency: zod.coerce
+    .string()
+    .regex(searchServicesQueryPriceCurrencyRegExp)
+    .optional()
+    .describe("ISO currency required with price bounds."),
   latitude: zod.coerce.number(),
   longitude: zod.coerce.number(),
   radiusKm: zod.coerce

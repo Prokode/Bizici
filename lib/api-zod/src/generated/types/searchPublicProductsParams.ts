@@ -8,6 +8,23 @@
 import type { SearchPublicProductsScope } from "./searchPublicProductsScope";
 
 export type SearchPublicProductsParams = {
+  /**
+   * Inclusive minimum in priceCurrency major units.
+   * @minimum 0
+   * @maximum 1000000000000
+   */
+  minPrice?: number;
+  /**
+   * Inclusive maximum in priceCurrency major units.
+   * @minimum 0
+   * @maximum 1000000000000
+   */
+  maxPrice?: number;
+  /**
+   * ISO currency required with price bounds.
+   * @pattern ^[A-Z]{3}$
+   */
+  priceCurrency?: string;
   q: string;
   /**
    * @minimum -90

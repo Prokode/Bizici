@@ -319,6 +319,9 @@ paths:
       operationId: searchPublicProducts
       summary: Search available public products nearby or outside the selected radius
       parameters:
+        - { name: minPrice, in: query, description: Inclusive minimum in priceCurrency major units., schema: { type: number, minimum: 0, maximum: 1000000000000 } }
+        - { name: maxPrice, in: query, description: Inclusive maximum in priceCurrency major units., schema: { type: number, minimum: 0, maximum: 1000000000000 } }
+        - { name: priceCurrency, in: query, description: ISO currency required with price bounds., schema: { type: string, pattern: '^[A-Z]{3}$' } }
         - { name: q, in: query, required: true, schema: { type: string } }
         - { name: lat, in: query, required: true, schema: { type: number, minimum: -90, maximum: 90 } }
         - { name: lng, in: query, required: true, schema: { type: number, minimum: -180, maximum: 180 } }
@@ -919,6 +922,9 @@ paths:
       operationId: searchServices
       tags: [services]
       parameters:
+        - { name: minPrice, in: query, description: Inclusive minimum advertised price in priceCurrency major units. Excludes quotes., schema: { type: number, minimum: 0, maximum: 1000000000000 } }
+        - { name: maxPrice, in: query, description: Inclusive maximum advertised price in priceCurrency major units. Excludes quotes., schema: { type: number, minimum: 0, maximum: 1000000000000 } }
+        - { name: priceCurrency, in: query, description: ISO currency required with price bounds., schema: { type: string, pattern: '^[A-Z]{3}$' } }
         - in: query
           name: latitude
           required: true

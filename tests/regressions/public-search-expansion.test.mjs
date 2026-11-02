@@ -96,6 +96,25 @@ test("local search retains the chosen radius; wider search has no distance ceili
   assert.deepEqual(products.quantity, { $gt: 0 });
 });
 
+test("price bounds apply before pagination in strict and fuzzy searches", async () => {
+  reset([[], [product(100)]]);
+  fixture.shops[0].currency = { code: "XOF" };
+  const res = await request("search", { ...base, q: "shoes", minPrice: "1500", maxPrice: "3500", priceCurrency: "XOF" });
+  assert.equal(res.statusCode, 200);
+  const productCalls = fixture.calls.filter((call) => call.model === "Product");
+  assert.equal(productCalls.length, 2);
+  for (const call of productCalls) assert.deepEqual(call.filter.$and, [{
+    $or: [{ shop: oid(1), price: { $gte: 150000, $lte: 350000 } }],
+  }]);
+});
+
+test("price validation rejects invalid ranges before querying the catalog", async () => {
+  reset();
+  const res = await request("search", { ...base, q: "shoes", minPrice: "3500", maxPrice: "1500", priceCurrency: "XOF" });
+  assert.equal(res.statusCode, 400);
+  assert.equal(fixture.calls.length, 0);
+});
+
 test("wider text pages can reach matches beyond the first 60", async () => {
   reset([Array.from({ length: 61 }, (_, i) => product(200 - i))]);
   const first = await request("search", { ...base, q: "shoes", scope: "all" });

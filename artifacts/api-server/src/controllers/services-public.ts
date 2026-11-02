@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { parsePriceRange, sellerPriceBounds, servicePriceMatches } from "../lib/price-range";
 import { publicShopKycFilter } from "../lib/kyc-policy";
 import { Types } from "mongoose";
 import { Service, Shop } from "@workspace/db";
@@ -11,6 +12,9 @@ import {
 export const servicesPublicController = {
   // Customer-facing search by location.
   search: async (req: Request, res: Response) => {
+    let priceRange;
+    try { priceRange = parsePriceRange(req.query); }
+    catch { res.status(400).json({ error: "Invalid price range or currency" }); return; }
     const lat = Number(req.query.latitude);
     const lng = Number(req.query.longitude);
     const radiusKm = Math.min(
@@ -60,6 +64,9 @@ export const servicesPublicController = {
 
     const shopMap = new Map<string, any>(shops.map((s) => [String(s._id), s]));
     const shopIds = shops.map((s) => s._id);
+    let priceBounds;
+    try { priceBounds = await sellerPriceBounds(shops, priceRange); }
+    catch { res.status(503).json({ error: "Currency conversion unavailable" }); return; }
 
     const serviceFilter: Record<string, unknown> = {
       shop: { $in: shopIds },
@@ -98,6 +105,7 @@ export const servicesPublicController = {
         };
       })
       .filter((r): r is NonNullable<typeof r> => r !== null)
+      .filter((r) => !priceRange || servicePriceMatches(r.shop.id, r.service, priceBounds))
       .filter((r) => {
         if (!slFilter) return true;
         const eff = r.service.effectiveServiceLocation;

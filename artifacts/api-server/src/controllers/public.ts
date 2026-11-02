@@ -1,3 +1,4 @@
+import { parsePriceRange, sellerPriceBounds, productPriceClauses } from "../lib/price-range";
 import type { Request, Response } from "express";
 import { publicShopKycFilter, isPublicShopKycAllowed } from "../lib/kyc-policy";
 import { Types } from "mongoose";
@@ -197,6 +198,9 @@ export const publicController = {
    * The mobile client adds Fuse.js fuzzy re-ranking on top to tolerate typos.
    */
   search: async (req: Request, res: Response) => {
+    let priceRange;
+    try { priceRange = parsePriceRange(req.query); }
+    catch { res.status(400).json({ error: "Invalid price range or currency" }); return; }
     const q = String(req.query.q ?? "").trim();
     const lat = Number(req.query.lat);
     const lng = Number(req.query.lng);
@@ -228,6 +232,9 @@ export const publicController = {
 
     const shopById = new Map(shopsInRadius.map((s) => [String(s._id), s]));
     const shopIds = shopsInRadius.map((s) => s._id);
+    let priceClauses;
+    try { priceClauses = priceRange ? productPriceClauses(shopsInRadius, await sellerPriceBounds(shopsInRadius, priceRange)) : null; }
+    catch { res.status(503).json({ error: "Currency conversion unavailable" }); return; }
 
     // 2. Build a lenient OR regex across name / brand / description / tags.
     // We do an initial "strict" regex pass; if that returns nothing we fall
@@ -247,6 +254,7 @@ export const publicController = {
 
     const productFilter = {
       shop: { $in: shopIds },
+      ...(priceClauses ? { $and: [{ $or: priceClauses.length ? priceClauses : [{ _id: null }] }] } : {}),
       deletedAt: null,
       quantity: { $gt: 0 },
       ...(cursor ? { _id: { $lt: new Types.ObjectId(cursor) } } : {}),
