@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import "./AnimatedSplash.css";
 
 type MotionMode = "initial" | "full" | "reduced";
-const FULL_FINISH_MS = 1200;
+const FULL_FINISH_MS = 2500;
 
 export function AnimatedSplash({ onFinish }: { onFinish: () => void }) {
   const [motionMode, setMotionMode] = useState<MotionMode>(() =>
@@ -35,7 +35,7 @@ export function AnimatedSplash({ onFinish }: { onFinish: () => void }) {
         return;
       }
       setMotionMode("full");
-      fadeTimer = window.setTimeout(() => setIsFading(true), FULL_FINISH_MS - 180);
+      fadeTimer = window.setTimeout(() => setIsFading(true), FULL_FINISH_MS - 375);
       finishTimer = window.setTimeout(finishOnce, FULL_FINISH_MS);
     };
     const handleMotionChange = (event: MediaQueryListEvent) => schedule(event.matches);

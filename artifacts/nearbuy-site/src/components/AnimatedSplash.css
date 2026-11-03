@@ -10,7 +10,7 @@
   overflow: hidden;
   background: var(--splash-cream);
   opacity: 1;
-  transition: opacity 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 375ms cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 
@@ -82,25 +82,25 @@
 .bsplash--full .bsplash__dot {
   opacity: 0;
   transform: translateY(-2.2px);
-  animation: bsplash-dot-arrive 350ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: bsplash-dot-arrive 729ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .bsplash--full .bsplash__body {
   opacity: 0;
   transform: translateY(2.4px);
-  animation: bsplash-body-arrive 380ms cubic-bezier(0.22, 1, 0.36, 1) 145ms forwards;
+  animation: bsplash-body-arrive 792ms cubic-bezier(0.22, 1, 0.36, 1) 302ms forwards;
 }
 
 .bsplash--full .bsplash__wings {
   opacity: 0;
-  animation: bsplash-wings-arrive 380ms cubic-bezier(0.22, 1, 0.36, 1) 75ms forwards;
+  animation: bsplash-wings-arrive 792ms cubic-bezier(0.22, 1, 0.36, 1) 156ms forwards;
 }
 
 .bsplash--full .bsplash__wing {
   transform-box: fill-box;
   transform-origin: center;
-  animation-duration: 380ms;
-  animation-delay: 75ms;
+  animation-duration: 792ms;
+  animation-delay: 156ms;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   animation-fill-mode: forwards;
 }
@@ -116,7 +116,7 @@
 }
 
 .bsplash--full .bsplash__pin {
-  animation: bsplash-pin-shake 280ms ease-in-out 635ms both;
+  animation: bsplash-pin-shake 583ms ease-in-out 1323ms both;
 }
 
 @keyframes bsplash-dot-arrive {

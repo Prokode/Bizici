@@ -96,7 +96,7 @@ test("mobile splash animates the approved three-part vector mark and respects mo
     assert.match(splash, /startedRef\.current = false/);
     assert.match(splash, /setMotionMode\("reduced"\)/);
     assert.match(splash, /finishOnce\(\)/);
-    assert.ok(Number(splash.match(/const FINISH_MS = (\d+)/)?.[1]) <= 1400);
+    assert.equal(Number(splash.match(/const FINISH_MS = (\d+)/)?.[1]), 2500);
     assert.ok(!splash.includes("BizIci"));
     if (app === "nearbuy-business") assert.match(splash, />Pro<\/Text>/);
   }
@@ -123,8 +123,8 @@ test("web splash animates the approved vector geometry, directions, shake and re
     assert.match(css, /translateY\(2\.4px\)/);
     assert.match(css, /translateX\(-2\.4px\)/);
     assert.match(css, /translateX\(2\.4px\)/);
-    assert.match(css, /bsplash-pin-shake 280ms/);
-    assert.ok(Number(splash.match(/const FULL_FINISH_MS = (\d+)/)?.[1]) <= 1400);
+    assert.match(css, /bsplash-pin-shake 583ms ease-in-out 1323ms/);
+    assert.equal(Number(splash.match(/const FULL_FINISH_MS = (\d+)/)?.[1]), 2500);
     assert.match(splash, /aria-hidden="true"/);
     assert.match(css, /prefers-reduced-motion/);
     assert.match(css, /pointer-events: none/);

@@ -4,7 +4,7 @@ import Svg, { Circle, Path } from "react-native-svg";
 import Animated, { cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withDelay, withSequence, withTiming } from "react-native-reanimated";
 import { useColors } from "@/hooks/useColors";
 
-const FINISH_MS = 1200;
+const FINISH_MS = 2500;
 const VIEW_BOX = "2 28 25 30.3";
 
 export function AnimatedSplash({ onFinish }: { onFinish: () => void }) {
@@ -47,20 +47,20 @@ export function AnimatedSplash({ onFinish }: { onFinish: () => void }) {
       bodyOpacity.value = 0; bodyY.value = 12;
       wingsOpacity.value = 0; leftWingX.value = -12; rightWingX.value = 12;
       pinRotation.value = 0; overlayOpacity.value = 1;
-      const arrive = { duration: 380, easing: Easing.out(Easing.cubic) };
+      const arrive = { duration: 792, easing: Easing.out(Easing.cubic) };
       dotOpacity.value = withTiming(1, arrive);
       dotY.value = withTiming(0, arrive);
-      wingsOpacity.value = withDelay(75, withTiming(1, arrive));
-      leftWingX.value = withDelay(75, withTiming(0, arrive));
-      rightWingX.value = withDelay(75, withTiming(0, arrive));
-      bodyOpacity.value = withDelay(145, withTiming(1, arrive));
-      bodyY.value = withDelay(145, withTiming(0, arrive));
-      pinRotation.value = withDelay(635, withSequence(
-        withTiming(-1.4, { duration: 55 }), withTiming(1.4, { duration: 55 }),
-        withTiming(-1.1, { duration: 55 }), withTiming(1.1, { duration: 55 }),
-        withTiming(0, { duration: 60 }),
+      wingsOpacity.value = withDelay(156, withTiming(1, arrive));
+      leftWingX.value = withDelay(156, withTiming(0, arrive));
+      rightWingX.value = withDelay(156, withTiming(0, arrive));
+      bodyOpacity.value = withDelay(302, withTiming(1, arrive));
+      bodyY.value = withDelay(302, withTiming(0, arrive));
+      pinRotation.value = withDelay(1323, withSequence(
+        withTiming(-1.4, { duration: 115 }), withTiming(1.4, { duration: 115 }),
+        withTiming(-1.1, { duration: 115 }), withTiming(1.1, { duration: 115 }),
+        withTiming(0, { duration: 125 }),
       ));
-      fadeTimer = setTimeout(() => { overlayOpacity.value = withTiming(0, { duration: 180 }); }, FINISH_MS - 180);
+      fadeTimer = setTimeout(() => { overlayOpacity.value = withTiming(0, { duration: 375 }); }, FINISH_MS - 375);
       finishTimer = setTimeout(finishOnce, FINISH_MS);
     };
     const subscription = AccessibilityInfo.addEventListener("reduceMotionChanged", (reduced) => {
