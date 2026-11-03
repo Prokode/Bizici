@@ -7,6 +7,8 @@ import test from "node:test";
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const read = (file: string) => readFileSync(path.join(root, file), "utf8");
 const apps = ["nearbuy", "nearbuy-business"];
+const pathData = (source: string, tag: string) =>
+  [...source.matchAll(new RegExp(`<${tag}\\b[\\s\\S]*?\\bd="([^"]+)"`, "g"))].map(match => match[1]);
 
 test("mobile display names change without breaking installed app identity", () => {
   for (const app of apps) {
@@ -73,25 +75,56 @@ test("web metadata and asset URLs respect prefixed artifact routes", () => {
   }
 });
 
-test("mobile splash is bounded, motion-aware and safe under effect remounts", () => {
+test("mobile splash animates the approved three-part vector mark and respects motion preferences", () => {
+  const approvedPaths = pathData(read("artifacts/nearbuy/assets/images/icibiz-mark.svg"), "path");
   for (const app of apps) {
     const splash = read(`artifacts/${app}/components/AnimatedSplash.tsx`);
-    assert.match(splash, /icibiz-mark\.png/);
+    assert.doesNotMatch(splash, /icibiz-mark\.png/);
+    assert.deepEqual(pathData(splash, "Path"), approvedPaths);
+    assert.equal((splash.match(/<Circle\b/g) ?? []).length, 1);
+    assert.match(splash, /const VIEW_BOX = "2 28 25 30\.3"/);
+    assert.match(splash, /<Circle cx="14\.53" cy="41\.76" r="1\.076"/);
+    assert.match(splash, /dotOpacity/);
+    assert.match(splash, /bodyOpacity/);
+    assert.match(splash, /wingsOpacity/);
+    assert.match(splash, /leftWingX\.value = -12/);
+    assert.match(splash, /rightWingX\.value = 12/);
+    assert.match(splash, /dotY\.value = -11/);
+    assert.match(splash, /bodyY\.value = 12/);
     assert.match(splash, /reduceMotionChanged/);
     assert.match(splash, /completedRef\.current/);
     assert.match(splash, /startedRef\.current = false/);
-    assert.ok(Number(splash.match(/const FINISH_MS = (\d+)/)?.[1]) <= 2400);
-    assert.ok(Number(splash.match(/const REDUCED_FINISH_MS = (\d+)/)?.[1]) <= 800);
+    assert.match(splash, /setMotionMode\("reduced"\)/);
+    assert.match(splash, /finishOnce\(\)/);
+    assert.ok(Number(splash.match(/const FINISH_MS = (\d+)/)?.[1]) <= 1400);
     assert.ok(!splash.includes("BizIci"));
+    if (app === "nearbuy-business") assert.match(splash, />Pro<\/Text>/);
   }
 });
 
-test("web splash has a reduced-motion version and prefix-safe approved mark", () => {
+test("web splash animates the approved vector geometry, directions, shake and reduced-motion path", () => {
+  const approvedPaths = pathData(read("artifacts/nearbuy-site/public/icibiz-mark.svg"), "path");
   for (const app of ["nearbuy-site", "nearbuy-admin"]) {
     const splash = read(`artifacts/${app}/src/components/AnimatedSplash.tsx`);
     const css = read(`artifacts/${app}/src/components/AnimatedSplash.css`);
-    assert.match(splash, /import\.meta\.env\.BASE_URL/);
-    assert.match(splash, /icibiz-mark\.svg/);
+    assert.deepEqual(pathData(splash, "path"), approvedPaths);
+    assert.equal((splash.match(/<circle\b/g) ?? []).length, 1);
+    assert.match(splash, /viewBox="2 28 25 30\.3"/);
+    assert.match(splash, /className="bsplash__dot"/);
+    assert.match(splash, /className="bsplash__body"/);
+    assert.match(splash, /className="bsplash__wings"/);
+    assert.match(splash, /bsplash__wing--left/);
+    assert.match(splash, /bsplash__wing--right/);
+    assert.doesNotMatch(splash, /<img className="bsplash__mark"/);
+    assert.match(splash, /window\.matchMedia\("\(prefers-reduced-motion: reduce\)"\)\.matches/);
+    assert.match(splash, /completedRef\.current/);
+    assert.match(splash, /finishOnce\(\)/);
+    assert.match(css, /translateY\(-2\.2px\)/);
+    assert.match(css, /translateY\(2\.4px\)/);
+    assert.match(css, /translateX\(-2\.4px\)/);
+    assert.match(css, /translateX\(2\.4px\)/);
+    assert.match(css, /bsplash-pin-shake 280ms/);
+    assert.ok(Number(splash.match(/const FULL_FINISH_MS = (\d+)/)?.[1]) <= 1400);
     assert.match(splash, /aria-hidden="true"/);
     assert.match(css, /prefers-reduced-motion/);
     assert.match(css, /pointer-events: none/);
